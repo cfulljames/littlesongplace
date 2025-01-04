@@ -1,15 +1,34 @@
 import os
 import sqlite3
+import sys
 import uuid
 from pathlib import Path, PosixPath
 
 import bcrypt
 import click
-from flask import Flask, render_template, request, redirect, g, session, abort
+from flask import Flask, render_template, request, redirect, g, session, abort, \
+        send_from_directory
 from werkzeug.utils import secure_filename
 
+################################################################################
+# Check for Required Environment Variables
+################################################################################
+
+REQUIRED_VARS = ["SECRET_KEY", "DATA_DIR"]
+
+for var in REQUIRED_VARS:
+    if var not in os.environ:
+        print(f"{var} not set")
+        sys.exit(1)
+
+DATA_DIR = Path(os.environ["DATA_DIR"])
+
+################################################################################
+# Routes
+################################################################################
+
 app = Flask(__name__)
-app.secret_key = "TODO"
+app.secret_key = os.environ["SECRET_KEY"]
 
 @app.route("/")
 def index():
@@ -64,6 +83,7 @@ def login_post():
     if user_data and bcrypt.checkpw(password.encode(), user_data["password"]):
         # Successful login
         session["username"] = username
+        session["userid"] = user_data["userid"]
         session.permanent = True
         return redirect("/")
 
@@ -73,6 +93,8 @@ def login_post():
 def logout():
     if "username" in session:
         session.pop("username")
+    if "userid" in session:
+        session.pop("userid")
 
     return redirect("/")
 
@@ -81,16 +103,20 @@ def users():
     users = [row["username"] for row in query_db("select username from users")]
     return render_template("users.html", users=users)
 
-@app.get("/users/<name>")
-def users_profile(name):
+@app.get("/users/<profile_username>")
+def users_profile(profile_username):
     username = session.get("username", None)
-    songsdir = f"static/users/{username}/songs/"
-    songspath = Path(f"static/users/{username}/songs")
-    songs = []
-    if songspath.exists():
-        songs = [child.name for child in songspath.iterdir() if child.suffix.lower() == ".mp3"]
-        print(songs)
-    return render_template("profile.html", name=name, username=username, songs=songs)
+
+    # Look up user data for current profile
+    profile_data = query_db("select * from users where username = ?", [profile_username], one=True)
+    if profile_data is None:
+        abort(404)
+
+    # Get songs for current profile
+    profile_userid = profile_data["userid"]
+    profile_songs_data = query_db("select * from songs where userid = ?", [profile_userid])
+
+    return render_template("profile.html", name=profile_username, username=username, songs=profile_songs_data)
 
 @app.post("/uploadsong")
 def upload_song():
@@ -98,17 +124,35 @@ def upload_song():
         abort(401)
 
     username = session["username"]
-    userpath = Path(f"static/users/{username}/songs")
+    userid = session["userid"]
+    userpath = DATA_DIR / "songs" / str(userid)
     if not userpath.exists():
         os.makedirs(userpath)
 
     file = request.files["song"]
-    filename = secure_filename(file.filename)
-    filepath = userpath / filename
+    title = request.form["title"]
+    description = request.form["description"]
+
+    # TODO: Validate song file
+
+    song_data = query_db(
+            "insert into songs (userid, title, description) values (?, ?, ?) returning (songid)",
+            [userid, title, description], one=True)
+    get_db().commit()
+
+    filepath = userpath / (str(song_data["songid"]) + ".mp3")
     file.save(filepath)
 
     return redirect(f"/users/{username}")
 
+@app.get("/song/<userid>/<songid>")
+def song(userid, songid):
+    try:
+        int(userid) # Make sure userid is a valid integer
+    except ValueError:
+        abort(404)
+
+    return send_from_directory(DATA_DIR / "songs" / userid, songid + ".mp3")
 
 ################################################################################
 # Database
@@ -117,7 +161,7 @@ def upload_song():
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect("database.db")
+        db = g._database = sqlite3.connect(DATA_DIR / "database.db")
         db.row_factory = sqlite3.Row
     return db
 
@@ -142,6 +186,23 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
+
+################################################################################
+# Generate Session Key
+################################################################################
+
+@click.command("gen-key")
+def gen_key():
+    """Generate a secret key for session cookie encryption"""
+    import secrets
+    print(secrets.token_hex())
+
+
+################################################################################
+# App Configuration
+################################################################################
+
 app.teardown_appcontext(close_db)
 app.cli.add_command(init_db)
+app.cli.add_command(gen_key)
 

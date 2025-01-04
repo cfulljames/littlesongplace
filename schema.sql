@@ -1,7 +1,16 @@
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS songs;
 
 CREATE TABLE users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL
+    userid INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
+
+CREATE TABLE songs (
+    songid INTEGER PRIMARY KEY AUTOINCREMENT,
+    userid INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    FOREIGN KEY(userid) REFERENCES users(userid)
 );
