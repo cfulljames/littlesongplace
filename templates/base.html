@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{% block title %} Base {% endblock %}</title>
+    </head>
+    <body>
+        <div class="navbar">
+            {% if username %}
+            <p>Signed in as {{ username }}</p>
+            <a href="/logout">Sign Out</a><br>
+            <a href="/users/{{ username }}">My Profile</a><br>
+            {% else %}
+            <a href="/login">Sign In</a><br>
+            <a href="/signup">Create Account</a><br>
+            {% endif %}
+            <a href="/users">All Users</a><br>
+            <a href="/">Home</a>
+        </div>
+
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>
+

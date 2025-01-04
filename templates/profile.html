@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name }}'s Profile{% endblock %}
+
+{% block body %}
+
+<h1 class="name">{{ name }}</h1>
+
+{% if name == username %}
+<form action="/uploadsong" method="post" enctype="multipart/form-data">
+    <div class="upload-form">
+        <input type="file" name="song" accept=".mp3"></input>
+    </div>
+    <div class="upload-form">
+        <input type="submit" value="Upload"></input>
+    </div>
+</form>
+{% endif %}
+
+{% for song in songs %}
+<div class="song">
+    {{song}}
+    <audio src="/static/users/{{ name }}/songs/{{ song }}" controls></audio>
+</div>
+{% endfor %}
+
+{% endblock %}

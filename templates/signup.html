@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block body %}
+<h1>Create a new account</h1>
+<p>Welcome to the site!</p>
+<h2>Rules:</h2>
+<ol>
+    <li>Be nice</li>
+    <li>Be cool</li>
+    <li>Have fun</li>
+</ol>
+<form method="post">
+    <div class="signup-form">
+        <label for="username">Username</label>
+        <input type="text" name="username" required></input>
+    </div>
+
+    <div class="signup-form">
+        <label for="password">Password</label>
+        <input type="password" name="password" required></input>
+    </div>
+
+    <div class="signup-form">
+        <label for="password_confirm">Confirm Password</label>
+        <input type="password" name="password_confirm" required></input>
+    </div>
+
+    <div class="signup-form">
+        <input type="submit" value="Sign Up"></input>
+    </div>
+</form>
+
+{% if error %}
+<div class="signup-error">Error: {{ error }}</div>
+{% endif %}
+
+{% endblock %}
+
+
