@@ -1,14 +1,17 @@
-- song database
-- user folders outside of static tree (custom route)
-- user folders use id instead of name
-- save songs with id for name
 - validate song files
 - song collaborators
 - song tags
 - delete song
+- edit song info
+- user bio
+- edit user bio
+
+- javascript song player
 
 - admin account(s)
 - logging
+
+- css/design
 
 URL
 secrethideout.net
