@@ -36,7 +36,7 @@ def signup_post():
     password_confirm = request.form["password_confirm"]
 
     error = None
-    if not username.isalnum():
+    if not username.isidentifier():
         error = "Username cannot contain special characters"
     elif len(username) < 3:
         error ="Username must be at least 3 characters"
@@ -122,11 +122,56 @@ def upload_song():
     title = request.form["title"]
     description = request.form["description"]
 
+    error = None
+
+    # Check if tags are valid
+    tags = request.form["tags"]
+    tags = [t.strip() for t in tags.split(",")]
+    for tag in tags:
+        if not tag.isidentifier():
+            error = f"'{tag}' is not a valid tag name"
+            break
+
+    # Check if collaborators are valid
+    collaborators = request.form["collabs"]
+    collaborators = [c.strip() for c in collaborators.split(",")]
+    collab_ids = {}
+    for collab in collaborators:
+        # Check if @user exists
+        if collab.startswith("@"):
+            collab_user_data = query_db("select * from users where username = ?", [collab[1:]], one=True)
+            if collab_user_data is None:
+                error = f"Invalid collaborator username: {collab}"
+                break
+            else:
+                collab_ids[collab] = collab_user_data["userid"]
+
+        # Check if valid name
+        elif not collab.isprintable():
+            error = f"Invalid collaborator name: {collab}"
+            break
+
+    # TODO: Handle errors above
     # TODO: Validate song file
 
+    # Create song
     song_data = query_db(
             "insert into songs (userid, title, description) values (?, ?, ?) returning (songid)",
             [userid, title, description], one=True)
+    songid = song_data["songid"]
+
+    # Assign tags
+    for tag in tags:
+        query_db("insert into song_tags (tag, songid) values (?, ?)", [tag, songid])
+
+    # List collaborators
+    for collab in collaborators:
+        if collab.startswith("@"):
+            collab_id = collab_ids[collab]
+            query_db("insert into song_collaborators (songid, userid) values (?, ?)", [songid, collab_id])
+        else:
+            query_db("insert into song_collaborators (songid, name) values (?, ?)", [songid, collab])
+
     get_db().commit()
 
     filepath = userpath / (str(song_data["songid"]) + ".mp3")
@@ -138,8 +183,8 @@ def upload_song():
 def song(userid, songid):
     try:
         # Make sure values are valid integers
-        int(userid) 
-        int(songid) 
+        int(userid)
+        int(songid)
     except ValueError:
         abort(404)
 

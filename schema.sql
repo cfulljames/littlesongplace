@@ -25,17 +25,10 @@ CREATE TABLE song_collaborators (
     CONSTRAINT userid_or_name CHECK ((userid IS NULL and name IS NOT NULL) OR (userid IS NOT NULL and name IS NULL))
 );
 
-DROP TABLE IF EXISTS tags;
-CREATE TABLE tags (
-    tagid INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
-);
-
 DROP TABLE IF EXISTS song_tags;
 CREATE TABLE song_tags (
-    tagid INTEGER NOT NULL,
+    tag TEXT NOT NULL,
     songid INTEGER NOT NULL,
-    FOREIGN KEY(tagid) REFERENCES tags(tagid),
     FOREIGN KEY(songid) REFERENCES songs(songid),
-    PRIMARY KEY(tagid, songid)
+    PRIMARY KEY(tag, songid)
 );
