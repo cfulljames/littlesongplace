@@ -11,24 +11,13 @@ from flask import Flask, render_template, request, redirect, g, session, abort, 
 from werkzeug.utils import secure_filename
 
 ################################################################################
-# Check for Required Environment Variables
-################################################################################
-
-REQUIRED_VARS = ["SECRET_KEY", "DATA_DIR"]
-
-for var in REQUIRED_VARS:
-    if var not in os.environ:
-        print(f"{var} not set")
-        sys.exit(1)
-
-DATA_DIR = Path(os.environ["DATA_DIR"])
-
-################################################################################
 # Routes
 ################################################################################
 
+DATA_DIR = Path(".")
+
 app = Flask(__name__)
-app.secret_key = os.environ["SECRET_KEY"]
+app.secret_key = "dev"
 
 @app.route("/")
 def index():
@@ -148,7 +137,9 @@ def upload_song():
 @app.get("/song/<userid>/<songid>")
 def song(userid, songid):
     try:
-        int(userid) # Make sure userid is a valid integer
+        # Make sure values are valid integers
+        int(userid) 
+        int(songid) 
     except ValueError:
         abort(404)
 
@@ -177,6 +168,7 @@ def query_db(query, args=(), one=False):
     cur.close()
     return (rv[0] if rv else None) if one else rv
 
+@app.cli.add_command
 @click.command("init-db")
 def init_db():
     """Clear the existing data and create new tables"""
@@ -191,18 +183,10 @@ def init_db():
 # Generate Session Key
 ################################################################################
 
+@app.cli.add_command
 @click.command("gen-key")
 def gen_key():
     """Generate a secret key for session cookie encryption"""
     import secrets
     print(secrets.token_hex())
-
-
-################################################################################
-# App Configuration
-################################################################################
-
-app.teardown_appcontext(close_db)
-app.cli.add_command(init_db)
-app.cli.add_command(gen_key)
 
