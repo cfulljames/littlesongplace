@@ -16,19 +16,18 @@ CREATE TABLE songs (
 
 DROP TABLE IF EXISTS song_collaborators;
 CREATE TABLE song_collaborators (
-    collabid INTEGER NOT NULL,
     songid INTEGER NOT NULL,
-    userid INTEGER,
-    name TEXT,
-    FOREIGN KEY(userid) REFERENCES users(userid),
-    PRIMARY KEY(collabid, songid),
-    CONSTRAINT userid_or_name CHECK ((userid IS NULL and name IS NOT NULL) OR (userid IS NOT NULL and name IS NULL))
+    name TEXT NOT NULL,
+    FOREIGN KEY(songid) REFERENCES songs(songid),
+    PRIMARY KEY(songid, name)
 );
 
 DROP TABLE IF EXISTS song_tags;
 CREATE TABLE song_tags (
-    tag TEXT NOT NULL,
     songid INTEGER NOT NULL,
+    tag TEXT NOT NULL,
     FOREIGN KEY(songid) REFERENCES songs(songid),
-    PRIMARY KEY(tag, songid)
+    PRIMARY KEY(songid, tag)
 );
+CREATE INDEX idx_song_tags_tag ON song_tags(tag);
+
