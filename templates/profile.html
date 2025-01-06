@@ -11,11 +11,11 @@
     <h2>Upload a new song</h2>
     <div class="upload-form">
         <label for="song">mp3 File</label>
-        <input type="file" name="song" accept=".mp3" required></input>
+        <input type="file" name="song" accept=".mp3" id="file-select" required></input>
     </div>
     <div class="upload-form">
         <label for="title">Title</label>
-        <input type="text" name="title" required></input>
+        <input type="text" name="title" id="song-title" required></input>
     </div>
     <div class="upload-form">
         <label for="title">Description</label>
@@ -35,8 +35,20 @@
 </form>
 {% endif %}
 
+<!-- Automatically set song name from file name -->
+<script>
+document.getElementById("file-select").addEventListener("change", function(e) {
+    var songTitle = document.getElementById("song-title");
+    if (e.target.files[0] && !songTitle.value) {
+        var name = e.target.files[0].name;
+        songTitle.value = name.substring(0, name.length - 4);
+    }
+});
+</script>
+
 <h2>Songs</h2>
 
+<!-- TODO: This is duplicated in songs-by-tag.html -->
 {% for song in songs %}
 <div class="song">
     <div class="song-title">{{ song["title"] }}</div>
