@@ -113,20 +113,15 @@ def users_profile(profile_username):
     # Get songs for current profile
     profile_userid = profile_data["userid"]
     profile_songs_data = query_db("select * from songs where userid = ?", [profile_userid])
-    profile_songs_tags = {}
-    profile_songs_collabs = {}
-    for song in profile_songs_data:
-        songid = song["songid"]
-        profile_songs_tags[songid] = query_db("select (tag) from song_tags where songid = ?", [songid])
-        profile_songs_collabs[songid] = query_db("select (name) from song_collaborators where songid = ?", [songid])
+    tags, collabs = get_tags_and_collabs_for_songs(profile_songs_data)
 
     return render_template(
             "profile.html",
             name=profile_username,
             username=username,
             songs=profile_songs_data,
-            songs_tags=profile_songs_tags,
-            songs_collaborators=profile_songs_collabs)
+            songs_tags=tags,
+            songs_collaborators=collabs)
 
 @app.post("/uploadsong")
 def upload_song():
@@ -220,6 +215,19 @@ def song(userid, songid):
 
     return send_from_directory(DATA_DIR / "songs" / userid, songid + ".mp3")
 
+@app.get("/songs-by-tag/<tag>")
+def songs_by_tag(tag):
+    songs_data = query_db("select * from song_tags inner join songs on song_tags.songid = songs.songid where tag = ?", [tag])
+    tags, collabs = get_tags_and_collabs_for_songs(songs_data)
+
+    return render_template(
+            "songs-by-tag.html",
+            tag=tag,
+            username=session["username"],
+            songs=songs_data,
+            songs_tags=tags,
+            songs_collaborators=collabs)
+
 ################################################################################
 # Database
 ################################################################################
@@ -253,6 +261,14 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
+def get_tags_and_collabs_for_songs(songs):
+    tags = {}
+    collabs = {}
+    for song in songs:
+        songid = song["songid"]
+        tags[songid] = query_db("select (tag) from song_tags where songid = ?", [songid])
+        collabs[songid] = query_db("select (name) from song_collaborators where songid = ?", [songid])
+    return tags, collabs
 
 ################################################################################
 # Generate Session Key

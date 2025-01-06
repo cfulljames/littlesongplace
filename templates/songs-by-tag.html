@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Songs with Tag: {{ tag }}{% endblock %}
+
+{% block body %}
+
+<h1 class="tag-name">Songs tagged with '{{ tag }}'</h1>
+
+{% for song in songs %}
+<div class="song">
+    <div class="song-title">{{ song["title"] }}</div>
+    <audio src="/song/{{ song["userid"] }}/{{ song["songid"] }}" controls></audio>
+    <div class="song-description">{{ song["description"] }}</div>
+    <div class="song-tags">
+        {% for tag in songs_tags[song["songid"]] %}
+        <a href="/songs-by-tag/{{ tag["tag"] }}">{{ tag["tag"] }}</a>
+        {% endfor %}
+    </div>
+    <div class="song-collabs">
+        {% for collab in songs_collaborators[song["songid"]] %}
+            {% if collab["name"].startswith("@") %}
+            <a href="/users/{{ collab["name"][1:] }}" class="collab-link">{{ collab["name"] }}</a>
+            {% else %}
+            <span class="collab-name">{{ collab["name"] }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
