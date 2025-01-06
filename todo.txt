@@ -1,6 +1,3 @@
-- validate song files
-- song collaborators
-- song tags
 - delete song
 - edit song info
 - user bio
