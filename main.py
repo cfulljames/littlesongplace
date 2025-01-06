@@ -204,6 +204,37 @@ def upload_song():
 
     return redirect(request.referrer)
 
+@app.get("/delete-song/<userid>/<songid>")
+def delete_song(userid, songid):
+    try:
+        # Make sure values are valid integers
+        int(userid)
+        int(songid)
+    except ValueError:
+        abort(404)
+
+    # Users can only delete their own songs
+    if int(userid) != session["userid"]:
+        abort(401)
+
+    if not query_db("select * from songs where songid = ?", [songid]):
+        abort(404)  # Song doesn't exist
+
+    # Delete tags, collaborators
+    query_db("delete from song_tags where songid = ?", [songid])
+    query_db("delete from song_collaborators where songid = ?", [songid])
+
+    # Delete song database entry
+    query_db("delete from songs where songid = ?", [songid])
+    get_db().commit()
+
+    # Delete song file from disk
+    songpath = DATA_DIR / "songs" / userid / (songid + ".mp3")
+    if songpath.exists():
+        os.remove(songpath)
+
+    return redirect(request.referrer)
+
 @app.get("/song/<userid>/<songid>")
 def song(userid, songid):
     try:

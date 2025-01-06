@@ -2,6 +2,7 @@
 - edit song info
 - user bio
 - edit user bio
+- delete user account
 
 - javascript song player
 
@@ -9,6 +10,8 @@
 - logging
 
 - css/design
+
+- playlists
 
 URL
 secrethideout.net

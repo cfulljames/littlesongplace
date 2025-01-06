@@ -51,14 +51,31 @@ document.getElementById("file-select").addEventListener("change", function(e) {
 <!-- TODO: This is duplicated in songs-by-tag.html -->
 {% for song in songs %}
 <div class="song">
-    <div class="song-title">{{ song["title"] }}</div>
+    <!-- Song Title -->
+    <div class="song-title"><h3>{{ song["title"] }}</h3></div>
+
+    <!-- Owner-Specific Buttons (Edit/Delete) -->
+    {% if name == username %}
+    <!-- TODO: Edit button -->
+    <div class="song-delete-button">
+    <a href="/delete-song/{{ song["userid"] }}/{{ song["songid"] }}">Delete</a>
+    </div>
+    {% endif %}
+
+    <!-- Play Button -->
     <audio src="/song/{{ song["userid"] }}/{{ song["songid"] }}" controls></audio>
+
+    <!-- Song Description -->
     <div class="song-description">{{ song["description"] }}</div>
+
+    <!-- Song Tags -->
     <div class="song-tags">
         {% for tag in songs_tags[song["songid"]] %}
         <a href="/songs-by-tag/{{ tag["tag"] }}">{{ tag["tag"] }}</a>
         {% endfor %}
     </div>
+
+    <!-- Song Collaborators -->
     <div class="song-collabs">
         {% for collab in songs_collaborators[song["songid"]] %}
             {% if collab["name"].startswith("@") %}
