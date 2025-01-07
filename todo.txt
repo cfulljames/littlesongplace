@@ -12,6 +12,8 @@
 - css/design
 
 - playlists
+- homepage activity log
+- shuffle all
 
 URL
 secrethideout.net
