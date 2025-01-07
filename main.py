@@ -130,9 +130,6 @@ def upload_song():
 
     username = session["username"]
     userid = session["userid"]
-    userpath = DATA_DIR / "songs" / str(userid)
-    if not userpath.exists():
-        os.makedirs(userpath)
 
     file = request.files["song"]
     title = request.form["title"]
@@ -166,8 +163,30 @@ def upload_song():
             flash(f"'{collab}' is not a valid collaborator name", "error")
             error = True
 
-    # Validate and save mp3 file
     if not error:
+        if "songid" in request.args:
+            # Update existing song
+            update_song(file, userid, title, description, tags, collaborators)
+        else:
+            # Uploading new song
+            create_song(file, userid, title, description, tags, collaborators)
+
+    return redirect(request.referrer)
+
+def get_user_path(userid):
+    userpath = DATA_DIR / "songs" / str(userid)
+    if not userpath.exists():
+        os.makedirs(userpath)
+    return userpath
+
+def update_song(file, userid, title, description, tags, collaborators):
+    songid = request.args["songid"]
+    try:
+        int(songid)
+    except ValueError:
+        abort(400)
+
+    if file:
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             file.save(tmp_file)
             tmp_file.close()
@@ -177,32 +196,66 @@ def upload_song():
             lines = [l.strip().lower() for l in lines]
             passed = any(l.startswith("result") and l.endswith("ok") for l in lines)
 
-            if not passed:
-                flash("Invalid mp3 file", "error")
-            else:
-                # Create song
-                song_data = query_db(
-                        "insert into songs (userid, title, description) values (?, ?, ?) returning (songid)",
-                        [userid, title, description], one=True)
-                songid = song_data["songid"]
-                filepath = userpath / (str(song_data["songid"]) + ".mp3")
-
+            if passed:
                 # Move file to permanent location
                 shutil.move(tmp_file.name, filepath)
+            else:
+                flash("Invalid mp3 file", "error")
+                error = True
 
-                # Assign tags
-                for tag in tags:
-                    query_db("insert into song_tags (tag, songid) values (?, ?)", [tag, songid])
+    if not error:
+        # Update songs table
+        query_db(
+                "update songs set userid = ?, title = ?, description = ? where songid = ?",
+                [userid, title, description, songid])
 
-                # Assign collaborators
-                for collab in collaborators:
-                    query_db("insert into song_collaborators (songid, name) values (?, ?)", [songid, collab])
+        # Update song_tags table
+        query_db("delete from song_tags where songid = ?", [songid])
+        for tag in tags:
+            query_db("insert into song_tags (tag, songid) values (?, ?)", [tag, songid])
 
-                get_db().commit()
+        # Update song_collaborators table
+        query_db("delete from song_collaborators where songid = ?", [songid])
+        for collab in collaborators:
+            query_db("insert into song_collaborators (name, songid) values (?, ?)", [collab, songid])
 
-                flash(f"Successfully uploaded '{title}'", "success")
+        get_db().commit()
+        flash(f"Successfully updated '{title}'", "success")
 
-    return redirect(request.referrer)
+def create_song(file, userid, title, description, tags, collaborators):
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        file.save(tmp_file)
+        tmp_file.close()
+
+        result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
+        lines = result.stdout.decode().split("\r\n")
+        lines = [l.strip().lower() for l in lines]
+        passed = any(l.startswith("result") and l.endswith("ok") for l in lines)
+
+        if not passed:
+            flash("Invalid mp3 file", "error")
+        else:
+            # Create song
+            song_data = query_db(
+                    "insert into songs (userid, title, description) values (?, ?, ?) returning (songid)",
+                    [userid, title, description], one=True)
+            songid = song_data["songid"]
+            filepath = get_user_path() / (str(song_data["songid"]) + ".mp3")
+
+            # Move file to permanent location
+            shutil.move(tmp_file.name, filepath)
+
+            # Assign tags
+            for tag in tags:
+                query_db("insert into song_tags (tag, songid) values (?, ?)", [tag, songid])
+
+            # Assign collaborators
+            for collab in collaborators:
+                query_db("insert into song_collaborators (songid, name) values (?, ?)", [songid, collab])
+
+            get_db().commit()
+
+            flash(f"Successfully uploaded '{title}'", "success")
 
 @app.get("/delete-song/<userid>/<songid>")
 def delete_song(userid, songid):
