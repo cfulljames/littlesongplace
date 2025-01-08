@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{% if song %}Edit Song{% else %}Upload Song{% endif %}{% endblock %}
+
+{% block body %}
+
+<form action="/uploadsong" method="post" enctype="multipart/form-data">
+    <h2>Upload a new song</h2>
+    <div class="upload-form">
+        <label for="song">{% if editing %}Replace {% endif %}mp3 File</label>
+        <input type="file" name="song" accept=".mp3" id="file-select" required></input>
+    </div>
+    <div class="upload-form">
+        <label for="title">Title</label>
+        <input type="text" name="title" id="song-title" value="{{ title }}" required></input>
+    </div>
+    <div class="upload-form">
+        <label for="description">Description</label>
+        <textarea name="description" value="{{ description }}"></textarea>
+    </div>
+    <div class="upload-form">
+        <label for="tags">Tags</label>
+        <input type="text" name="tags" placeholder="country, extratone, vocals, ..." value="{{ tags }}"></input>
+    </div>
+    <div class="upload-form">
+        <label for="collabs">Collaborators</label>
+        <input type="text" name="collabs" placeholder="@fren_user, John Doe, ..." value="{{ collaborators }}"></input>
+    </div>
+    <div class="upload-form">
+        <input type="submit" value="Upload"></input>
+    </div>
+</form>
+
+<!-- Automatically set song name from file name -->
+<script>
+document.getElementById("file-select").addEventListener("change", function(e) {
+    var songTitle = document.getElementById("song-title");
+    if (e.target.files[0] && !songTitle.value) {
+        var name = e.target.files[0].name;
+        songTitle.value = name.substring(0, name.length - 4);
+    }
+});
+</script>
+{% endif %}
+
+{% endblock %}

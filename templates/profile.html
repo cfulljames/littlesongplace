@@ -6,47 +6,13 @@
 
 <h1 class="profile-name">{{ name }}</h1>
 
-{% if name == username %}
-<form action="/uploadsong" method="post" enctype="multipart/form-data">
-    <h2>Upload a new song</h2>
-    <div class="upload-form">
-        <label for="song">mp3 File</label>
-        <input type="file" name="song" accept=".mp3" id="file-select" required></input>
-    </div>
-    <div class="upload-form">
-        <label for="title">Title</label>
-        <input type="text" name="title" id="song-title" required></input>
-    </div>
-    <div class="upload-form">
-        <label for="title">Description</label>
-        <textarea name="description"></textarea>
-    </div>
-    <div class="upload-form">
-        <label for="tags">Tags</label>
-        <input type="text" name="tags" placeholder="country, extratone, vocals, ..."></input>
-    </div>
-    <div class="upload-form">
-        <label for="collabs">Collaborators</label>
-        <input type="text" name="collabs" placeholder="@fren_user, John Doe, ..."></input>
-    </div>
-    <div class="upload-form">
-        <input type="submit" value="Upload"></input>
-    </div>
-</form>
+<h2>Songs</h2>
+
+<!-- Upload New Song button -->
+{% if session["userid"] == userid %}
+<a href="/edit-song">Upload New Song</a>
 {% endif %}
 
-<!-- Automatically set song name from file name -->
-<script>
-document.getElementById("file-select").addEventListener("change", function(e) {
-    var songTitle = document.getElementById("song-title");
-    if (e.target.files[0] && !songTitle.value) {
-        var name = e.target.files[0].name;
-        songTitle.value = name.substring(0, name.length - 4);
-    }
-});
-</script>
-
-<h2>Songs</h2>
 
 <!-- TODO: This is duplicated in songs-by-tag.html -->
 {% for song in songs %}
@@ -55,8 +21,10 @@ document.getElementById("file-select").addEventListener("change", function(e) {
     <div class="song-title"><h3>{{ song["title"] }}</h3></div>
 
     <!-- Owner-Specific Buttons (Edit/Delete) -->
-    {% if name == username %}
-    <!-- TODO: Edit button -->
+    {% if session["userid"] == userid %}
+    <div class="song-edit-button">
+    <a href="/edit-song/{{ song["userid"] }}/{{ song["songid"] }}">Edit</a>
+    </div>
     <div class="song-delete-button">
     <a href="/delete-song/{{ song["userid"] }}/{{ song["songid"] }}">Delete</a>
     </div>
@@ -89,3 +57,4 @@ document.getElementById("file-select").addEventListener("change", function(e) {
 {% endfor %}
 
 {% endblock %}
+

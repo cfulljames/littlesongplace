@@ -1,3 +1,4 @@
+- edit-song.html: use song object
 - delete song
 - edit song info
 - user bio

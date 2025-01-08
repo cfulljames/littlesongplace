@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import shutil
 import sqlite3
@@ -123,14 +124,42 @@ def users_profile(profile_username):
             songs_tags=tags,
             songs_collaborators=collabs)
 
-@app.post("/uploadsong")
-def upload_song():
-    if not "username" in session:
-        abort(401)
+@app.get("/edit-song/<int:songid>")
+def edit_song(songid=None):
+    if not "userid" in session:
+        return redirect("/login")  # Must be logged in to edit
 
-    username = session["username"]
-    userid = session["userid"]
+    if songid:
+        try:
+            song = Song.from_db(songid)
+        except ValueError:
+            abort(404)
 
+        return render_template("edit-song.html", song=song)
+
+
+@app.post("/upload-song/<int:songid>")
+def upload_song(songid=None):
+    if not "userid" in session:
+        return redirect("/login")  # Must be logged in to edit
+
+    error = validate_song_form()
+
+    if not error:
+        userid = session["userid"]
+        if songid:
+            error = update_song(file, userid, title, description, tags, collaborators, songid)
+        else:
+            error = create_song(file, userid, title, description, tags, collaborators)
+
+    if not error:
+        username = session["username"]
+        return redirect("/users/{username}")
+
+    else:
+        return redirect(request.referrer)
+
+def validate_song_form():
     file = request.files["song"]
     title = request.form["title"]
     description = request.form["description"]
@@ -163,15 +192,7 @@ def upload_song():
             flash(f"'{collab}' is not a valid collaborator name", "error")
             error = True
 
-    if not error:
-        if "songid" in request.args:
-            # Update existing song
-            update_song(file, userid, title, description, tags, collaborators)
-        else:
-            # Uploading new song
-            create_song(file, userid, title, description, tags, collaborators)
-
-    return redirect(request.referrer)
+    return error
 
 def get_user_path(userid):
     userpath = DATA_DIR / "songs" / str(userid)
@@ -185,6 +206,13 @@ def update_song(file, userid, title, description, tags, collaborators):
         int(songid)
     except ValueError:
         abort(400)
+
+    # Make sure song exists and the logged-in user owns it
+    song_data = query_db("select userid from songs where songid = ?", [songid], one=True)
+    if song_data is None:
+        abort(400)
+    elif userid != song_data["userid"]:
+        abort(401)
 
     if file:
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
@@ -364,4 +392,26 @@ def gen_key():
     """Generate a secret key for session cookie encryption"""
     import secrets
     print(secrets.token_hex())
+
+@dataclass
+class Song:
+    id: int
+    title: str
+    description: str
+    tags: list[str]
+    collaborators: list[str]
+
+    @classmethod
+    def from_db(cls, songid):
+        song_data = query_db("select * from songs where songid = ?", [songid], one=True)
+        if song_data is None:
+            raise ValueError(f"No song for ID {songid:d}")
+
+        tags_data = query_db("select * from song_tags where songid = ?", [songid])
+        collaborators_data = query_db("select * from song_collaborators where songid = ?", [song])
+
+        tags = [t["tag"] for t in tags_data]
+        collabs = [c["name"] for c in collaborators_data]
+
+        return cls(song_data["songid"], song_data["title"], song_data["description"], tags, collabs)
 
