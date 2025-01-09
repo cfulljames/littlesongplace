@@ -4,30 +4,34 @@
 
 {% block body %}
 
-<form action="/uploadsong" method="post" enctype="multipart/form-data">
+{% if song %}
+<form action="/upload-song?songid={{ song.songid }}" method="post" enctype="multipart/form-data">
+{% else %}
+<form action="/upload-song" method="post" enctype="multipart/form-data">
+{% endif %}
     <h2>Upload a new song</h2>
     <div class="upload-form">
-        <label for="song">{% if editing %}Replace {% endif %}mp3 File</label>
-        <input type="file" name="song" accept=".mp3" id="file-select" required></input>
+        <label for="song">{% if song %}Replace {% endif %}mp3 File</label>
+        <input type="file" name="song" accept=".mp3" id="file-select" {% if not song %}required{% endif %}>
     </div>
     <div class="upload-form">
         <label for="title">Title</label>
-        <input type="text" name="title" id="song-title" value="{{ title }}" required></input>
+        <input type="text" name="title" id="song-title" value="{{ song.title }}" required>
     </div>
     <div class="upload-form">
         <label for="description">Description</label>
-        <textarea name="description" value="{{ description }}"></textarea>
+        <textarea name="description">{{ song.description }}</textarea>
     </div>
     <div class="upload-form">
         <label for="tags">Tags</label>
-        <input type="text" name="tags" placeholder="country, extratone, vocals, ..." value="{{ tags }}"></input>
+        <input type="text" name="tags" placeholder="country, extratone, vocals, ..." value="{{ ", ".join(song.tags) }}">
     </div>
     <div class="upload-form">
         <label for="collabs">Collaborators</label>
-        <input type="text" name="collabs" placeholder="@fren_user, John Doe, ..." value="{{ collaborators }}"></input>
+        <input type="text" name="collabs" placeholder="@fren_user, John Doe, ..." value="{{ ", ".join(song.collaborators) }}">
     </div>
     <div class="upload-form">
-        <input type="submit" value="Upload"></input>
+        <input type="submit" value="Upload">
     </div>
 </form>
 
@@ -41,6 +45,5 @@ document.getElementById("file-select").addEventListener("change", function(e) {
     }
 });
 </script>
-{% endif %}
 
 {% endblock %}

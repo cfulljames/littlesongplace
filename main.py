@@ -119,27 +119,39 @@ def users_profile(profile_username):
     return render_template(
             "profile.html",
             name=profile_username,
-            username=username,
+            userid=profile_userid,
             songs=profile_songs_data,
             songs_tags=tags,
             songs_collaborators=collabs)
 
-@app.get("/edit-song/<int:songid>")
-def edit_song(songid=None):
+@app.get("/edit-song")
+def edit_song():
     if not "userid" in session:
         return redirect("/login")  # Must be logged in to edit
 
-    if songid:
+    song = None
+
+    if "songid" in request.args:
         try:
-            song = Song.from_db(songid)
+            songid = int(request.args["songid"])
         except ValueError:
+            # Invalid song id - file not found
             abort(404)
 
-        return render_template("edit-song.html", song=song)
+        try:
+            song = Song.from_db(songid)
+            if not song.userid == session["userid"]:
+                # Can't edit someone else's song - 401 unauthorized
+                abort(401)
+        except ValueError:
+            # Song doesn't exist - 404 file not found
+            abort(404)
 
 
-@app.post("/upload-song/<int:songid>")
-def upload_song(songid=None):
+    return render_template("edit-song.html", song=song)
+
+@app.post("/upload-song")
+def upload_song():
     if not "userid" in session:
         return redirect("/login")  # Must be logged in to edit
 
@@ -147,14 +159,14 @@ def upload_song(songid=None):
 
     if not error:
         userid = session["userid"]
-        if songid:
-            error = update_song(file, userid, title, description, tags, collaborators, songid)
+        if "songid" in request.args:
+            error = update_song()
         else:
-            error = create_song(file, userid, title, description, tags, collaborators)
+            error = create_song()
 
     if not error:
         username = session["username"]
-        return redirect("/users/{username}")
+        return redirect(f"/users/{username}")
 
     else:
         return redirect(request.referrer)
@@ -200,20 +212,27 @@ def get_user_path(userid):
         os.makedirs(userpath)
     return userpath
 
-def update_song(file, userid, title, description, tags, collaborators):
+def update_song():
     songid = request.args["songid"]
     try:
         int(songid)
     except ValueError:
         abort(400)
 
+    file = request.files["song"]
+    title = request.form["title"]
+    description = request.form["description"]
+    tags = [t.strip() for t in request.form["tags"].split(",")]
+    collaborators = [c.strip() for c in request.form["collabs"].split(",")]
+
     # Make sure song exists and the logged-in user owns it
     song_data = query_db("select userid from songs where songid = ?", [songid], one=True)
     if song_data is None:
         abort(400)
-    elif userid != song_data["userid"]:
+    elif session["userid"] != song_data["userid"]:
         abort(401)
 
+    error = False
     if file:
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             file.save(tmp_file)
@@ -235,7 +254,7 @@ def update_song(file, userid, title, description, tags, collaborators):
         # Update songs table
         query_db(
                 "update songs set userid = ?, title = ?, description = ? where songid = ?",
-                [userid, title, description, songid])
+                [session["userid"], title, description, songid])
 
         # Update song_tags table
         query_db("delete from song_tags where songid = ?", [songid])
@@ -250,7 +269,13 @@ def update_song(file, userid, title, description, tags, collaborators):
         get_db().commit()
         flash(f"Successfully updated '{title}'", "success")
 
-def create_song(file, userid, title, description, tags, collaborators):
+def create_song():
+    file = request.files["song"]
+    title = request.form["title"]
+    description = request.form["description"]
+    tags = [t.strip() for t in request.form["tags"].split(",")]
+    collaborators = [c.strip() for c in request.form["collabs"].split(",")]
+
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
         file.save(tmp_file)
         tmp_file.close()
@@ -266,9 +291,9 @@ def create_song(file, userid, title, description, tags, collaborators):
             # Create song
             song_data = query_db(
                     "insert into songs (userid, title, description) values (?, ?, ?) returning (songid)",
-                    [userid, title, description], one=True)
+                    [session["userid"], title, description], one=True)
             songid = song_data["songid"]
-            filepath = get_user_path() / (str(song_data["songid"]) + ".mp3")
+            filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
 
             # Move file to permanent location
             shutil.move(tmp_file.name, filepath)
@@ -395,7 +420,8 @@ def gen_key():
 
 @dataclass
 class Song:
-    id: int
+    songid: int
+    userid: int
     title: str
     description: str
     tags: list[str]
@@ -408,10 +434,10 @@ class Song:
             raise ValueError(f"No song for ID {songid:d}")
 
         tags_data = query_db("select * from song_tags where songid = ?", [songid])
-        collaborators_data = query_db("select * from song_collaborators where songid = ?", [song])
+        collaborators_data = query_db("select * from song_collaborators where songid = ?", [songid])
 
         tags = [t["tag"] for t in tags_data]
         collabs = [c["name"] for c in collaborators_data]
 
-        return cls(song_data["songid"], song_data["title"], song_data["description"], tags, collabs)
+        return cls(song_data["songid"], song_data["userid"], song_data["title"], song_data["description"], tags, collabs)
 
