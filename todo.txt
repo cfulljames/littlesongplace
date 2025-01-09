@@ -1,9 +1,7 @@
-- edit-song.html: use song object
-- delete song
-- edit song info
 - user bio
 - edit user bio
 - delete user account
+- sort songs by upload timestamp
 
 - javascript song player
 

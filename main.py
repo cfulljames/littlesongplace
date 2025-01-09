@@ -113,16 +113,13 @@ def users_profile(profile_username):
 
     # Get songs for current profile
     profile_userid = profile_data["userid"]
-    profile_songs_data = query_db("select * from songs where userid = ?", [profile_userid])
-    tags, collabs = get_tags_and_collabs_for_songs(profile_songs_data)
+    songs = Song.get_all_for_user(profile_userid)
 
     return render_template(
             "profile.html",
             name=profile_username,
             userid=profile_userid,
-            songs=profile_songs_data,
-            songs_tags=tags,
-            songs_collaborators=collabs)
+            songs=songs)
 
 @app.get("/edit-song")
 def edit_song():
@@ -139,7 +136,7 @@ def edit_song():
             abort(404)
 
         try:
-            song = Song.from_db(songid)
+            song = Song.by_id(songid)
             if not song.userid == session["userid"]:
                 # Can't edit someone else's song - 401 unauthorized
                 abort(401)
@@ -354,16 +351,13 @@ def song(userid, songid):
 
 @app.get("/songs-by-tag/<tag>")
 def songs_by_tag(tag):
-    songs_data = query_db("select * from song_tags inner join songs on song_tags.songid = songs.songid where tag = ?", [tag])
-    tags, collabs = get_tags_and_collabs_for_songs(songs_data)
+    songs = Song.get_all_for_tag(tag)
 
     return render_template(
             "songs-by-tag.html",
             tag=tag,
             username=session["username"],
-            songs=songs_data,
-            songs_tags=tags,
-            songs_collaborators=collabs)
+            songs=songs)
 
 ################################################################################
 # Database
@@ -398,15 +392,6 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
-def get_tags_and_collabs_for_songs(songs):
-    tags = {}
-    collabs = {}
-    for song in songs:
-        songid = song["songid"]
-        tags[songid] = query_db("select (tag) from song_tags where songid = ?", [songid])
-        collabs[songid] = query_db("select (name) from song_collaborators where songid = ?", [songid])
-    return tags, collabs
-
 ################################################################################
 # Generate Session Key
 ################################################################################
@@ -428,16 +413,40 @@ class Song:
     collaborators: list[str]
 
     @classmethod
-    def from_db(cls, songid):
-        song_data = query_db("select * from songs where songid = ?", [songid], one=True)
-        if song_data is None:
+    def by_id(cls, songid):
+        songs = cls._from_db("select * from songs where songid = ?", [songid])
+        if not songs:
             raise ValueError(f"No song for ID {songid:d}")
 
-        tags_data = query_db("select * from song_tags where songid = ?", [songid])
-        collaborators_data = query_db("select * from song_collaborators where songid = ?", [songid])
+        return songs[0]
 
-        tags = [t["tag"] for t in tags_data]
-        collabs = [c["name"] for c in collaborators_data]
+    @classmethod
+    def get_all_for_user(cls, userid):
+        return cls._from_db("select * from songs where userid = ?", [userid])
 
-        return cls(song_data["songid"], song_data["userid"], song_data["title"], song_data["description"], tags, collabs)
+    @classmethod
+    def get_all_for_tag(cls, tag):
+        return cls._from_db("select * from song_tags inner join songs on song_tags.songid = songs.songid where tag = ?", [tag])
+
+    @classmethod
+    def _from_db(cls, query, args=()):
+        songs_data = query_db(query, args)
+        tags, collabs = cls._get_tags_and_collabs_for_songs(songs_data)
+        songs = []
+        for sd in songs_data:
+            song_tags = [t["tag"] for t in tags[sd["songid"]]]
+            song_collabs = [c["name"] for c in collabs[sd["songid"]]]
+            songs.append(cls(sd["songid"], sd["userid"], sd["title"], sd["description"], song_tags, song_collabs))
+
+        return songs
+
+    @classmethod
+    def _get_tags_and_collabs_for_songs(cls, songs):
+        tags = {}
+        collabs = {}
+        for song in songs:
+            songid = song["songid"]
+            tags[songid] = query_db("select (tag) from song_tags where songid = ?", [songid])
+            collabs[songid] = query_db("select (name) from song_collaborators where songid = ?", [songid])
+        return tags, collabs
 
