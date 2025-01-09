@@ -119,7 +119,7 @@ def users_profile(profile_username):
             "profile.html",
             name=profile_username,
             userid=profile_userid,
-            songs=songs)
+            song_list=render_template("song-list.html", songs=songs))
 
 @app.get("/edit-song")
 def edit_song():

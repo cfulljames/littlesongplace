@@ -1,0 +1,40 @@
+{% for song in songs %}
+<div class="song">
+    <!-- Song Title -->
+    <div class="song-title"><h3>{{ song.title }}</h3></div>
+
+    <!-- Owner-Specific Buttons (Edit/Delete) -->
+    {% if session["userid"] == song.userid %}
+    <div class="song-edit-button">
+    <a href="/edit-song?songid={{ song.songid }}">Edit</a>
+    </div>
+    <div class="song-delete-button">
+    <a href="/delete-song/{{ song.userid }}/{{ song.songid }}">Delete</a>
+    </div>
+    {% endif %}
+
+    <!-- Play Button -->
+    <audio src="/song/{{ song.userid }}/{{ song.songid }}" controls></audio>
+
+    <!-- Song Description -->
+    <div class="song-description">{{ song.description }}</div>
+
+    <!-- Song Tags -->
+    <div class="song-tags">
+        {% for tag in song.tags %}
+        <a href="/songs-by-tag/{{ tag }}">{{ tag }}</a>
+        {% endfor %}
+    </div>
+
+    <!-- Song Collaborators -->
+    <div class="song-collabs">
+        {% for collab in song.collaborators %}
+            {% if collab.startswith("@") %}
+            <a href="/users/{{ collab }}" class="collab-link">{{ collab }}</a>
+            {% else %}
+            <span class="collab-name">{{ collab }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}

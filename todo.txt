@@ -3,6 +3,8 @@
 - delete user account
 - sort songs by upload timestamp
 
+- automated tests
+
 - javascript song player
 
 - admin account(s)
