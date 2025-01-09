@@ -5,10 +5,10 @@
     </head>
     <body>
         <div class="navbar">
-            {% if username %}
-            <p>Signed in as {{ username }}</p>
+            {% if "username" in session %}
+            <p>Signed in as {{ session["username"] }}</p>
             <a href="/logout">Sign Out</a><br>
-            <a href="/users/{{ username }}">My Profile</a><br>
+            <a href="/users/{{ session["username"] }}">My Profile</a><br>
             {% else %}
             <a href="/login">Sign In</a><br>
             <a href="/signup">Create Account</a><br>

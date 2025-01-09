@@ -26,7 +26,7 @@ app.secret_key = "dev"
 @app.route("/")
 def index():
     username = session.get("username", None)
-    return render_template("index.html", username=username)
+    return render_template("index.html")
 
 @app.get("/signup")
 def signup_get():
@@ -356,8 +356,7 @@ def songs_by_tag(tag):
     return render_template(
             "songs-by-tag.html",
             tag=tag,
-            username=session["username"],
-            songs=songs)
+            song_list=render_template("song-list.html", songs=songs))
 
 ################################################################################
 # Database
