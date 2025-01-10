@@ -258,7 +258,7 @@ def update_song():
     collaborators = [c.strip() for c in request.form["collabs"].split(",")]
 
     # Make sure song exists and the logged-in user owns it
-    song_data = query_db("select userid from songs where songid = ?", [songid], one=True)
+    song_data = query_db("select * from songs where songid = ?", [songid], one=True)
     if song_data is None:
         abort(400)
     elif session["userid"] != song_data["userid"]:
@@ -277,6 +277,7 @@ def update_song():
 
             if passed:
                 # Move file to permanent location
+                filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
                 shutil.move(tmp_file.name, filepath)
             else:
                 flash("Invalid mp3 file", "error")
@@ -285,8 +286,8 @@ def update_song():
     if not error:
         # Update songs table
         query_db(
-                "update songs set userid = ?, title = ?, description = ? where songid = ?",
-                [session["userid"], title, description, songid])
+                "update songs set title = ?, description = ? where songid = ?",
+                [title, description, songid])
 
         # Update song_tags table
         query_db("delete from song_tags where songid = ?", [songid])
