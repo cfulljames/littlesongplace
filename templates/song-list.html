@@ -30,7 +30,7 @@
     <div class="song-collabs">
         {% for collab in song.collaborators %}
             {% if collab.startswith("@") %}
-            <a href="/users/{{ collab }}" class="collab-link">{{ collab }}</a>
+            <a href="/users/{{ collab[1:] }}" class="collab-link">{{ collab }}</a>
             {% else %}
             <span class="collab-name">{{ collab }}</span>
             {% endif %}
