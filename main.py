@@ -9,7 +9,9 @@ import uuid
 from pathlib import Path, PosixPath
 
 import bcrypt
+import bleach
 import click
+from bleach.css_sanitizer import CSSSanitizer
 from flask import Flask, render_template, request, redirect, g, session, abort, \
         send_from_directory, flash
 from werkzeug.utils import secure_filename
@@ -113,8 +115,29 @@ def users_profile(profile_username):
 
     # Get songs for current profile
     profile_userid = profile_data["userid"]
-    profile_bio = profile_data["bio"]
     songs = Song.get_all_for_user(profile_userid)
+
+    # Sanitize bio
+    allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({
+        'area', 'br', 'div', 'img', 'map', 'hr', 'header', 'hgroup', 'table', 'tr', 'td',
+        'th', 'thead', 'tbody', 'span', 'small', 'p', 'q', 'u', 'pre',
+    })
+    allowed_attributes = {
+        "*": ["style"], "a": ["href", "title"], "abbr": ["title"], "acronym": ["title"],
+        "img": ["src", "alt", "usemap", "width", "height"], "map": ["name"],
+        "area": ["shape", "coords", "alt", "href"]
+    }
+    allowed_css_properties = {
+        "font-size", "font-style", "font-variant", "font-family", "font-weight", "color",
+        "background-color", "background-image", "border", "border-color",
+        "border-image", "width", "height"
+    }
+    css_sanitizer = CSSSanitizer(allowed_css_properties=allowed_css_properties)
+    profile_bio = bleach.clean(
+            profile_data["bio"],
+            tags=allowed_tags,
+            attributes=allowed_attributes,
+            css_sanitizer=css_sanitizer)
 
     return render_template(
             "profile.html",
