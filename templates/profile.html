@@ -6,6 +6,40 @@
 
 <h1 class="profile-name">{{ name }}</h1>
 
+<!-- Bio -->
+<div class="profile-bio" id="profile-bio">{{ bio }}</div>
+
+<!-- Bio edit form -->
+{% if session["userid"] == userid %}
+
+<a href="javascript:showEditForm();" id="profile-bio-edit-btn">Edit Bio</a>
+
+<form id="profile-edit-form" action="/update-bio" method="post" hidden>
+    <div class="profile-edit">
+        <textarea name="bio">{{ bio }}</textarea>
+    </div>
+    <div class="profile-edit">
+        <a href="javascript:hideEditForm();">Cancel</a>
+        <input type="submit" value="Save">
+    </div>
+</form>
+
+<!-- Show/hide bio edit form -->
+<script>
+    function showEditForm() {
+        document.getElementById("profile-bio").hidden = true;
+        document.getElementById("profile-bio-edit-btn").hidden = true;
+        document.getElementById("profile-edit-form").hidden = false;
+    }
+    function hideEditForm() {
+        document.getElementById("profile-bio").hidden = false;
+        document.getElementById("profile-bio-edit-btn").hidden = false;
+        document.getElementById("profile-edit-form").hidden = true;
+    }
+</script>
+
+{% endif %}
+
 <h2>Songs</h2>
 
 <!-- Upload New Song button -->
@@ -13,6 +47,7 @@
 <a href="/edit-song">Upload New Song</a>
 {% endif %}
 
+<!-- Song List -->
 {{ song_list|safe }}
 
 {% endblock %}

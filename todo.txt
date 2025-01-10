@@ -1,5 +1,4 @@
-- user bio
-- edit user bio
+- markup in user bio
 - delete user account
 - sort songs by upload timestamp
 

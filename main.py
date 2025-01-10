@@ -113,13 +113,25 @@ def users_profile(profile_username):
 
     # Get songs for current profile
     profile_userid = profile_data["userid"]
+    profile_bio = profile_data["bio"]
     songs = Song.get_all_for_user(profile_userid)
 
     return render_template(
             "profile.html",
             name=profile_username,
             userid=profile_userid,
+            bio=profile_bio,
             song_list=render_template("song-list.html", songs=songs))
+
+@app.post("/update-bio")
+def update_bio():
+    query_db(
+            "update users set bio = ? where userid = ?",
+            [request.form["bio"], session["userid"]])
+    get_db().commit()
+    flash("Bio updated successfully")
+
+    return redirect(f"/users/{session['username']}")
 
 @app.get("/edit-song")
 def edit_song():
