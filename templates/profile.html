@@ -7,7 +7,7 @@
 <h1 class="profile-name">{{ name }}</h1>
 
 <!-- Bio -->
-<div class="profile-bio" id="profile-bio">{{ bio|safe }}</div>
+<div class="profile-bio" id="profile-bio">{{ (bio.replace("\n", "<br>"))|safe }}</div>
 
 <!-- Bio edit form -->
 {% if session["userid"] == userid %}
