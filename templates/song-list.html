@@ -1,7 +1,7 @@
 {% for song in songs %}
 <div class="song">
     <!-- Song Title -->
-    <div class="song-title"><h3>{{ song.title }}</h3></div>
+    <div class="song-title">{{ song.title }}</div>
 
     <!-- Owner-Specific Buttons (Edit/Delete) -->
     {% if session["userid"] == song.userid %}
@@ -14,7 +14,10 @@
     {% endif %}
 
     <!-- Play Button -->
-    <audio src="/song/{{ song.userid }}/{{ song.songid }}" controls></audio>
+    <!-- <audio src="/song/{{ song.userid }}/{{ song.songid }}" controls></audio> -->
+    <div class="song-play-button">
+        <a href="javascript:play({{ song.userid }}, {{ song.songid }})">Play</a>
+    </div>
 
     <!-- Song Description -->
     <div class="song-description">{{ song.description }}</div>

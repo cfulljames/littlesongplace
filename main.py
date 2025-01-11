@@ -257,7 +257,7 @@ def update_song():
     file = request.files["song"]
     title = request.form["title"]
     description = request.form["description"]
-    tags = [t.strip() for t in request.form["tags"].split(",")]
+    tags = [t.strip().lower() for t in request.form["tags"].split(",")]
     collaborators = [c.strip() for c in request.form["collabs"].split(",")]
 
     # Make sure song exists and the logged-in user owns it

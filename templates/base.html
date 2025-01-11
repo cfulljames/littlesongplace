@@ -2,8 +2,11 @@
 <html>
     <head>
         <title>{% block title %} Base {% endblock %}</title>
+        <link rel="stylesheet" href="/static/styles.css">
+        <script src="/static/player.js"></script>
     </head>
     <body>
+        <!-- Navbar -->
         <div class="navbar">
             {% if "username" in session %}
             <p>Signed in as {{ session["username"] }}</p>
@@ -17,6 +20,7 @@
             <a href="/">Home</a>
         </div>
 
+        <!-- Stite Status Messages -->
         {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
         <ul class="flashes">
@@ -27,8 +31,26 @@
         {% endif %}
         {% endwith %}
 
+        <!-- Page-Specific Content -->
         {% block body %}
         {% endblock %}
+
+        <!-- Song Player -->
+        <div class="player">
+            <a href="javascript:songPrevious()" class="player-button">&lt;&lt;</a>
+            <a href="javascript:songPlayPause()" class="player-button">&gt;</a>
+            <a href="javascript:songNext()" class="player-button">&gt;&gt;</a>
+            <div class="player-position">
+                <span id="player-position-bar"></span>
+                <span id="player-position-dot"></span>
+            </div>
+            <span class="player-time" id="player-current-time">0:00</span>
+            <span class="player-time-sep">/</span>
+            <span class="player-time" id="player-total-time">0:00</span>
+            <audio id="player-audio"></audio>
+            <!-- TODO: Show song title, artist -->
+            <!-- TODO: Volume control -->
+        </div>
     </body>
 </html>
 
