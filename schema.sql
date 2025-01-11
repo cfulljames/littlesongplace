@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     userid INTEGER PRIMARY KEY AUTOINCREMENT,
+    created TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     bio TEXT
@@ -10,6 +11,7 @@ CREATE INDEX users_by_name ON users(username);
 DROP TABLE IF EXISTS songs;
 CREATE TABLE songs (
     songid INTEGER PRIMARY KEY AUTOINCREMENT,
+    created TEXT NOT NULL,
     userid INTEGER NOT NULL,
     title TEXT NOT NULL,
     description TEXT,

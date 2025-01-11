@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import os
 import shutil
 import sqlite3
@@ -6,6 +5,8 @@ import subprocess
 import sys
 import tempfile
 import uuid
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path, PosixPath
 
 import bcrypt
@@ -36,7 +37,6 @@ def signup_get():
 
 @app.post("/signup")
 def signup_post():
-    print(request.form)
     username = request.form["username"]
     password = request.form["password"]
     password_confirm = request.form["password_confirm"]
@@ -64,7 +64,8 @@ def signup_post():
         return redirect(request.referrer)
 
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    query_db("insert into users (username, password) values (?, ?)", [username, password])
+    timestamp = datetime.now(timezone.utc).isoformat()
+    query_db("insert into users (username, password, created) values (?, ?, ?)", [username, password, timestamp])
     get_db().commit()
 
     return render_template("login.html", note="User created.  Sign in to continue")
@@ -118,26 +119,28 @@ def users_profile(profile_username):
     songs = Song.get_all_for_user(profile_userid)
 
     # Sanitize bio
-    allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({
-        'area', 'br', 'div', 'img', 'map', 'hr', 'header', 'hgroup', 'table', 'tr', 'td',
-        'th', 'thead', 'tbody', 'span', 'small', 'p', 'q', 'u', 'pre',
-    })
-    allowed_attributes = {
-        "*": ["style"], "a": ["href", "title"], "abbr": ["title"], "acronym": ["title"],
-        "img": ["src", "alt", "usemap", "width", "height"], "map": ["name"],
-        "area": ["shape", "coords", "alt", "href"]
-    }
-    allowed_css_properties = {
-        "font-size", "font-style", "font-variant", "font-family", "font-weight", "color",
-        "background-color", "background-image", "border", "border-color",
-        "border-image", "width", "height"
-    }
-    css_sanitizer = CSSSanitizer(allowed_css_properties=allowed_css_properties)
-    profile_bio = bleach.clean(
-            profile_data["bio"],
-            tags=allowed_tags,
-            attributes=allowed_attributes,
-            css_sanitizer=css_sanitizer)
+    profile_bio = ""
+    if profile_data["bio"] is not None:
+        allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({
+            'area', 'br', 'div', 'img', 'map', 'hr', 'header', 'hgroup', 'table', 'tr', 'td',
+            'th', 'thead', 'tbody', 'span', 'small', 'p', 'q', 'u', 'pre',
+        })
+        allowed_attributes = {
+            "*": ["style"], "a": ["href", "title"], "abbr": ["title"], "acronym": ["title"],
+            "img": ["src", "alt", "usemap", "width", "height"], "map": ["name"],
+            "area": ["shape", "coords", "alt", "href"]
+        }
+        allowed_css_properties = {
+            "font-size", "font-style", "font-variant", "font-family", "font-weight", "color",
+            "background-color", "background-image", "border", "border-color",
+            "border-image", "width", "height"
+        }
+        css_sanitizer = CSSSanitizer(allowed_css_properties=allowed_css_properties)
+        profile_bio = bleach.clean(
+                profile_data["bio"],
+                tags=allowed_tags,
+                attributes=allowed_attributes,
+                css_sanitizer=css_sanitizer)
 
     return render_template(
             "profile.html",
@@ -322,9 +325,10 @@ def create_song():
             flash("Invalid mp3 file", "error")
         else:
             # Create song
+            timestamp = datetime.now(timezone.utc).isoformat()
             song_data = query_db(
-                    "insert into songs (userid, title, description) values (?, ?, ?) returning (songid)",
-                    [session["userid"], title, description], one=True)
+                    "insert into songs (userid, title, description, created) values (?, ?, ?, ?) returning (songid)",
+                    [session["userid"], title, description, timestamp], one=True)
             songid = song_data["songid"]
             filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
 
@@ -457,7 +461,7 @@ class Song:
 
     @classmethod
     def get_all_for_user(cls, userid):
-        return cls._from_db("select * from songs where userid = ?", [userid])
+        return cls._from_db("select * from songs where userid = ? order by created desc", [userid])
 
     @classmethod
     def get_all_for_tag(cls, tag):
