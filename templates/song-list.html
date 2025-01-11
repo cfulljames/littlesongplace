@@ -1,5 +1,5 @@
 {% for song in songs %}
-<div class="song">
+<div class="song" data-song="{{ song.json() }}">
     <!-- Song Title -->
     <div class="song-title">{{ song.title }}</div>
 
@@ -14,10 +14,7 @@
     {% endif %}
 
     <!-- Play Button -->
-    <!-- <audio src="/song/{{ song.userid }}/{{ song.songid }}" controls></audio> -->
-    <div class="song-play-button">
-        <a href="javascript:play({{ song.userid }}, {{ song.songid }})">Play</a>
-    </div>
+    <a href="#" class="song-play-button">Play</a>
 
     <!-- Song Description -->
     <div class="song-description">{{ song.description }}</div>

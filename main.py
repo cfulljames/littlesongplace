@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sqlite3
@@ -450,6 +451,9 @@ class Song:
     description: str
     tags: list[str]
     collaborators: list[str]
+
+    def json(self):
+        return json.dumps(vars(self))
 
     @classmethod
     def by_id(cls, songid):

@@ -1,8 +1,9 @@
 - automated tests
 
 - javascript song player:
-    - scrubbing
     - song queue
+
+- limit input length for form fields (back and front end)
 
 - song search
 - admin account(s)

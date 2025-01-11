@@ -1,8 +1,20 @@
+var m_allSongs = [];
+var m_songIndex = 0;
+
 // Play a new song from the list in the player
-function play(userid, songid) {
+function play(event) {
+    var song = event.target.parentElement;
+    m_songIndex = m_allSongs.indexOf(song);
+    playCurrentSong();
+}
+
+function playCurrentSong() {
+    var song = m_allSongs[m_songIndex];
+    var songData = JSON.parse(song.dataset.song);
+
     var audio = document.getElementById("player-audio");
     audio.pause();
-    audio.src = `/song/${userid}/${songid}`;
+    audio.src = `/song/${songData.userid}/${songData.songid}`;
     audio.currentTime = 0;
     audio.play();
 }
@@ -20,16 +32,25 @@ function songPlayPause() {
 
 // Play the next song in the queue
 function songNext() {
-    // TODO
+    m_songIndex = (m_songIndex + 1) % m_allSongs.length;
+    playCurrentSong();
 }
 
 // Play the previous song in the queue
 function songPrevious() {
-    // TODO
+    m_songIndex = m_songIndex - 1;
+    if (m_songIndex < 0) {
+        m_songIndex = m_allSongs.length - 1;
+    }
+    playCurrentSong();
 }
 
 // Convert float seconds to "min:sec"
 function getTimeString(time) {
+    if (isNaN(time))
+    {
+        time = 0.0;
+    }
     var minute = Math.floor(time / 60);
     var second = Math.floor(time % 60);
     var secondStr = second.toString();
@@ -108,14 +129,24 @@ function updateScrubPosition(dot, audio, dotPosition, maxPosition) {
 // Add event listeners
 document.addEventListener("DOMContentLoaded", (event) => {
 
-    // Audio playback position
+    // Audio playback position while playing
     var audio = document.getElementById("player-audio");
     audio.addEventListener("timeupdate", songUpdate);
 
+    // Next song on audio playback end
+    audio.addEventListener("ended", songNext);
+
+    // Audio position scrubbing
     var playerPosition = document.getElementById("player-position");
     playerPosition.addEventListener("mousedown", songScrub);
     playerPosition.addEventListener("mouseup", songScrub);
     playerPosition.addEventListener("mouseleave", songScrub);
     playerPosition.addEventListener("mousemove", songScrub);
+
+    // Song play
+    for (const element of document.getElementsByClassName("song-play-button")) {
+        m_allSongs.push(element.parentElement);
+        element.addEventListener("click", play);
+    }
 });
 
