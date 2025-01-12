@@ -1,3 +1,13 @@
+/* Navbar */
+div.navbar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
 /* Song Entry in Song List */
 div.song {
     display: flex;

@@ -11,13 +11,13 @@
         <div class="navbar">
             {% if "username" in session %}
             <p>Signed in as {{ session["username"] }}</p>
-            <a href="/logout">Sign Out</a><br>
-            <a href="/users/{{ session["username"] }}">My Profile</a><br>
+            <a href="/logout">Sign Out</a>
+            <a href="/users/{{ session["username"] }}">My Profile</a>
             {% else %}
-            <a href="/login">Sign In</a><br>
-            <a href="/signup">Create Account</a><br>
+            <a href="/login">Sign In</a>
+            <a href="/signup">Create Account</a>
             {% endif %}
-            <a href="/users">All Users</a><br>
+            <a href="/users">All Users</a>
             <a href="/">Home</a>
         </div>
 
