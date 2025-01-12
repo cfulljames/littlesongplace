@@ -3,13 +3,14 @@ var m_songIndex = 0;
 
 // Play a new song from the list in the player
 function play(event) {
-    var song = event.target.parentElement;
+    var song = event.target.parentElement.parentElement.parentElement;
     m_songIndex = m_allSongs.indexOf(song);
     playCurrentSong();
 }
 
 function playCurrentSong() {
     var song = m_allSongs[m_songIndex];
+    console.log(song);
     var songData = JSON.parse(song.dataset.song);
 
     var audio = document.getElementById("player-audio");
@@ -156,7 +157,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     // Song play
     for (const element of document.getElementsByClassName("song-play-button")) {
-        m_allSongs.push(element.parentElement);
+        m_allSongs.push(element.parentElement.parentElement.parentElement);
         element.addEventListener("click", play);
     }
 });

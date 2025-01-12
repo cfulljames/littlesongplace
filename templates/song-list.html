@@ -34,7 +34,7 @@
                 <a href="/edit-song?songid={{ song.songid }}">Edit</a>
                 </div>
                 <div class="song-delete-button">
-                <a href="/delete-song/{{ song.userid }}/{{ song.songid }}">Delete</a>
+                <a href="/delete-song/{{ song.userid }}/{{ song.songid }}" onclick="return confirm(&#34;Are you sure you want to delete this song?&#34;)">Delete</a>
                 </div>
                 {% endif %}
 

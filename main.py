@@ -361,7 +361,9 @@ def delete_song(userid, songid):
     if int(userid) != session["userid"]:
         abort(401)
 
-    if not query_db("select * from songs where songid = ?", [songid]):
+    song_data = query_db("select * from songs where songid = ?", [songid], one=True)
+
+    if not song_data:
         abort(404)  # Song doesn't exist
 
     # Delete tags, collaborators
@@ -376,6 +378,8 @@ def delete_song(userid, songid):
     songpath = DATA_DIR / "songs" / userid / (songid + ".mp3")
     if songpath.exists():
         os.remove(songpath)
+
+    flash(f"Deleted {song_data['title']}")
 
     return redirect(request.referrer)
 
