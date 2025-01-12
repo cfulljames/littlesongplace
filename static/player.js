@@ -17,6 +17,17 @@ function playCurrentSong() {
     audio.src = `/song/${songData.userid}/${songData.songid}`;
     audio.currentTime = 0;
     audio.play();
+
+    var title = document.getElementById("player-title");
+    title.textContent = songData.title;
+
+    var separator = document.getElementById("player-info-sep");
+    separator.hidden = false;
+
+    var artist = document.getElementById("player-artist");
+    artist.textContent = songData.username;
+    artist.href = `/users/${songData.username}`;
+    artist.hidden = false;
 }
 
 // Play or pause the current song in the player

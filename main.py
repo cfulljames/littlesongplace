@@ -447,6 +447,7 @@ def gen_key():
 class Song:
     songid: int
     userid: int
+    username: str
     title: str
     description: str
     tags: list[str]
@@ -457,7 +458,7 @@ class Song:
 
     @classmethod
     def by_id(cls, songid):
-        songs = cls._from_db("select * from songs where songid = ?", [songid])
+        songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songid = ?", [songid])
         if not songs:
             raise ValueError(f"No song for ID {songid:d}")
 
@@ -465,11 +466,11 @@ class Song:
 
     @classmethod
     def get_all_for_user(cls, userid):
-        return cls._from_db("select * from songs where userid = ? order by created desc", [userid])
+        return cls._from_db("select * from songs inner join users on songs.userid = users.userid where songs.userid = ? order by songs.created desc", [userid])
 
     @classmethod
     def get_all_for_tag(cls, tag):
-        return cls._from_db("select * from song_tags inner join songs on song_tags.songid = songs.songid where tag = ?", [tag])
+        return cls._from_db("select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where tag = ?", [tag])
 
     @classmethod
     def _from_db(cls, query, args=()):
@@ -479,7 +480,7 @@ class Song:
         for sd in songs_data:
             song_tags = [t["tag"] for t in tags[sd["songid"]]]
             song_collabs = [c["name"] for c in collabs[sd["songid"]]]
-            songs.append(cls(sd["songid"], sd["userid"], sd["title"], sd["description"], song_tags, song_collabs))
+            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sd["description"], song_tags, song_collabs))
 
         return songs
 

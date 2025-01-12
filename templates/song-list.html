@@ -3,6 +3,9 @@
     <!-- Song Title -->
     <div class="song-title">{{ song.title }}</div>
 
+    <!-- Song Artist -->
+    <a href="/users/{{ song.username }}" class="song-username">{{ song.username }}</a>
+
     <!-- Owner-Specific Buttons (Edit/Delete) -->
     {% if session["userid"] == song.userid %}
     <div class="song-edit-button">

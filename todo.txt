@@ -1,7 +1,34 @@
-- automated tests
+PRIORITIES??
+- Player: Show song/artist
+- Player: Use session storage to continue song after load
+- Song List: Show/Hide Details
+- Song List: Show details when song plays, hide after
+- Mobile browser support
+- CSS/Design
+- AJAX pages so songs can play without glitching during navigation
+- Automated Tests
+- RELEASE IT
+- Play Queue:
+    - Add songs
+    - View songs in queue
+    - Remove songs
+    - Reorder songs
+    - Automatically use songs on page when queue ends
+- Playlists:
+    - Create
+    - Play
+    - Remove song
+    - Reorder songs
+    - Delete
+    - Pin to profile
+    - Albums?
+- Comments:
+    - Leave comment
+    - Delete comment
+    - Notifications
+- Song Search
 
-- javascript song player:
-    - song queue
+
 
 - limit input length for form fields (back and front end)
 
@@ -9,7 +36,6 @@
 - admin account(s)
 - logging
 
-- css/design
 
 - playlists
 - homepage activity log
