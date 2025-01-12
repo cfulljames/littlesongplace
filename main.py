@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 import sqlite3
@@ -8,6 +9,7 @@ import tempfile
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from logging.handlers import RotatingFileHandler
 from pathlib import Path, PosixPath
 
 import bcrypt
@@ -18,15 +20,27 @@ from flask import Flask, render_template, request, redirect, g, session, abort, 
         send_from_directory, flash
 from werkzeug.utils import secure_filename
 
+DATA_DIR = Path(".")
+
+################################################################################
+# Logging
+################################################################################
+
+handler = RotatingFileHandler(DATA_DIR / "app.log", maxBytes=1_000_000, backupCount=10)
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s'))
+
+root_logger = logging.getLogger()
+root_logger.addHandler(handler)
+
 ################################################################################
 # Routes
 ################################################################################
 
-DATA_DIR = Path(".")
-
 app = Flask(__name__)
 app.secret_key = "dev"
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+app.logger.addHandler(handler)
 
 @app.route("/")
 def index():
@@ -66,6 +80,7 @@ def signup_post():
         error = True
 
     if error:
+        app.logger.info(f"Failed signup attempt: {get_flashed_messages()}")
         return redirect(request.referrer)
 
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
@@ -74,6 +89,7 @@ def signup_post():
     get_db().commit()
 
     flash("User created.  Please sign in to continue.", "success")
+    app.logger.info(f"Created user {username}")
 
     return redirect("/login")
 
@@ -93,9 +109,12 @@ def login_post():
         session["username"] = username
         session["userid"] = user_data["userid"]
         session.permanent = True
+        app.logger.info(f"{username} logged in")
         return redirect("/")
 
     flash("Invalid username/password", "error")
+    app.logger.info(f"Failed login for {username}")
+
     return render_template("login.html")
 
 @app.get("/logout")
@@ -164,6 +183,8 @@ def update_bio():
     get_db().commit()
     flash("Bio updated successfully")
 
+    app.logger.info(f"{session['username']} updated bio")
+
     return redirect(f"/users/{session['username']}")
 
 @app.get("/edit-song")
@@ -178,17 +199,19 @@ def edit_song():
             songid = int(request.args["songid"])
         except ValueError:
             # Invalid song id - file not found
+            app.logger.warning(f"Failed song edit - {session['username']} - invalid song ID {songid}")
             abort(404)
 
         try:
             song = Song.by_id(songid)
             if not song.userid == session["userid"]:
                 # Can't edit someone else's song - 401 unauthorized
+                app.logger.warning(f"Failed song edit - {session['username']} - attempted update for unowned song")
                 abort(401)
         except ValueError:
             # Song doesn't exist - 404 file not found
+            app.logger.warning(f"Failed song edit - {session['username']} - song doesn't exist ({songid})")
             abort(404)
-
 
     return render_template("edit-song.html", song=song)
 
@@ -208,9 +231,11 @@ def upload_song():
 
     if not error:
         username = session["username"]
+        app.logger.info(f"{username} uploaded/modified a song - {get_flashed_messages()}")
         return redirect(f"/users/{username}")
 
     else:
+        app.logger.info(f"Failed song update - {username} - {get_flashed_messages()}")
         return redirect(request.referrer)
 
 def validate_song_form():
@@ -371,11 +396,13 @@ def delete_song(userid, songid):
 
     # Users can only delete their own songs
     if int(userid) != session["userid"]:
+        app.logger.warning(f"Failed song delete - {session['username']} - user doesn't own song")
         abort(401)
 
     song_data = query_db("select * from songs where songid = ?", [songid], one=True)
 
     if not song_data:
+        app.logger.warning(f"Failed song delete - {session['username']} - song doesn't exist")
         abort(404)  # Song doesn't exist
 
     # Delete tags, collaborators
@@ -391,6 +418,7 @@ def delete_song(userid, songid):
     if songpath.exists():
         os.remove(songpath)
 
+    app.logger.info(f"{session['username']} deleted song: {song_data['title']}")
     flash(f"Deleted {song_data['title']}")
 
     return redirect(request.referrer)
@@ -402,6 +430,7 @@ def song(userid, songid):
         int(userid)
         int(songid)
     except ValueError:
+        app.logger.warning(f"Invalid song request: user: {userid}, song: {songid}")
         abort(404)
 
     return send_from_directory(DATA_DIR / "songs" / userid, songid + ".mp3")

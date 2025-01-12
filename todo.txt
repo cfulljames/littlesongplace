@@ -1,6 +1,4 @@
 TODO (BEFORE RELEASE)
-- Limit input length for form fields (back and front end)
-- Logging
 - CSS/Design
 - Automated Tests
 
