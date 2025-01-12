@@ -26,6 +26,7 @@ DATA_DIR = Path(".")
 
 app = Flask(__name__)
 app.secret_key = "dev"
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 
 @app.route("/")
 def index():
@@ -49,6 +50,9 @@ def signup_post():
     elif len(username) < 3:
         flash("Username must be at least 3 characters", "error")
         error = True
+    elif len(username) > 30:
+        flash("Username cannot be more than 30 characters", "error")
+        error = True
 
     elif password != password_confirm:
         flash("Passwords do not match", "error")
@@ -69,7 +73,9 @@ def signup_post():
     query_db("insert into users (username, password, created) values (?, ?, ?)", [username, password, timestamp])
     get_db().commit()
 
-    return render_template("login.html", note="User created.  Sign in to continue")
+    flash("User created.  Please sign in to continue.", "success")
+
+    return redirect("/login")
 
 @app.get("/login")
 def login_get():
@@ -218,17 +224,23 @@ def validate_song_form():
     if not title.isprintable():
         flash(f"'{title}' is not a valid song title", "error")
         error = True
+    elif len(title) > 80:
+        flash(f"Title cannot be more than 80 characters", "error")
+        error = True
 
     # Check if description is valid
     if not description.isprintable():
         flash(f"Description contains invalid characters", "error")
+        error = True
+    elif len(description) > 10_000:
+        flash(f"Description cannot be more than 10k characters", "error")
         error = True
 
     # Check if tags are valid
     tags = request.form["tags"]
     tags = [t.strip() for t in tags.split(",")]
     for tag in tags:
-        if not tag.isprintable():
+        if not tag.isprintable() or len(tag) > 30:
             flash(f"'{tag}' is not a valid tag name", "error")
             error = True
 
@@ -236,7 +248,7 @@ def validate_song_form():
     collaborators = request.form["collabs"]
     collaborators = [c.strip() for c in collaborators.split(",")]
     for collab in collaborators:
-        if not collab.isprintable():
+        if not collab.isprintable() or len(collab) > 31:
             flash(f"'{collab}' is not a valid collaborator name", "error")
             error = True
 
