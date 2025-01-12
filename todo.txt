@@ -1,9 +1,16 @@
-PRIORITIES??
-- Mobile browser support
+TODO (BEFORE RELEASE)
+- Limit input length for form fields (back and front end)
+- Logging
 - CSS/Design
-- AJAX pages so songs can play without glitching during navigation
 - Automated Tests
+
 - RELEASE IT
+
+TODO (AFTER RELEASE)
+- Shuffle all
+- Homepage activity log
+- Admin accounts
+- AJAX pages so songs can play during navigation
 - Play Queue:
     - Add songs
     - View songs in queue
@@ -22,25 +29,5 @@ PRIORITIES??
     - Leave comment
     - Delete comment
     - Notifications
-- Song Search
-
-
-
-- limit input length for form fields (back and front end)
-
-- song search
-- admin account(s)
-- logging
-
-
-- playlists
-- homepage activity log
-- shuffle all
-
-URL
-secrethideout.net
-sneaky.place
-sneaky.website
-hotnew.singles
-hotlocal.singles
+- Song/User Search
 
