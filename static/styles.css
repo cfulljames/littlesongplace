@@ -1,20 +1,63 @@
 /* Navbar */
 div.navbar {
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
-    flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     gap: 10px;
 }
 
 /* Song Entry in Song List */
+div.song-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 div.song {
+    border: 3px solid #000;
+}
+
+div.song-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 5px;
+}
+
+div.song-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    flex-grow: 1;
+}
+
+div.song-buttons {
     display: flex;
     gap: 10px;
+    align-items: center;
+}
+
+div.song-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: left;
+    margin: 5px;
+}
+
+[hidden] {
+    display: none !important;
 }
 
 /* Song Player */
+#scroll-padding {
+    height: 110px;
+}
+
 div.player {
     position: fixed;
     bottom: 0;

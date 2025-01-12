@@ -1,8 +1,4 @@
 PRIORITIES??
-- Player: Show song/artist
-- Player: Use session storage to continue song after load
-- Song List: Show/Hide Details
-- Song List: Show details when song plays, hide after
 - Mobile browser support
 - CSS/Design
 - AJAX pages so songs can play without glitching during navigation

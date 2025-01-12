@@ -1,43 +1,80 @@
+<div class="song-list">
 {% for song in songs %}
-<div class="song" data-song="{{ song.json() }}">
-    <!-- Song Title -->
-    <div class="song-title">{{ song.title }}</div>
+    <div class="song" data-song="{{ song.json() }}">
+        <div class="song-main">
+            <div class="song-info">
+                <!-- Song Title -->
+                <div class="song-title">{{ song.title }}</div>
 
-    <!-- Song Artist -->
-    <a href="/users/{{ song.username }}" class="song-username">{{ song.username }}</a>
+                <!-- Separator -->
+                -
 
-    <!-- Owner-Specific Buttons (Edit/Delete) -->
-    {% if session["userid"] == song.userid %}
-    <div class="song-edit-button">
-    <a href="/edit-song?songid={{ song.songid }}">Edit</a>
+                <!-- Song Artist -->
+                <a href="/users/{{ song.username }}" class="song-username">{{ song.username }}</a>
+
+                <!-- Song Collaborators -->
+                <div class="song-collabs">
+                    {% for collab in song.collaborators %}
+                        {% if collab.startswith("@") %}
+                        <a href="/users/{{ collab[1:] }}" class="collab-link">{{ collab }}</a>
+                        {% else %}
+                        <span class="collab-name">{{ collab }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="song-buttons">
+
+                <!-- Details Button -->
+                <a href="#" onclick="showDetails(event)" class="song-details-button">Show Details</a>
+
+                <!-- Owner-Specific Buttons (Edit/Delete) -->
+                {% if session["userid"] == song.userid %}
+                <div class="song-edit-button">
+                <a href="/edit-song?songid={{ song.songid }}">Edit</a>
+                </div>
+                <div class="song-delete-button">
+                <a href="/delete-song/{{ song.userid }}/{{ song.songid }}">Delete</a>
+                </div>
+                {% endif %}
+
+                <!-- Play Button -->
+                <a href="#" class="song-play-button">Play</a>
+            </div>
+        </div>
+
+        <div class="song-details" hidden>
+            <!-- Song Description -->
+            <div class="song-description">{{ song.description }}</div>
+
+            <!-- Song Tags -->
+            <div class="song-tags">
+                Tags:
+                {% for tag in song.tags %}
+                <a href="/songs-by-tag/{{ tag }}">{{ tag }}</a>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    <div class="song-delete-button">
-    <a href="/delete-song/{{ song.userid }}/{{ song.songid }}">Delete</a>
-    </div>
-    {% endif %}
-
-    <!-- Play Button -->
-    <a href="#" class="song-play-button">Play</a>
-
-    <!-- Song Description -->
-    <div class="song-description">{{ song.description }}</div>
-
-    <!-- Song Tags -->
-    <div class="song-tags">
-        {% for tag in song.tags %}
-        <a href="/songs-by-tag/{{ tag }}">{{ tag }}</a>
-        {% endfor %}
-    </div>
-
-    <!-- Song Collaborators -->
-    <div class="song-collabs">
-        {% for collab in song.collaborators %}
-            {% if collab.startswith("@") %}
-            <a href="/users/{{ collab[1:] }}" class="collab-link">{{ collab }}</a>
-            {% else %}
-            <span class="collab-name">{{ collab }}</span>
-            {% endif %}
-        {% endfor %}
-    </div>
-</div>
 {% endfor %}
+</div>
+
+<script>
+function showDetails(event) {
+    var songElement = event.target.parentElement.parentElement.parentElement;
+    for (const child of songElement.children) {
+        if (child.classList.contains("song-details")) {
+            if (child.hidden) {
+                // Show details
+                child.hidden = false;
+                event.target.textContent = "Hide Details"
+            }
+            else {
+                // Hide details
+                child.hidden = true;
+                event.target.textContent = "Show Details"
+            }
+        }
+    }
+}
+</script>
