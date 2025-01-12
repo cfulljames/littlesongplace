@@ -1,10 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Songs with Tag: {{ tag }}{% endblock %}
+{% block title %}Songs{% endblock %}
 
 {% block body %}
 
-<h1 class="tag-name">Songs tagged with '{{ tag }}'</h1>
+<h1>Songs</h1>
+
+{% if user %}
+    <div class="filter">
+        By: {{ user }} {% if tag %}<a href="/songs?tag={{ tag }}" class="filter-remove">(remove filter)</a>{% endif %}
+    </div>
+{% endif %}
+
+{% if tag %}
+    <div class="filter">
+        With tag: {{ tag }} {% if user %}<a href="/songs?user={{ user }}" class="filter-remove">(remove filter)</a>{% endif %}
+    </div>
+{% endif %}
 
 {{ song_list|safe }}
 

@@ -51,7 +51,7 @@
             <div class="song-tags">
                 Tags:
                 {% for tag in song.tags %}
-                <a href="/songs-by-tag/{{ tag }}">{{ tag }}</a>
+                <a href="/songs?user={{ song.username }}&tag={{ tag }}">{{ tag }}</a>
                 {% endfor %}
             </div>
         </div>

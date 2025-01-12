@@ -8,6 +8,14 @@ div.navbar {
     gap: 10px;
 }
 
+/* Filters on /songs page */
+.filter {
+    margin: 5px;
+}
+.filter-remove {
+    font-size: 12px;
+}
+
 /* Song Entry in Song List */
 div.song-list {
     display: flex;

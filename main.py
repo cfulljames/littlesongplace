@@ -117,7 +117,7 @@ def users_profile(profile_username):
 
     # Get songs for current profile
     profile_userid = profile_data["userid"]
-    songs = Song.get_all_for_user(profile_userid)
+    songs = Song.get_all_for_userid(profile_userid)
 
     # Sanitize bio
     profile_bio = ""
@@ -390,12 +390,23 @@ def song(userid, songid):
 
     return send_from_directory(DATA_DIR / "songs" / userid, songid + ".mp3")
 
-@app.get("/songs-by-tag/<tag>")
-def songs_by_tag(tag):
-    songs = Song.get_all_for_tag(tag)
+@app.get("/songs")
+def songs():
+    tag = request.args.get("tag", None)
+    user = request.args.get("user", None)
+
+    if tag and user:
+        songs = Song.get_all_for_username_and_tag(user, tag)
+    elif tag:
+        songs = Song.get_all_for_tag(tag)
+    elif user:
+        songs = Song.get_all_for_username(user)
+    else:
+        songs = []
 
     return render_template(
             "songs-by-tag.html",
+            user=user,
             tag=tag,
             song_list=render_template("song-list.html", songs=songs))
 
@@ -465,12 +476,20 @@ class Song:
         return songs[0]
 
     @classmethod
-    def get_all_for_user(cls, userid):
+    def get_all_for_userid(cls, userid):
         return cls._from_db("select * from songs inner join users on songs.userid = users.userid where songs.userid = ? order by songs.created desc", [userid])
 
     @classmethod
+    def get_all_for_username(cls, username):
+        return cls._from_db("select * from songs inner join users on songs.userid = users.userid where users.username = ? order by songs.created desc", [username])
+
+    @classmethod
+    def get_all_for_username_and_tag(cls, username, tag):
+        return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (username = ? and tag = ?)", [username, tag])
+
+    @classmethod
     def get_all_for_tag(cls, tag):
-        return cls._from_db("select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where tag = ?", [tag])
+        return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (tag = ?)", [tag])
 
     @classmethod
     def _from_db(cls, query, args=()):
