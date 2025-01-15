@@ -1,3 +1,13 @@
+/* General */
+body {
+    background: #ede99f;
+}
+
+div.main {
+    max-width: 500px;
+    margin: auto;
+}
+
 /* Navbar */
 div.navbar {
     display: flex;

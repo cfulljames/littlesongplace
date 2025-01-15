@@ -1,6 +1,8 @@
 TODO (BEFORE RELEASE)
 - CSS/Design
 - Automated Tests
+- Homepage
+- Tips and Tricks
 
 - RELEASE IT
 

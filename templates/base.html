@@ -33,8 +33,10 @@
         {% endwith %}
 
         <!-- Page-Specific Content -->
+        <div class="main">
         {% block body %}
         {% endblock %}
+        </div>
 
         <!-- Padding to prevent player from obscuring content -->
         <div id="scroll-padding"></div>
@@ -45,7 +47,7 @@
                 <!-- TODO: Show song title, artist -->
                 <span id="player-title">Not Playing</span>
                 <span id="player-info-sep" hidden>-</span>
-                <a id="player-artist" hidden></span>
+                <a id="player-artist" hidden></a>
             </div>
             <div class="player-controls">
                 <a href="javascript:songPrevious()" class="player-button">&lt;&lt;</a>
