@@ -2,8 +2,13 @@
 
 {% block body %}
 
-<img src="/static/littlesongplace01.gif" style="image-rendering:pixelated;width:512px">
-
 <p>Hello, and welcome!</p>
+
+<p>Check out the music of the fine folks below!  If you create an account, you'll show up here too. :)</p>
+
+<h2>Lovely Humans:</h2>
+{% for user in users %}
+<a href="/users/{{ user }}">{{ user }}</a><br>
+{% endfor %}
 
 {% endblock %}

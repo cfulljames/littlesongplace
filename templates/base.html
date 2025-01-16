@@ -7,28 +7,38 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-        <!-- Navbar -->
-        <div class="navbar">
-            {% if "username" in session %}
-            <p>Signed in as {{ session["username"] }}</p>
-            <a href="/logout">Sign Out</a>
-            <a href="/users/{{ session["username"] }}">My Profile</a>
-            {% else %}
-            <a href="/login">Sign In</a>
-            <a href="/signup">Create Account</a>
-            {% endif %}
-            <a href="/users">All Users</a>
-            <a href="/">Home</a>
+
+        <div class="page-header">
+            <div style="text-align: center;">
+                <img src="/static/littlesongplace01.gif" class="title-image">
+            </div>
+            <!-- Navbar -->
+            <div class="navbar">
+                <a href="/">Home</a>
+                {% if "username" in session %}
+                    <a href="/users/{{ session["username"] }}">My Profile</a>
+                    <a href="/logout">Sign Out</a>
+                {% else %}
+                    <a href="/signup">Create Account</a>
+                    <a href="/login">Sign In</a>
+                {% endif %}
+
+                {% if "username" in session %}
+                    Signed in as {{ session["username"] }}
+                {% endif %}
+            </div>
         </div>
 
         <!-- Stite Status Messages -->
         {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
-        <ul class="flashes">
-            {% for category, message in messages %}
-            <li class="flash-msg {{ category }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
+        <div class="flashes">
+            <ul>
+                {% for category, message in messages %}
+                <li class="flash-msg {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
         {% endwith %}
 
@@ -42,7 +52,7 @@
         <div id="scroll-padding"></div>
 
         <!-- Song Player -->
-        <div class="player">
+        <div class="player" id="player" hidden>
             <div class="player-info">
                 <!-- TODO: Show song title, artist -->
                 <span id="player-title">Not Playing</span>

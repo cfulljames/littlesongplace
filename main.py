@@ -44,8 +44,8 @@ app.logger.addHandler(handler)
 
 @app.route("/")
 def index():
-    username = session.get("username", None)
-    return render_template("index.html")
+    users = [row["username"] for row in query_db("select username from users")]
+    return render_template("index.html", users=users)
 
 @app.get("/signup")
 def signup_get():
@@ -125,11 +125,6 @@ def logout():
         session.pop("userid")
 
     return redirect("/")
-
-@app.get("/users")
-def users():
-    users = [row["username"] for row in query_db("select username from users")]
-    return render_template("users.html", users=users)
 
 @app.get("/users/<profile_username>")
 def users_profile(profile_username):

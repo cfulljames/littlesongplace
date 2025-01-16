@@ -18,6 +18,9 @@ function playCurrentSong() {
     console.log(song);
     var songData = JSON.parse(song.dataset.song);
 
+    var player = document.getElementById("player")
+    player.hidden = false;
+
     var audio = document.getElementById("player-audio");
     audio.pause();
     audio.src = `/song/${songData.userid}/${songData.songid}`;
