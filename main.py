@@ -17,7 +17,7 @@ import bleach
 import click
 from bleach.css_sanitizer import CSSSanitizer
 from flask import Flask, render_template, request, redirect, g, session, abort, \
-        send_from_directory, flash
+        send_from_directory, flash, get_flashed_messages
 from werkzeug.utils import secure_filename
 
 DATA_DIR = Path(".")

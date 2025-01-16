@@ -3,8 +3,13 @@ var m_songIndex = 0;
 
 // Play a new song from the list in the player
 function play(event) {
-    var song = event.target.parentElement.parentElement.parentElement;
-    m_songIndex = m_allSongs.indexOf(song);
+    var songElement = event.target;
+    while (!songElement.classList.contains("song"))
+    {
+        songElement = songElement.parentElement;
+        console.log(songElement);
+    }
+    m_songIndex = m_allSongs.indexOf(songElement);
     playCurrentSong();
 }
 
@@ -155,10 +160,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
     playerPosition.addEventListener("mouseleave", songScrub);
     playerPosition.addEventListener("mousemove", songScrub);
 
-    // Song play
-    for (const element of document.getElementsByClassName("song-play-button")) {
-        m_allSongs.push(element.parentElement.parentElement.parentElement);
-        element.addEventListener("click", play);
+    // Song queue
+    for (const element of document.getElementsByClassName("song")) {
+        console.log(element);
+        m_allSongs.push(element);
     }
 });
 

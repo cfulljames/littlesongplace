@@ -26,20 +26,24 @@
             <div class="song-buttons">
 
                 <!-- Details Button -->
-                <a href="#" onclick="showDetails(event)" class="song-details-button">Show Details</a>
+                <a href="#" onclick="return showDetails(event)" class="song-list-button">
+                    <img src="/static/lsp_btn_show.gif" alt="Show Details">
+                </a>
 
                 <!-- Owner-Specific Buttons (Edit/Delete) -->
                 {% if session["userid"] == song.userid %}
-                <div class="song-edit-button">
-                <a href="/edit-song?songid={{ song.songid }}">Edit</a>
-                </div>
-                <div class="song-delete-button">
-                <a href="/delete-song/{{ song.userid }}/{{ song.songid }}" onclick="return confirm(&#34;Are you sure you want to delete this song?&#34;)">Delete</a>
-                </div>
+                <a href="/edit-song?songid={{ song.songid }}" class="song-list-button">
+                    <img src="/static/lsp_btn_edit.gif" alt="Edit">
+                </a>
+                <a href="/delete-song/{{ song.userid }}/{{ song.songid }}" onclick="return confirm(&#34;Are you sure you want to delete this song?&#34;)" class="song-list-button">
+                    <img src="/static/lsp_btn_delete.gif" alt="Delete">
+                </a>
                 {% endif %}
 
                 <!-- Play Button -->
-                <a href="#" class="song-play-button">Play</a>
+                <a href="#" onclick="return play(event)" class="song-list-button">
+                    <img src="/static/lsp_btn_play.gif" alt="Play">
+                </a>
             </div>
         </div>
 
@@ -61,7 +65,14 @@
 
 <script>
 function showDetails(event) {
-    var songElement = event.target.parentElement.parentElement.parentElement;
+    // Find song-main
+    var songElement = event.target;
+    while (!songElement.classList.contains("song"))
+    {
+        songElement = songElement.parentElement;
+        console.log(songElement);
+    }
+
     for (const child of songElement.children) {
         if (child.classList.contains("song-details")) {
             if (child.hidden) {
@@ -76,5 +87,6 @@ function showDetails(event) {
             }
         }
     }
+    return false;
 }
 </script>
