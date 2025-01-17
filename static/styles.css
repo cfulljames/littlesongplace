@@ -63,6 +63,7 @@ input[type=text], input[type=password] {
 div.main {
     max-width: 700px;
     margin: auto;
+    padding: 10px;
 }
 
 div.page-header {
@@ -80,6 +81,7 @@ div.page-header {
 .title-image {
     image-rendering: pixelated;
     width: 512px;
+    max-width: 80%;
     margin: 10px;
 }
 
@@ -193,7 +195,8 @@ div.player {
     position: fixed;
     max-width: 700px;
     margin: auto;
-    margin-bottom: 10px;
+    margin: 10px;
+    padding: 10px;
     box-shadow: 0px 0px 20px 0px;
     border-radius: 10px;
     bottom: 0;
