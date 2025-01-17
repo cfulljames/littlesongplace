@@ -11,23 +11,23 @@
 {% endif %}
     <h2>Upload a new song</h2>
     <div class="upload-form">
-        <label for="song">{% if song %}Replace {% endif %}mp3 File</label>
+        <label for="song">{% if song %}Replace {% endif %}mp3 File</label><br>
         <input type="file" name="song" accept=".mp3" id="file-select" {% if not song %}required{% endif %}>
     </div>
     <div class="upload-form">
-        <label for="title">Title</label>
+        <label for="title">Title</label><br>
         <input type="text" name="title" id="song-title" value="{{ song.title }}" maxlength="80" required>
     </div>
     <div class="upload-form">
-        <label for="description">Description</label>
+        <label for="description">Description</label><br>
         <textarea name="description" maxlength="10000">{{ song.description }}</textarea>
     </div>
     <div class="upload-form">
-        <label for="tags">Tags</label>
+        <label for="tags">Tags</label><br>
         <input type="text" name="tags" placeholder="country, extratone, vocals, ..." value="{{ ", ".join(song.tags) }}" maxlength="350">
     </div>
     <div class="upload-form">
-        <label for="collabs">Collaborators</label>
+        <label for="collabs">Collaborators</label><br>
         <input type="text" name="collabs" placeholder="@fren_user, John Doe, ..." value="{{ ", ".join(song.collaborators) }}" maxlength="350">
     </div>
     <div class="upload-form">

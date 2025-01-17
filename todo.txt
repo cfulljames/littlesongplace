@@ -1,5 +1,5 @@
 TODO (BEFORE RELEASE)
-- CSS/Design
+- Multiline descriptions
 - Automated Tests
 - Homepage
 - Tips and Tricks

@@ -110,7 +110,7 @@ def login_post():
         session["userid"] = user_data["userid"]
         session.permanent = True
         app.logger.info(f"{username} logged in")
-        return redirect("/")
+        return redirect(f"/users/{username}")
 
     flash("Invalid username/password", "error")
     app.logger.info(f"Failed login for {username}")
@@ -230,6 +230,7 @@ def upload_song():
         return redirect(f"/users/{username}")
 
     else:
+        username = session["username"]
         app.logger.info(f"Failed song update - {username} - {get_flashed_messages()}")
         return redirect(request.referrer)
 
@@ -249,10 +250,7 @@ def validate_song_form():
         error = True
 
     # Check if description is valid
-    if not description.isprintable():
-        flash(f"Description contains invalid characters", "error")
-        error = True
-    elif len(description) > 10_000:
+    if len(description) > 10_000:
         flash(f"Description cannot be more than 10k characters", "error")
         error = True
 
