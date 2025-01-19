@@ -69,28 +69,28 @@ def signup_post():
 
     error = False
     if not username.isidentifier():
-        flash("Username cannot contain special characters", "error")
+        flash_and_log("Username cannot contain special characters", "error")
         error = True
     elif len(username) < 3:
-        flash("Username must be at least 3 characters", "error")
+        flash_and_log("Username must be at least 3 characters", "error")
         error = True
     elif len(username) > 30:
-        flash("Username cannot be more than 30 characters", "error")
+        flash_and_log("Username cannot be more than 30 characters", "error")
         error = True
 
     elif password != password_confirm:
-        flash("Passwords do not match", "error")
+        flash_and_log("Passwords do not match", "error")
         error = True
     elif len(password) < 8:
-        flash("Password must be at least 8 characters", "error")
+        flash_and_log("Password must be at least 8 characters", "error")
         error = True
 
     if query_db("select * from users where username = ?", [username], one=True):
-        flash(f"Username '{username}' is already taken", "error")
+        flash_and_log(f"Username '{username}' is already taken", "error")
         error = True
 
     if error:
-        app.logger.info(f"Failed signup attempt: {get_flashed_messages()}")
+        app.logger.info("Failed signup attempt")
         return redirect(request.referrer)
 
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
@@ -236,12 +236,12 @@ def upload_song():
 
     if not error:
         username = session["username"]
-        app.logger.info(f"{username} uploaded/modified a song - {get_flashed_messages()}")
+        app.logger.info(f"{username} uploaded/modified a song")
         return redirect(f"/users/{username}")
 
     else:
         username = session["username"]
-        app.logger.info(f"Failed song update - {username} - {get_flashed_messages()}")
+        app.logger.info(f"Failed song update - {username}")
         return redirect(request.referrer)
 
 def validate_song_form():
@@ -253,15 +253,15 @@ def validate_song_form():
 
     # Check if title is valid
     if not title.isprintable():
-        flash(f"'{title}' is not a valid song title", "error")
+        flash_and_log(f"'{title}' is not a valid song title", "error")
         error = True
     elif len(title) > 80:
-        flash(f"Title cannot be more than 80 characters", "error")
+        flash_and_log(f"Title cannot be more than 80 characters", "error")
         error = True
 
     # Check if description is valid
     if len(description) > 10_000:
-        flash(f"Description cannot be more than 10k characters", "error")
+        flash_and_log(f"Description cannot be more than 10k characters", "error")
         error = True
 
     # Check if tags are valid
@@ -269,7 +269,7 @@ def validate_song_form():
     tags = [t.strip() for t in tags.split(",")]
     for tag in tags:
         if not tag.isprintable() or len(tag) > 30:
-            flash(f"'{tag}' is not a valid tag name", "error")
+            flash_and_log(f"'{tag}' is not a valid tag name", "error")
             error = True
 
     # Check if collaborators are valid
@@ -277,7 +277,7 @@ def validate_song_form():
     collaborators = [c.strip() for c in collaborators.split(",")]
     for collab in collaborators:
         if not collab.isprintable() or len(collab) > 31:
-            flash(f"'{collab}' is not a valid collaborator name", "error")
+            flash_and_log(f"'{collab}' is not a valid collaborator name", "error")
             error = True
 
     return error
@@ -315,7 +315,9 @@ def update_song():
             tmp_file.close()
 
             result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
-            lines = result.stdout.decode().split("\r\n")
+            res_stdout = result.stdout.decode()
+            app.logger.info(f"mpck result: \n {res_stdout}")
+            lines = res_stdout.split("\n")
             lines = [l.strip().lower() for l in lines]
             passed = any(l.startswith("result") and l.endswith("ok") for l in lines)
 
@@ -324,7 +326,7 @@ def update_song():
                 filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
                 shutil.move(tmp_file.name, filepath)
             else:
-                flash("Invalid mp3 file", "error")
+                flash_and_log("Invalid mp3 file", "error")
                 error = True
 
     if not error:
@@ -344,7 +346,9 @@ def update_song():
             query_db("insert into song_collaborators (name, songid) values (?, ?)", [collab, songid])
 
         get_db().commit()
-        flash(f"Successfully updated '{title}'", "success")
+        flash_and_log(f"Successfully updated '{title}'", "success")
+
+    return error
 
 def create_song():
     file = request.files["song"]
@@ -358,12 +362,15 @@ def create_song():
         tmp_file.close()
 
         result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
-        lines = result.stdout.decode().split("\r\n")
+        res_stdout = result.stdout.decode()
+        app.logger.info(f"mpck result: \n {res_stdout}")
+        lines = res_stdout.split("\n")
         lines = [l.strip().lower() for l in lines]
         passed = any(l.startswith("result") and l.endswith("ok") for l in lines)
 
         if not passed:
-            flash("Invalid mp3 file", "error")
+            flash_and_log("Invalid mp3 file", "error")
+            return True
         else:
             # Create song
             timestamp = datetime.now(timezone.utc).isoformat()
@@ -386,7 +393,8 @@ def create_song():
 
             get_db().commit()
 
-            flash(f"Successfully uploaded '{title}'", "success")
+            flash_and_log(f"Successfully uploaded '{title}'", "success")
+            return False
 
 @app.get("/delete-song/<userid>/<songid>")
 def delete_song(userid, songid):
@@ -422,7 +430,7 @@ def delete_song(userid, songid):
         os.remove(songpath)
 
     app.logger.info(f"{session['username']} deleted song: {song_data['title']}")
-    flash(f"Deleted {song_data['title']}")
+    flash_and_log(f"Deleted {song_data['title']}")
 
     return redirect(request.referrer)
 
@@ -457,6 +465,17 @@ def songs():
             user=user,
             tag=tag,
             song_list=render_template("song-list.html", songs=songs))
+
+# TODO: USE THIS
+def flash_and_log(msg, category=None):
+    flash(msg, category)
+    username = session["username"] if "username" in session else "N/A"
+    url = request.referrer
+    logmsg = f"[{category}] User: {username}, URL: {url} - {msg}"
+    if category == "error":
+        app.logger.warning(logmsg)
+    else:
+        app.logger.info(logmsg)
 
 ################################################################################
 # Database
