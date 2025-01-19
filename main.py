@@ -42,12 +42,13 @@ app = Flask(__name__)
 app.secret_key = os.environ["SECRET_KEY"] if "SECRET_KEY" in os.environ else "dev"
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.logger.addHandler(handler)
+
 if "DATA_DIR" in os.environ:
     # Running on server behind proxy
     app.wsgi_app = ProxyFix(
         app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
     )
-
+    app.logger.setLevel(logging.INFO)
 
 @app.route("/")
 def index():
