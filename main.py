@@ -20,7 +20,7 @@ from flask import Flask, render_template, request, redirect, g, session, abort, 
         send_from_directory, flash, get_flashed_messages
 from werkzeug.utils import secure_filename
 
-DATA_DIR = Path(".")
+DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 
 ################################################################################
 # Logging
@@ -38,7 +38,7 @@ root_logger.addHandler(handler)
 ################################################################################
 
 app = Flask(__name__)
-app.secret_key = "dev"
+app.secret_key = os.environ["SECRET_KEY"] if "SECRET_KEY" in os.environ else "dev"
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 app.logger.addHandler(handler)
 
