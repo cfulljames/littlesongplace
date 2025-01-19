@@ -1,14 +1,37 @@
 {% extends "base.html" %}
 
+{% block title %}Little Song Place{% endblock %}
+
 {% block body %}
+
+<h2>A Brief Introduction</h2>
 
 <p>Hello, and welcome!</p>
 
-<p>Check out the music of the fine folks below!  If you create an account, you'll show up here too. :)</p>
+<p>
+I created this website because I wanted a little place where a few friends can
+share songs with each other. There are lots of <em>big</em> places for this
+already of course, but they all feel too cold and impersonal to me.  I figure
+maybe some of you also feel the same way, so I made this little song place just
+for us.
+</p>
 
-<h2>Lovely Humans:</h2>
+<p>
+At present it's very basic - you can listen to the newest songs here on the
+home page, or go to someone's profile to listen to all of their music.  There
+are no likes, comments, followers, or play counts.  Maybe someday there will
+be, or maybe we'll discover we don't need them.  I'm open to any thoughts or
+feedback you might have!  Just send me (cfull) a message on Discord. :)
+</p>
+
+<p>Check out the music of the fine folks below!  If you create an account, you'll show up here too.</p>
+
+<h2>Profiles</h2>
 {% for user in users %}
 <a href="/users/{{ user }}">{{ user }}</a><br>
 {% endfor %}
+
+<h2>Recently Uploaded Songs</h2>
+{{ song_list|safe }}
 
 {% endblock %}

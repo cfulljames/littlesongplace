@@ -45,7 +45,9 @@ app.logger.addHandler(handler)
 @app.route("/")
 def index():
     users = [row["username"] for row in query_db("select username from users")]
-    return render_template("index.html", users=users)
+    songs = Song.get_latest(50)
+    song_list = render_template("song-list.html", songs=songs)
+    return render_template("index.html", users=users, song_list=song_list)
 
 @app.get("/signup")
 def signup_get():
@@ -528,6 +530,10 @@ class Song:
     @classmethod
     def get_all_for_tag(cls, tag):
         return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (tag = ?)", [tag])
+
+    @classmethod
+    def get_latest(cls, count):
+        return cls._from_db("select * from songs inner join users on songs.userid = users.userid order by songs.created desc limit ?", [count])
 
     @classmethod
     def _from_db(cls, query, args=()):
