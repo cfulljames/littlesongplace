@@ -1,0 +1,41 @@
+name: Deploy Test
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Copy repo contents to server via SCP
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+      with:
+        source: "."
+        target: "/var/www/littlesongplace-test"
+
+    - name: Run test server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+        script: |
+          # Setup venv
+          rm -rf /var/www/littlesongplace-test/venv
+          python3 -m venv /var/www/littlesongplace-test/venv
+          /var/www/littlesongplace-test/venv/pip install -r /var/www/littlesongplace-test/requirements.txt
+          
+          # Symlink service
+          systemctl --user stop littlesongplace-test.service
+          mkdir -p /home/github/.config/systemd/user/
+          rm -f /home/github/.config/systemd/user/littlesongplace-test.service
+          ln -s /var/www/littlesongplace-test/service/test.service /home/github/.config/systemd/user/littlesongplace-test.service
+          
+          # Restart service
+          systemctl --user daemon-reload
+          systemctl --user start littlesongplace-test.service
