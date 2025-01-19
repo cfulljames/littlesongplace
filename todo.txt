@@ -1,8 +1,6 @@
 TODO (BEFORE RELEASE)
-- Homepage
 - Multiline descriptions
 - Automated Tests
-- Homepage
 - Tips and Tricks
 
 - RELEASE IT
