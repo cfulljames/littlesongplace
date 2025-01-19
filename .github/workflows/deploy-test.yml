@@ -27,7 +27,7 @@ jobs:
           # Setup venv
           rm -rf /var/www/littlesongplace-test/venv
           python3 -m venv /var/www/littlesongplace-test/venv
-          /var/www/littlesongplace-test/venv/pip install -r /var/www/littlesongplace-test/requirements.txt
+          /var/www/littlesongplace-test/venv/bin/pip install -r /var/www/littlesongplace-test/requirements.txt
           
           # Symlink service
           systemctl --user stop littlesongplace-test.service
