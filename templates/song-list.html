@@ -25,11 +25,6 @@
             </div>
             <div class="song-buttons">
 
-                <!-- Details Button -->
-                <a href="#" onclick="return showDetails(event)" class="song-list-button">
-                    <img src="/static/lsp_btn_show.gif" alt="Show Details">
-                </a>
-
                 <!-- Owner-Specific Buttons (Edit/Delete) -->
                 {% if session["userid"] == song.userid %}
                 <a href="/edit-song?songid={{ song.songid }}" class="song-list-button">
@@ -40,6 +35,11 @@
                 </a>
                 {% endif %}
 
+                <!-- Details Button -->
+                <a href="#" onclick="return showDetails(event)" class="song-list-button">
+                    <img src="/static/lsp_btn_show.gif" alt="Show Details">
+                </a>
+
                 <!-- Play Button -->
                 <a href="#" onclick="return play(event)" class="song-list-button">
                     <img src="/static/lsp_btn_play.gif" alt="Play">
@@ -49,7 +49,9 @@
 
         <div class="song-details" hidden>
             <!-- Song Description -->
+            {% if song.description %}
             <div class="song-description">{{ song.description }}</div>
+            {% endif %}
 
             <!-- Song Tags -->
             <div class="song-tags">
@@ -78,12 +80,14 @@ function showDetails(event) {
             if (child.hidden) {
                 // Show details
                 child.hidden = false;
-                event.target.textContent = "Hide Details"
+                event.target.alt = "Hide Details";
+                event.target.src = "/static/lsp_btn_hide.gif";
             }
             else {
                 // Hide details
                 child.hidden = true;
-                event.target.textContent = "Show Details"
+                event.target.alt = "Show Details";
+                event.target.src = "/static/lsp_btn_show.gif";
             }
         }
     }

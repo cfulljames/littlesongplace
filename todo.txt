@@ -1,11 +1,12 @@
 TODO (BEFORE RELEASE)
-- Multiline descriptions
+
 - Automated Tests
-- Tips and Tricks
 
 - RELEASE IT
 
 TODO (AFTER RELEASE)
+- Tips and Tricks
+- Multiline descriptions
 - Shuffle all
 - Homepage activity log
 - Admin accounts

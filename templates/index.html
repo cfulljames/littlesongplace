@@ -24,14 +24,15 @@ be, or maybe we'll discover we don't need them.  I'm open to any thoughts or
 feedback you might have!  Just send me (cfull) a message on Discord. :)
 </p>
 
+<h2>Profiles</h2>
 <p>Check out the music of the fine folks below!  If you create an account, you'll show up here too.</p>
 
-<h2>Profiles</h2>
 {% for user in users %}
 <a href="/users/{{ user }}">{{ user }}</a><br>
 {% endfor %}
 
 <h2>Recently Uploaded Songs</h2>
+<p>Listen to all the newest tunes!</p>
 {{ song_list|safe }}
 
 {% endblock %}

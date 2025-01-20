@@ -42,10 +42,13 @@ function playCurrentSong() {
 // Play or pause the current song in the player
 function songPlayPause() {
     var audio = document.getElementById("player-audio");
+    var button = document.getElementById("play-pause-button");
     if (audio.paused) {
+        button.src = "/static/lsp_btn_pause.gif";
         audio.play();
     }
     else {
+        button.src = "/static/lsp_btn_play.gif";
         audio.pause();
     }
 }

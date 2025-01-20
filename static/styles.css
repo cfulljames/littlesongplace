@@ -171,7 +171,7 @@ div.song-buttons {
 
 a.song-list-button img {
     image-rendering: pixelated;
-    width: 24px;
+    width: 32px;
 }
 
 div.song-details {
@@ -179,7 +179,14 @@ div.song-details {
     flex-direction: column;
     gap: 5px;
     align-items: left;
-    margin: 5px;
+}
+
+div.song-description {
+    margin: 10px;
+}
+
+div.song-tags {
+    margin: 10px;
 }
 
 [hidden] {
@@ -188,21 +195,23 @@ div.song-details {
 
 /* Song Player */
 #scroll-padding {
-    height: 110px;
+    height: 160px;
 }
 
-div.player {
+div.player-container {
     position: fixed;
     max-width: 700px;
     margin: auto;
-    margin: 10px;
-    padding: 10px;
-    box-shadow: 0px 0px 20px 0px;
-    border-radius: 10px;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 100px;
+}
+
+div.player {
+    margin: 10px;
+    box-shadow: 0px 0px 20px 0px;
+    border-radius: 10px;
+    min-height: 100px;
     /*border-top: 3px solid;*/
     background: var(--yellow);
 }
@@ -215,6 +224,7 @@ div.player-info {
     justify-content: center;
     align-items: center;
     gap: 10px;
+    padding: 10px;
 }
 
 div.player-controls {
@@ -225,6 +235,7 @@ div.player-controls {
     align-items: center;
     gap: 10px;
     height: 50%;
+    padding: 10px;
 }
 
 a.player-button {
@@ -233,14 +244,14 @@ a.player-button {
 
 a.player-button img {
     image-rendering: pixelated;
-    width: 24px;
+    width: 32px;
 }
 
 #player-position {
     display: inline-block;
     position: relative;
     width: 50%;
-    height: 100%;
+    height: 32px;
 }
 
 #player-position-bar {
@@ -248,7 +259,7 @@ a.player-button img {
     display: inline-block;
     background-color: var(--purple);
     left: 100;
-    top: 23px;
+    top: 14px;
     width: 100%;
     height: 4px;
 }
@@ -258,7 +269,7 @@ a.player-button img {
     display: inline-block;
     visibility: hidden;
     background-color: var(--pink);
-    top: 15px;
+    top: 6px;
     width: 20px;
     height: 20px;
     border-radius: 50%;

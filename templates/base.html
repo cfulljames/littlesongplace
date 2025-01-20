@@ -52,32 +52,33 @@
         <div id="scroll-padding"></div>
 
         <!-- Song Player -->
-        <div class="player" id="player" hidden>
-            <div class="player-info">
-                <!-- TODO: Show song title, artist -->
-                <span id="player-title">Not Playing</span>
-                <span id="player-info-sep" hidden>-</span>
-                <a id="player-artist" hidden></a>
-            </div>
-            <div class="player-controls">
-                <a href="javascript:songPrevious()" class="player-button">
-                    <img src="/static/lsp_btn_prev.gif" alt="Previous">
-                </a>
-                <a href="javascript:songPlayPause()" class="player-button">
-                    <img src="/static/lsp_btn_play.gif" alt="Play">
-                </a>
-                <a href="javascript:songNext()" class="player-button">
-                    <img src="/static/lsp_btn_next.gif" alt="Next">
-                </a>
-                <div id="player-position">
-                    <span id="player-position-bar"></span>
-                    <span id="player-position-dot"></span>
+        <div class="player-container" id="player-container">
+            <div class="player" id="player" hidden>
+                <div class="player-info">
+                    <!-- TODO: Show song title, artist -->
+                    <span id="player-title">Not Playing</span>
+                    <span id="player-info-sep" hidden>-</span>
+                    <a id="player-artist" hidden></a>
                 </div>
-                <span class="player-time" id="player-current-time">0:00</span>
-                <span class="player-time-sep">/</span>
-                <span class="player-time" id="player-total-time">0:00</span>
-                <audio id="player-audio"></audio>
-                <!-- TODO: Volume control -->
+                <div class="player-controls">
+                    <a href="javascript:songPrevious()" class="player-button">
+                        <img src="/static/lsp_btn_prev.gif" alt="Previous">
+                    </a>
+                    <a href="javascript:songPlayPause()" class="player-button">
+                        <img src="/static/lsp_btn_pause.gif" alt="Play" id="play-pause-button">
+                    </a>
+                    <a href="javascript:songNext()" class="player-button">
+                        <img src="/static/lsp_btn_next.gif" alt="Next">
+                    </a>
+                    <div id="player-position">
+                        <span id="player-position-bar"></span>
+                        <span id="player-position-dot"></span>
+                    </div>
+                    <span class="player-time" id="player-current-time">0:00</span>
+                    <span class="player-time-sep">/</span>
+                    <span class="player-time" id="player-total-time">0:00</span>
+                    <audio id="player-audio"></audio>
+                </div>
             </div>
         </div>
     </body>
