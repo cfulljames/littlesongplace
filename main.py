@@ -204,7 +204,7 @@ def edit_song():
             songid = int(request.args["songid"])
         except ValueError:
             # Invalid song id - file not found
-            app.logger.warning(f"Failed song edit - {session['username']} - invalid song ID {songid}")
+            app.logger.warning(f"Failed song edit - {session['username']} - invalid song ID {request.args['songid']}")
             abort(404)
 
         try:
@@ -276,7 +276,7 @@ def validate_song_form():
     collaborators = request.form["collabs"]
     collaborators = [c.strip() for c in collaborators.split(",")]
     for collab in collaborators:
-        if not collab.isprintable() or len(collab) > 31:
+        if not collab.isprintable() or len(collab) > 31:  # 30ch username + @
             flash_and_log(f"'{collab}' is not a valid collaborator name", "error")
             error = True
 
@@ -396,25 +396,19 @@ def create_song():
             flash_and_log(f"Successfully uploaded '{title}'", "success")
             return False
 
-@app.get("/delete-song/<userid>/<songid>")
-def delete_song(userid, songid):
-    try:
-        # Make sure values are valid integers
-        int(userid)
-        int(songid)
-    except ValueError:
-        abort(404)
-
-    # Users can only delete their own songs
-    if int(userid) != session["userid"]:
-        app.logger.warning(f"Failed song delete - {session['username']} - user doesn't own song")
-        abort(401)
+@app.get("/delete-song/<int:songid>")
+def delete_song(songid):
 
     song_data = query_db("select * from songs where songid = ?", [songid], one=True)
 
     if not song_data:
         app.logger.warning(f"Failed song delete - {session['username']} - song doesn't exist")
         abort(404)  # Song doesn't exist
+
+    # Users can only delete their own songs
+    if song_data["userid"] != session["userid"]:
+        app.logger.warning(f"Failed song delete - {session['username']} - user doesn't own song")
+        abort(401)
 
     # Delete tags, collaborators
     query_db("delete from song_tags where songid = ?", [songid])
@@ -425,12 +419,12 @@ def delete_song(userid, songid):
     get_db().commit()
 
     # Delete song file from disk
-    songpath = DATA_DIR / "songs" / userid / (songid + ".mp3")
+    songpath = DATA_DIR / "songs" / str(session["userid"]) / (str(songid) + ".mp3")
     if songpath.exists():
         os.remove(songpath)
 
     app.logger.info(f"{session['username']} deleted song: {song_data['title']}")
-    flash_and_log(f"Deleted {song_data['title']}")
+    flash_and_log(f"Deleted '{song_data['title']}'")
 
     return redirect(request.referrer)
 
@@ -551,11 +545,11 @@ class Song:
 
     @classmethod
     def get_all_for_username_and_tag(cls, username, tag):
-        return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (username = ? and tag = ?)", [username, tag])
+        return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (username = ? and tag = ?) order by songs.created desc", [username, tag])
 
     @classmethod
     def get_all_for_tag(cls, tag):
-        return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (tag = ?)", [tag])
+        return cls._from_db(f"select * from song_tags inner join songs on song_tags.songid = songs.songid inner join users on songs.userid = users.userid where (tag = ?) order by songs.created desc", [tag])
 
     @classmethod
     def get_latest(cls, count):
