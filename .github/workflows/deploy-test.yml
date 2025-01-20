@@ -29,12 +29,5 @@ jobs:
           python3 -m venv /var/www/littlesongplace-test/venv
           /var/www/littlesongplace-test/venv/bin/pip install -r /var/www/littlesongplace-test/requirements.txt
           
-          # Symlink service
-          systemctl --user stop littlesongplace-test.service
-          mkdir -p /home/github/.config/systemd/user/
-          rm -f /home/github/.config/systemd/user/littlesongplace-test.service
-          ln -s /var/www/littlesongplace-test/service/test.service /home/github/.config/systemd/user/littlesongplace-test.service
-          
           # Restart service
-          systemctl --user daemon-reload
-          systemctl --user start littlesongplace-test.service
+          sudo systemctl restart littlesongplace-test.service
