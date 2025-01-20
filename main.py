@@ -466,7 +466,6 @@ def songs():
             tag=tag,
             song_list=render_template("song-list.html", songs=songs))
 
-# TODO: USE THIS
 def flash_and_log(msg, category=None):
     flash(msg, category)
     username = session["username"] if "username" in session else "N/A"
