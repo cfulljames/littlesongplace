@@ -10,6 +10,7 @@ TODO (AFTER RELEASE)
 - Shuffle all
 - Homepage activity log
 - Admin accounts
+- Song downloads
 - AJAX pages so songs can play during navigation
 - Play Queue:
     - Add songs

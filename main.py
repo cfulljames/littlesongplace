@@ -52,7 +52,7 @@ if "DATA_DIR" in os.environ:
 
 @app.route("/")
 def index():
-    users = [row["username"] for row in query_db("select username from users")]
+    users = [row["username"] for row in query_db("select username from users order by username asc")]
     songs = Song.get_latest(50)
     song_list = render_template("song-list.html", songs=songs)
     return render_template("index.html", users=users, song_list=song_list)

@@ -10,13 +10,13 @@
                 -
 
                 <!-- Song Artist -->
-                <a href="/users/{{ song.username }}" class="song-username">{{ song.username }}</a>
+                <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
 
                 <!-- Song Collaborators -->
                 <div class="song-collabs">
                     {% for collab in song.collaborators %}
                         {% if collab.startswith("@") %}
-                        <a href="/users/{{ collab[1:] }}" class="collab-link">{{ collab }}</a>
+                        <a href="/users/{{ collab[1:] }}" class="profile-link">{{ collab[1:] }}</a>
                         {% else %}
                         <span class="collab-name">{{ collab }}</span>
                         {% endif %}

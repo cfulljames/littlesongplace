@@ -85,6 +85,15 @@ div.page-header {
     margin: 10px;
 }
 
+.profile-link {
+    font-weight: bold;
+    color: var(--pink);
+}
+
+.user-list-entry {
+    padding: 5px;
+}
+
 /* Navbar */
 div.navbar {
     display: flex;

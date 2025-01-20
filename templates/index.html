@@ -9,11 +9,11 @@
 <p>Hello, and welcome!</p>
 
 <p>
-I created this website because I wanted a little place where a few friends can
+I created this website because I wanted a little place where a few friends could
 share songs with each other. There are lots of <em>big</em> places for this
-already of course, but they all feel too cold and impersonal to me.  I figure
-maybe some of you also feel the same way, so I made this little song place just
-for us.
+already of course, but they all feel so noisy and cold and impersonal to me.  I
+figure maybe some of you also feel the same way, so I made this little song
+place just for us.
 </p>
 
 <p>
@@ -25,10 +25,11 @@ feedback you might have!  Just send me (cfull) a message on Discord. :)
 </p>
 
 <h2>Profiles</h2>
-<p>Check out the music of the fine folks below!  If you create an account, you'll show up here too.</p>
+<p>Check out the music of the fine folks below!{% if not session["userid"] %}  If you create an account, you'll show up here too.{% endif %}</p>
 
 {% for user in users %}
-<a href="/users/{{ user }}">{{ user }}</a><br>
+<a href="/users/{{ user }}" class="profile-link user-list-entry">{{ user }}</a>
+
 {% endfor %}
 
 <h2>Recently Uploaded Songs</h2>
