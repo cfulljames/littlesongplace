@@ -6,10 +6,11 @@
 
 {% if song %}
 <form action="/upload-song?songid={{ song.songid }}" method="post" enctype="multipart/form-data">
+    <h2>Edit Song</h2>
 {% else %}
 <form action="/upload-song" method="post" enctype="multipart/form-data">
+    <h2>Upload a New Song</h2>
 {% endif %}
-    <h2>Upload a new song</h2>
     <div class="upload-form">
         <label for="song">{% if song %}Replace {% endif %}mp3 File</label><br>
         <input type="file" name="song" accept=".mp3" id="file-select" {% if not song %}required{% endif %}>
@@ -31,7 +32,12 @@
         <input type="text" name="collabs" placeholder="@fren_user, John Doe, ..." value="{{ ", ".join(song.collaborators) }}" maxlength="350">
     </div>
     <div class="upload-form">
-        <input type="submit" value="Upload">
+        {% if song %}
+        <input type="submit" value="Update" onclick="onUpload(event)">
+        {% else %}
+        <input type="submit" value="Upload" onclick="onUpload(event)">
+        {% endif %}
+        <p id="uploading" hidden>uploading...</p>
     </div>
 </form>
 
@@ -44,6 +50,11 @@ document.getElementById("file-select").addEventListener("change", function(e) {
         songTitle.value = name.substring(0, name.length - 4);
     }
 });
+
+function onUpload(event) {
+    var uploading = document.getElementById("uploading")
+    uploading.hidden = false;
+}
 </script>
 
 {% endblock %}
