@@ -41,7 +41,6 @@ root_logger.addHandler(handler)
 app = Flask(__name__)
 app.secret_key = os.environ["SECRET_KEY"] if "SECRET_KEY" in os.environ else "dev"
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
-app.logger.addHandler(handler)
 
 if "DATA_DIR" in os.environ:
     # Running on server behind proxy

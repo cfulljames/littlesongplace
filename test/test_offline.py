@@ -171,7 +171,7 @@ def test_update_bio(client):
 ################################################################################
 
 def _test_upload_song(client, msg, error=False, songid=None, user="user", **kwargs):
-    song_file = open("test/sample-3s.mp3", "rb")
+    song_file = open("sample-3s.mp3", "rb")
 
     data = {
         "song": song_file,
@@ -301,7 +301,7 @@ def test_update_song_invalid_song(client):
     _create_user_and_song(client)
 
     data = {
-        "song": open("test/sample-3s.mp3", "rb"),
+        "song": open("sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -315,7 +315,7 @@ def test_update_song_invalid_id(client):
     _create_user_and_song(client)
 
     data = {
-        "song": open("test/sample-3s.mp3", "rb"),
+        "song": open("sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -330,7 +330,7 @@ def test_update_song_other_users_song(client):
     _create_user(client, "user2", login=True)
 
     data = {
-        "song": open("test/sample-3s.mp3", "rb"),
+        "song": open("sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -380,7 +380,7 @@ def test_delete_song_other_users_song(client):
 def test_get_song(client):
     _create_user_and_song(client)
     response = client.get("/song/1/1")
-    with open("test/sample-3s.mp3", "rb") as mp3file:
+    with open("sample-3s.mp3", "rb") as mp3file:
         assert response.data == mp3file.read()
 
 def test_get_song_invalid_song(client):
