@@ -423,7 +423,7 @@ def delete_song(songid):
         os.remove(songpath)
 
     app.logger.info(f"{session['username']} deleted song: {song_data['title']}")
-    flash_and_log(f"Deleted '{song_data['title']}'")
+    flash_and_log(f"Deleted '{song_data['title']}'", "success")
 
     return redirect(request.referrer)
 
