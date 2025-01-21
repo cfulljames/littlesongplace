@@ -1,6 +1,8 @@
 import html
 import json
+import os
 import re
+import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -8,6 +10,8 @@ from unittest.mock import patch
 import bcrypt
 import pytest
 from flask import session
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import main
 
@@ -231,7 +235,7 @@ def test_upload_song_collab_too_long(client):
 
 def test_upload_song_invalid_mp3(client):
     _create_user(client, "user", "password", login=True)
-    song_file = open("test.py", "rb")
+    song_file = open(__file__, "rb")
     _test_upload_song(client, b"Invalid mp3 file", error=True, song=song_file)
 
 ################################################################################
@@ -294,7 +298,7 @@ def test_update_song_collab_too_long(client):
 
 def test_update_song_invalid_mp3(client):
     _create_user_and_song(client)
-    song_file = open("test.py", "rb")
+    song_file = open(__file__, "rb")
     _test_upload_song(client, b"Invalid mp3 file", error=True, songid=1, song=song_file)
 
 def test_update_song_invalid_song(client):
