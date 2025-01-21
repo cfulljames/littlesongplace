@@ -1,7 +1,26 @@
 name: Deploy Test
 on: [push, workflow_dispatch]
 jobs:
-  build:
+  run-offline-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r dev-requirements.txt
+
+    - name: Run pytest
+      run: |
+        pytest test.py
+
+  deploy-test-instance:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -25,9 +44,10 @@ jobs:
         KEY: ${{ secrets.SSHKEY }}
         script: |
           # Setup venv
-          rm -rf /var/www/littlesongplace-test/venv
-          python3 -m venv /var/www/littlesongplace-test/venv
-          /var/www/littlesongplace-test/venv/bin/pip install -r /var/www/littlesongplace-test/requirements.txt
-          
+          cd /var/www/littlesongplace-test
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install -r requirements.txt
+
           # Restart service
           sudo systemctl restart littlesongplace-test.service
