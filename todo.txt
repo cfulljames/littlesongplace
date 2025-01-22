@@ -1,6 +1,8 @@
 TODO (BEFORE RELEASE)
 
-- Automated Tests
+- Server monitoring
+- Account deletion
+- Email for bug reports
 
 - RELEASE IT
 
