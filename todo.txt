@@ -3,6 +3,7 @@ TODO (BEFORE RELEASE)
 - Server monitoring
 - Account deletion
 - Email for bug reports
+- Automated backups
 
 - RELEASE IT
 
