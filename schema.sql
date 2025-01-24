@@ -3,7 +3,7 @@ CREATE TABLE users (
     userid INTEGER PRIMARY KEY AUTOINCREMENT,
     created TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
+    password BLOB NOT NULL,
     bio TEXT
 );
 CREATE INDEX users_by_name ON users(username);

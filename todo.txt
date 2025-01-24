@@ -1,17 +1,18 @@
 TODO (BEFORE RELEASE)
 
-- Account deletion
-- Email for bug reports
 - Automated backups
 
 - RELEASE IT
 
 TODO (AFTER RELEASE)
+- Comments, notifications
 - Tips and Tricks
 - Multiline descriptions
 - Shuffle all
 - Homepage activity log
 - Admin accounts
+- Account deletion
+- Change password (require email?)
 - Song downloads
 - AJAX pages so songs can play during navigation
 - Play Queue:
