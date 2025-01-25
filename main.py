@@ -427,17 +427,21 @@ def delete_song(songid):
 
     return redirect(request.referrer)
 
-@app.get("/song/<userid>/<songid>")
+@app.get("/song/<int:userid>/<int:songid>")
 def song(userid, songid):
-    try:
-        # Make sure values are valid integers
-        int(userid)
-        int(songid)
-    except ValueError:
-        app.logger.warning(f"Invalid song request: user: {userid}, song: {songid}")
-        abort(404)
+    if request.args.get("action", None) == "view":
+        try:
+            song = Song.by_id(songid)
+            if song.userid != userid:
+                abort(404)
 
-    return send_from_directory(DATA_DIR / "songs" / userid, songid + ".mp3")
+            return render_template(
+                    "song.html",
+                    song_list=render_template("song-list.html", songs=[song]), song=song)
+        except ValueError:
+            abort(404)
+    else:
+        return send_from_directory(DATA_DIR / "songs" / str(userid), str(songid) + ".mp3")
 
 @app.get("/songs")
 def songs():

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head %}
+<meta property="og:title" content="{{ song.title }}" />
+<meta property="og:description" content="Song by {{ song.username }}" />
+{% endblock %}
+
+{% block title %}{{ song.title }}{% endblock %}
+
+{% block body %}
+
+{{ song_list|safe }}
+
+{% endblock %}

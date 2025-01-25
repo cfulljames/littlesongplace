@@ -500,3 +500,14 @@ def test_songs_by_user(client):
     assert songs[1]["username"] == "user1"
 
     # Song 3 not shown, by different user
+
+def test_single_song(client):
+    _create_user(client, "user1", "password", login=True)
+    _test_upload_song(client, b"Success", user="user1", title="song1", tags="tag")
+
+    songs = _get_song_list_from_page(client, "/song/1/1?action=view")
+    
+    assert len(songs) == 1
+    assert songs[0]["title"] == "song1"
+    assert songs[0]["username"] == "user1"
+
