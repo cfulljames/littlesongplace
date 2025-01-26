@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Write a Comment{% endblock %}
+
+{% block body %}
+
+<h1>Write a Comment</h1>
+
+<p>
+Commenting on {{ song.title }}
+</p>
+
+{% if comment %}
+<p>
+In reply to:
+<a href="/users/{{ comment['username'] }}" class="profile-link">{{ comment['username'] }}</a>
+<br>
+{{ comment['content'] }}
+</p>
+{% endif %}
+
+<form method="post">
+    <textarea name="content"></textarea>
+    <input type="submit" value="Post Comment">
+</form>
+
+{% endblock %}

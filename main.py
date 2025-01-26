@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path, PosixPath
+from typing import Optional
 
 import bcrypt
 import bleach
@@ -474,6 +475,63 @@ def songs():
             tag=tag,
             song_list=render_template("song-list.html", songs=songs))
 
+@app.get("/comment")
+def comment_get():
+    if not "songid" in request.args:
+        abort(400) # Must have songid
+
+    try:
+        song = Song.by_id(request.args["songid"])
+    except ValueError:
+        abort(404) # Invald songid
+
+    if not "userid" in session:
+        abort(401) # Must be logged in
+
+    comment = None
+    if "commentid" in request.args:
+        commentid = request.args["commentid"]
+        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [commentid], one=True)
+
+    session["previous_page"] = request.referrer
+    return render_template("comment.html", song=song, comment=comment)
+
+@app.post("/comment")
+def comment_post():
+    if not "songid" in request.args:
+        abort(400) # Must have songid
+
+    try:
+        song = Song.by_id(request.args["songid"])
+    except ValueError:
+        abort(404) # Invald songid
+
+    comment = None
+    if "commentid" in request.args:
+        commentid = request.args["commentid"]
+        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [commentid], one=True)
+        if not comment:
+            abort(404) # Invalid comment
+
+    if not "userid" in session:
+        abort(401) # Must be logged in
+
+    # Add new comment
+    timestamp = datetime.now(timezone.utc).isoformat()
+    content = request.form["content"]
+    userid = session["userid"]
+    songid = request.args["songid"]
+    replytoid = request.args.get("commentid", None)
+    query_db(
+            "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?)",
+            args=[songid, userid, replytoid, timestamp, content])
+    get_db().commit()
+
+    if "previous_page" in session:
+        return redirect(session["previous_page"])
+    else:
+        return redirect("/")
+
 @app.get("/site-news")
 def site_news():
     return render_template("news.html")
@@ -545,6 +603,16 @@ class Song:
     def json(self):
         return json.dumps(vars(self))
 
+    def get_comments(self):
+        comments = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where songid = ?", [self.songid])
+        # Top-level comments
+        song_comments = sorted([dict(c) for c in comments if c["replytoid"] is None], key=lambda c: c["created"])
+        # Replies (can only reply to top-level)
+        for comment in song_comments:
+            comment["replies"] = sorted([c for c in comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
+
+        return song_comments
+
     @classmethod
     def by_id(cls, songid):
         songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songid = ?", [songid])
@@ -576,7 +644,7 @@ class Song:
     @classmethod
     def _from_db(cls, query, args=()):
         songs_data = query_db(query, args)
-        tags, collabs = cls._get_tags_and_collabs_for_songs(songs_data)
+        tags, collabs = cls._get_info_for_songs(songs_data)
         songs = []
         for sd in songs_data:
             song_tags = [t["tag"] for t in tags[sd["songid"]]]
@@ -586,7 +654,7 @@ class Song:
         return songs
 
     @classmethod
-    def _get_tags_and_collabs_for_songs(cls, songs):
+    def _get_info_for_songs(cls, songs):
         tags = {}
         collabs = {}
         for song in songs:

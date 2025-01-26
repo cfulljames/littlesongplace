@@ -10,7 +10,7 @@
                 <div class="song-info-sep">
                     -
                 </div>
-                
+
                 <!-- Song Artist -->
                 <div class="song-artist">
                     <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
@@ -62,6 +62,29 @@
                 <a href="/songs?user={{ song.username }}&tag={{ tag }}">{{ tag }}</a>
                 {% endfor %}
             </div>
+
+            <!-- Song Comments -->
+            <div class="song-comments">
+                Comments:
+                <a href="/comment?songid={{ song.songid }}">Add a Comment</a>
+
+                {% for comment in song.get_comments() %}
+                <div class="top-level-comment">
+                    <a href="/users/{{ comment['username'] }}" class="profile-link">{{ comment['username'] }}</a>
+                    <p>{{ comment['content'] }}</p>
+
+                    {% for reply in comment['replies'] %}
+                    <div class="reply-comment">
+                        <a href="/users/{{ reply['username'] }}" class="profile-link">{{ reply['username'] }}</a>
+                        <p>{{ reply['content'] }}</p>
+                    </div>
+                    {% endfor %}
+
+                    <a href="/comment?songid={{ song.songid }}&commentid={{ comment['commentid'] }}">Reply</a>
+                </div>
+                {% endfor %}
+            </div>
+
         </div>
     </div>
 {% endfor %}

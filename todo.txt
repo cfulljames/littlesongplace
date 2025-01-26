@@ -1,10 +1,16 @@
-- Dark mode?
+- Comments:
+    - Leave comment
+    - Delete comment
+    - Notifications
+- YouTube importer
 - Autoplay toggle
-- Comments, notifications
-- Tips and Tricks
-- Multiline descriptions
+- Volume control
 - Shuffle all
-- Homepage activity log
+- Song sorter for song lists
+- Additional song info in player (collabs, description, tags)
+- Tips and Tricks (or html helper for bio/descriptions?)
+- Multiline/html descriptions
+- Dark mode/site color customization
 - Admin accounts
 - Account deletion
 - Change password (require email?)
@@ -24,9 +30,5 @@
     - Delete
     - Pin to profile
     - Albums?
-- Comments:
-    - Leave comment
-    - Delete comment
-    - Notifications
 - Song/User Search
 

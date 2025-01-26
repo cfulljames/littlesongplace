@@ -35,3 +35,16 @@ CREATE TABLE song_tags (
 );
 CREATE INDEX idx_song_tags_tag ON song_tags(tag);
 
+DROP TABLE IF EXISTS song_comments;
+CREATE TABLE song_comments (
+    commentid INTEGER PRIMARY KEY,
+    songid INTEGER NOT NULL,
+    userid INTEGER NOT NULL,
+    replytoid INTEGER,
+    created TEXT NOT NULL,
+    content TEXT NOT NULL,
+    FOREIGN KEY(songid) REFERENCES songs(songid),
+    FOREIGN KEY(userid) REFERENCES users(userid)
+);
+CREATE INDEX idx_comments_by_song ON song_comments(songid);
+
