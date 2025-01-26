@@ -492,6 +492,8 @@ def comment_get():
     if "replytoid" in request.args:
         replytoid = request.args["replytoid"]
         comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
+        if not comment:
+            abort(404) # Invalid comment
 
     session["previous_page"] = request.referrer
     return render_template("comment.html", song=song, comment=comment)
@@ -506,15 +508,15 @@ def comment_post():
     except ValueError:
         abort(404) # Invald songid
 
+    if not "userid" in session:
+        abort(401) # Must be logged in
+
     comment = None
     if "replytoid" in request.args:
         replytoid = request.args["replytoid"]
         comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
         if not comment:
             abort(404) # Invalid comment
-
-    if not "userid" in session:
-        abort(401) # Must be logged in
 
     # Add new comment
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -531,6 +533,24 @@ def comment_post():
         return redirect(session["previous_page"])
     else:
         return redirect("/")
+
+@app.get("/delete-comment/<int:commentid>")
+def comment_delete(commentid):
+    comment = query_db("select c.userid as comment_user, s.userid as song_user from song_comments as c inner join songs as s on c.songid == s.songid where commentid = ?", [commentid], one=True)
+    print(dict(comment))
+    if not comment:
+        abort(404) # Invalid comment
+
+    if not (
+        ("userid" in session)
+        and ((comment["comment_user"] == session["userid"])
+            or (comment["song_user"] == session["userid"]))):
+        abort(401)
+
+    query_db("delete from song_comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])
+    get_db().commit()
+
+    return redirect(request.referrer)
 
 @app.get("/site-news")
 def site_news():

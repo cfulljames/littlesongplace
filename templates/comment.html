@@ -7,7 +7,7 @@
 <h1>Write a Comment</h1>
 
 <p>
-Commenting on {{ song.title }}
+Commenting on {{ song.title }} by <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
 </p>
 
 {% if comment %}

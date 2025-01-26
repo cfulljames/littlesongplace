@@ -1,6 +1,5 @@
 - Comments:
-    - Leave comment
-    - Delete comment
+    - Edit comment
     - Notifications
 - YouTube importer
 - Autoplay toggle
