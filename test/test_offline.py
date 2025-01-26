@@ -174,8 +174,8 @@ def test_update_bio(client):
 # Upload Song
 ################################################################################
 
-def _test_upload_song(client, msg, error=False, songid=None, user="user", **kwargs):
-    song_file = open("sample-3s.mp3", "rb")
+def _test_upload_song(client, msg, error=False, songid=None, user="user", filename="sample-3s.mp3", **kwargs):
+    song_file = open(filename, "rb")
 
     data = {
         "song": song_file,
@@ -266,7 +266,11 @@ def _create_user_and_song(client):
 
 def test_update_song_success(client):
     _create_user_and_song(client)
-    _test_upload_song(client, b"Successfully updated &#39;song title&#39;", songid=1)
+    _test_upload_song(client, b"Successfully updated &#39;song title&#39;", filename="sample-6s.mp3", songid=1)
+    response = client.get("/song/1/1")
+    assert response.status_code == 200
+    with open("sample-6s.mp3", "rb") as expected_file:
+        assert response.data == expected_file.read()
 
 def test_update_song_bad_title(client):
     _create_user_and_song(client)
@@ -519,3 +523,4 @@ def test_site_news(client):
     response = client.get("/site-news")
     assert response.status_code == 200
     assert b"Site News" in response.data
+

@@ -310,15 +310,7 @@ def update_song():
     error = False
     if file:
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            file.save(tmp_file)
-            tmp_file.close()
-
-            result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
-            res_stdout = result.stdout.decode()
-            app.logger.info(f"mpck result: \n {res_stdout}")
-            lines = res_stdout.split("\n")
-            lines = [l.strip().lower() for l in lines]
-            passed = any(l.startswith("result") and l.endswith("ok") for l in lines)
+            passed = convert_song(tmp_file, file)
 
             if passed:
                 # Move file to permanent location
@@ -357,15 +349,7 @@ def create_song():
     collaborators = [c.strip() for c in request.form["collabs"].split(",")]
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        file.save(tmp_file)
-        tmp_file.close()
-
-        result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
-        res_stdout = result.stdout.decode()
-        app.logger.info(f"mpck result: \n {res_stdout}")
-        lines = res_stdout.split("\n")
-        lines = [l.strip().lower() for l in lines]
-        passed = any(l.startswith("result") and l.endswith("ok") for l in lines)
+        passed = convert_song(tmp_file, file)
 
         if not passed:
             flash_and_log("Invalid mp3 file", "error")
@@ -394,6 +378,21 @@ def create_song():
 
             flash_and_log(f"Successfully uploaded '{title}'", "success")
             return False
+
+def convert_song(tmp_file, request_file):
+    request_file.save(tmp_file)
+    tmp_file.close()
+
+    result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
+    res_stdout = result.stdout.decode()
+    app.logger.info(f"mpck result: \n {res_stdout}")
+    lines = res_stdout.split("\n")
+    lines = [l.strip().lower() for l in lines]
+    if any(l.startswith("result") and l.endswith("ok") for l in lines):
+        # Uploaded valid mp3 file
+        return True
+
+    return False
 
 @app.get("/delete-song/<int:songid>")
 def delete_song(songid):
