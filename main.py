@@ -489,9 +489,9 @@ def comment_get():
         abort(401) # Must be logged in
 
     comment = None
-    if "commentid" in request.args:
-        commentid = request.args["commentid"]
-        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [commentid], one=True)
+    if "replytoid" in request.args:
+        replytoid = request.args["replytoid"]
+        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
 
     session["previous_page"] = request.referrer
     return render_template("comment.html", song=song, comment=comment)
@@ -507,9 +507,9 @@ def comment_post():
         abort(404) # Invald songid
 
     comment = None
-    if "commentid" in request.args:
-        commentid = request.args["commentid"]
-        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [commentid], one=True)
+    if "replytoid" in request.args:
+        replytoid = request.args["replytoid"]
+        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
         if not comment:
             abort(404) # Invalid comment
 
@@ -521,7 +521,7 @@ def comment_post():
     content = request.form["content"]
     userid = session["userid"]
     songid = request.args["songid"]
-    replytoid = request.args.get("commentid", None)
+    replytoid = request.args.get("replytoid", None)
     query_db(
             "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?)",
             args=[songid, userid, replytoid, timestamp, content])
@@ -607,6 +607,7 @@ class Song:
         comments = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where songid = ?", [self.songid])
         # Top-level comments
         song_comments = sorted([dict(c) for c in comments if c["replytoid"] is None], key=lambda c: c["created"])
+        song_comments = list(reversed(song_comments))
         # Replies (can only reply to top-level)
         for comment in song_comments:
             comment["replies"] = sorted([c for c in comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
