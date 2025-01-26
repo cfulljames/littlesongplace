@@ -233,10 +233,14 @@ def test_upload_song_collab_too_long(client):
     _create_user(client, "user", "password", login=True)
     _test_upload_song(client, b"not a valid collaborator name", error=True, collabs="a"*32)
 
-def test_upload_song_invalid_mp3(client):
+def test_upload_song_invalid_audio(client):
     _create_user(client, "user", "password", login=True)
-    song_file = open(__file__, "rb")
-    _test_upload_song(client, b"Invalid mp3 file", error=True, song=song_file)
+    # Use this script file as the "audio" file
+    _test_upload_song(client, b"Invalid audio file", error=True, filename=__file__)
+
+def test_upload_song_from_mp4(client):
+    _create_user(client, "user", "password", login=True)
+    _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename="sample-4s.mp4")
 
 ################################################################################
 # Edit Song
@@ -303,7 +307,7 @@ def test_update_song_collab_too_long(client):
 def test_update_song_invalid_mp3(client):
     _create_user_and_song(client)
     song_file = open(__file__, "rb")
-    _test_upload_song(client, b"Invalid mp3 file", error=True, songid=1, song=song_file)
+    _test_upload_song(client, b"Invalid audio file", error=True, songid=1, song=song_file)
 
 def test_update_song_invalid_song(client):
     _create_user_and_song(client)

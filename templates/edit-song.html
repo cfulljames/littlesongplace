@@ -4,6 +4,12 @@
 
 {% block body %}
 
+<p>
+<em>Handy Tip:</em>
+If you upload a video (e.g. a PS4/PS5 capture file), the audio will be extracted automatically!
+Most standard audio/video formats are supported - .wav, .mp3, .ogg, .mp4, etc.
+</p>
+
 {% if song %}
 <form action="/upload-song?songid={{ song.songid }}" method="post" enctype="multipart/form-data">
     <h2>Edit Song</h2>
@@ -12,8 +18,8 @@
     <h2>Upload a New Song</h2>
 {% endif %}
     <div class="upload-form">
-        <label for="song">{% if song %}Replace {% endif %}mp3 File</label><br>
-        <input type="file" name="song" accept=".mp3" id="file-select" {% if not song %}required{% endif %}>
+        <label for="song">{% if song %}Replace {% endif %}Audio File</label><br>
+        <input type="file" name="song" id="file-select" {% if not song %}required{% endif %}>
     </div>
     <div class="upload-form">
         <label for="title">Title</label><br>

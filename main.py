@@ -317,7 +317,6 @@ def update_song():
                 filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
                 shutil.move(tmp_file.name, filepath)
             else:
-                flash_and_log("Invalid mp3 file", "error")
                 error = True
 
     if not error:
@@ -352,7 +351,6 @@ def create_song():
         passed = convert_song(tmp_file, file)
 
         if not passed:
-            flash_and_log("Invalid mp3 file", "error")
             return True
         else:
             # Create song
@@ -392,6 +390,20 @@ def convert_song(tmp_file, request_file):
         # Uploaded valid mp3 file
         return True
 
+    # Not a valid mp3, try to convert with ffmpeg
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as out_file:
+        out_file.close()
+        os.remove(out_file.name)
+        result = subprocess.run(["ffmpeg", "-i", tmp_file.name, out_file.name], stdout=subprocess.PIPE)
+        if result.returncode == 0:
+            # Successfully converted file, overwrite original file
+            os.replace(out_file.name, tmp_file.name)
+            return True
+
+        if os.path.exists(out_file.name):
+            os.remove(out_file.name)
+
+    flash_and_log("Invalid audio file", "error")
     return False
 
 @app.get("/delete-song/<int:songid>")
