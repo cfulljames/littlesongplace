@@ -4,11 +4,12 @@
     --purple: #9986a6;
     --pink: #bc80af;
     --blue: #8dcbc2;
+    --black: #695c73;
 }
 
 body {
     background: var(--yellow);
-    color: var(--purple);
+    color: var(--black);
     font-family: sans-serif;
     border-color: var(--purple);
     max-width: 700px;
@@ -16,6 +17,10 @@ body {
 }
 
 a {
+    color: var(--black);
+}
+
+h1, h2, h3, h4 {
     color: var(--purple);
 }
 
@@ -53,7 +58,7 @@ input[type=text], input[type=password] {
     font-family: sans-serif;
     font-weight: bold;
     color: var(--yellow);
-    background: var(--pink);
+    background: var(--purple);
     border: 0px;
     border-radius: 5px;
     padding: 8px;
@@ -87,7 +92,7 @@ div.page-header {
 
 .profile-link {
     font-weight: bold;
-    color: var(--pink);
+    /* color: var(--purple); */
 }
 
 .user-list-entry {
@@ -153,12 +158,11 @@ div.song-list {
 div.song {
     box-shadow: 0px 0px 5px 0px;
     border-radius: 10px;
-    padding-left: 10px;
 }
 
 div.song-main {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 10px;
     align-items: center;
     margin: 5px;
@@ -167,9 +171,22 @@ div.song-main {
 div.song-info {
     display: flex;
     flex-wrap: wrap;
+    flex-direction: row;
     gap: 10px;
-    align-items: center;
+    align-items: flex-start;
     flex-grow: 1;
+    margin: 10px
+}
+
+/* Artist on separate line for mobile */
+@media screen and (max-width: 480px) {
+    div.song-info {
+        flex-direction: column;
+    }
+
+    div.song-info-sep {
+        display: none;
+    }
 }
 
 div.song-buttons {
@@ -266,7 +283,7 @@ a.player-button img {
 #player-position-bar {
     position: absolute;
     display: inline-block;
-    background-color: var(--purple);
+    background-color: var(--black);
     left: 100;
     top: 14px;
     width: 100%;
@@ -277,7 +294,7 @@ a.player-button img {
     position: absolute;
     display: inline-block;
     visibility: hidden;
-    background-color: var(--pink);
+    background-color: var(--purple);
     top: 6px;
     width: 20px;
     height: 20px;

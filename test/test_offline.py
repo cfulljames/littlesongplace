@@ -511,3 +511,11 @@ def test_single_song(client):
     assert songs[0]["title"] == "song1"
     assert songs[0]["username"] == "user1"
 
+################################################################################
+# Site News
+################################################################################
+
+def test_site_news(client):
+    response = client.get("/site-news")
+    assert response.status_code == 200
+    assert b"Site News" in response.data

@@ -463,6 +463,10 @@ def songs():
             tag=tag,
             song_list=render_template("song-list.html", songs=songs))
 
+@app.get("/site-news")
+def site_news():
+    return render_template("news.html")
+
 def flash_and_log(msg, category=None):
     flash(msg, category)
     username = session["username"] if "username" in session else "N/A"

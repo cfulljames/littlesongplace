@@ -1,10 +1,5 @@
-TODO (BEFORE RELEASE)
-
-- Automated backups
-
-- RELEASE IT
-
-TODO (AFTER RELEASE)
+- Dark mode?
+- Autoplay toggle
 - Comments, notifications
 - Tips and Tricks
 - Multiline descriptions

@@ -7,13 +7,15 @@
                 <div class="song-title"><a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a></div>
 
                 <!-- Separator -->
-                -
-
+                <div class="song-info-sep">
+                    -
+                </div>
+                
                 <!-- Song Artist -->
-                <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
+                <div class="song-artist">
+                    <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
 
                 <!-- Song Collaborators -->
-                <div class="song-collabs">
                     {% for collab in song.collaborators %}
                         {% if collab.startswith("@") %}
                         <a href="/users/{{ collab[1:] }}" class="profile-link">{{ collab[1:] }}</a>
