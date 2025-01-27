@@ -17,6 +17,7 @@ CREATE TABLE songs (
     description TEXT,
     FOREIGN KEY(userid) REFERENCES users(userid)
 );
+CREATE INDEX idx_songs_by_user ON songs(userid);
 
 DROP TABLE IF EXISTS song_collaborators;
 CREATE TABLE song_collaborators (
@@ -47,4 +48,5 @@ CREATE TABLE song_comments (
     FOREIGN KEY(userid) REFERENCES users(userid)
 );
 CREATE INDEX idx_comments_by_song ON song_comments(songid);
+CREATE INDEX idx_comments_by_user ON song_comments(userid);
 

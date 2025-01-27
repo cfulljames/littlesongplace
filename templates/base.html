@@ -21,6 +21,7 @@
                 <a href="/site-news">News</a>
                 {% if "username" in session %}
                     <a href="/users/{{ session["username"] }}">My Profile</a>
+                    <a href="/activity">Activity</a>
                     <a href="/logout">Sign Out</a>
                 {% else %}
                     <a href="/signup">Create Account</a>

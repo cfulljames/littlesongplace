@@ -46,7 +46,7 @@ input[type=text], input[type=password] {
     background: var(--yellow);
     font-family: sans-serif;
     font-weight: bold;
-    color: var(--purple);
+    color: var(--black);
     border: 3px solid var(--purple);
     border-radius: 10px;
     padding: 5px;

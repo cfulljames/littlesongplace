@@ -552,6 +552,69 @@ def comment_delete(commentid):
 
     return redirect(request.referrer)
 
+@app.get("/activity")
+def activity():
+    if not "userid" in session:
+        return redirect("/login")
+
+    # For all:
+    # - Comment content
+    # - Comment created time
+    # - Commenter username
+    # - Song name
+    # - Song username
+
+    # For replies:
+    # - Parent username
+    # - Parent comment
+
+    # Get comments on user's songs
+    comments_on_songs = query_db(
+        """\
+        select c.content, c.created, cu.username as comment_username, s.title, su.username as song_username
+        from song_comments as c
+        inner join songs as s on c.songid == s.songid
+        inner join users as su on su.userid == s.userid
+        inner join users as cu on cu.userid == c.userid
+        where s.userid = ?""",
+        [session["userid"]])
+
+    # Get replies to user's comments
+    replies_to_user = query_db(
+        """\
+        select c.content, c.created, cu.username as comment_username, s.title, su.username as song_username, pu.username as parent_username, p.content as parent_content
+        from song_comments as c
+        inner join songs as s on c.songid == s.songid
+        inner join users as su on su.userid == s.userid
+        inner join users as cu on cu.userid == c.userid
+        inner join song_comments as p on c.replytoid == p.commentid
+        inner join users as pu on pu.userid == p.userid
+        where p.userid == ?""",
+        [session["userid"]])
+
+    # Get comments user has replied to
+    comments_user_replied_to = query_db(
+        "select * from song_comments where (replytoid is not null) and (userid == ?)",
+        [session["userid"]])
+
+
+    # Get replies to comments user has also replied to
+    # TODO:
+    # replies_to_user = query_db(
+    #     """\
+    #     select c.content, c.created, cu.username as comment_username, s.title, su.username as song_username, pu.username as parent_username, p.content as parent_content
+    #     from song_comments as c
+    #     inner join songs as s on c.songid == s.songid
+    #     inner join users as su on su.userid == s.userid
+    #     inner join users as cu on cu.userid == c.userid
+    #     inner join song_comments as p on c.replytoid == p.commentid
+    #     inner join users as pu on pu.userid == p.userid
+    #     where p.userid == ?""",
+    #     [session["userid"]])
+
+    # Filter duplicates
+    return [dict(c) for c in comments_on_songs] + [dict(c) for c in replies_to_user]
+
 @app.get("/site-news")
 def site_news():
     return render_template("news.html")

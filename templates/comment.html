@@ -10,12 +10,11 @@
 Commenting on {{ song.title }} by <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
 </p>
 
-{% if comment %}
+{% if replyto %}
 <p>
-In reply to:
-<a href="/users/{{ comment['username'] }}" class="profile-link">{{ comment['username'] }}</a>
-<br>
-{{ comment['content'] }}
+In reply to
+<a href="/users/{{ replyto['username'] }}" class="profile-link">{{ replyto['username'] }}</a>:
+{{ replyto['content'] }}
 </p>
 {% endif %}
 
