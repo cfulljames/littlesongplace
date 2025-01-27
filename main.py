@@ -475,7 +475,7 @@ def songs():
             tag=tag,
             song_list=render_template("song-list.html", songs=songs))
 
-@app.get("/comment")
+@app.route("/comment", methods=["GET", "POST"])
 def comment_get():
     if not "songid" in request.args:
         abort(400) # Must have songid
@@ -488,51 +488,50 @@ def comment_get():
     if not "userid" in session:
         abort(401) # Must be logged in
 
-    comment = None
+    # Check for comment being replied to
+    replyto = None
     if "replytoid" in request.args:
         replytoid = request.args["replytoid"]
-        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
-        if not comment:
+        replyto = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
+        if not replyto:
             abort(404) # Invalid comment
 
-    session["previous_page"] = request.referrer
-    return render_template("comment.html", song=song, comment=comment)
-
-@app.post("/comment")
-def comment_post():
-    if not "songid" in request.args:
-        abort(400) # Must have songid
-
-    try:
-        song = Song.by_id(request.args["songid"])
-    except ValueError:
-        abort(404) # Invald songid
-
-    if not "userid" in session:
-        abort(401) # Must be logged in
-
+    # Check for comment being edited
     comment = None
-    if "replytoid" in request.args:
-        replytoid = request.args["replytoid"]
-        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
+    if "commentid" in request.args:
+        commentid = request.args["commentid"]
+        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [commentid], one=True)
         if not comment:
             abort(404) # Invalid comment
+        if comment["userid"] != session["userid"]:
+            abort(403) # User doesn't own this comment
 
-    # Add new comment
-    timestamp = datetime.now(timezone.utc).isoformat()
-    content = request.form["content"]
-    userid = session["userid"]
-    songid = request.args["songid"]
-    replytoid = request.args.get("replytoid", None)
-    query_db(
-            "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?)",
-            args=[songid, userid, replytoid, timestamp, content])
-    get_db().commit()
+    if request.method == "GET":
+        # Show the comment editor
+        session["previous_page"] = request.referrer
+        return render_template("comment.html", song=song, replyto=replyto, comment=comment)
 
-    if "previous_page" in session:
-        return redirect(session["previous_page"])
-    else:
-        return redirect("/")
+    elif request.method == "POST":
+        # Add/update comment (user clicked the Post Comment button)
+        content = request.form["content"]
+        if comment:
+            # Update existing comment
+            query_db("update song_comments set content = ? where commentid = ?", args=[content, comment["commentid"]])
+        else:
+            # Add new comment
+            timestamp = datetime.now(timezone.utc).isoformat()
+            userid = session["userid"]
+            songid = request.args["songid"]
+            replytoid = request.args.get("replytoid", None)
+            query_db(
+                    "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?)",
+                    args=[songid, userid, replytoid, timestamp, content])
+        get_db().commit()
+
+        if "previous_page" in session:
+            return redirect(session["previous_page"])
+        else:
+            return redirect("/")
 
 @app.get("/delete-comment/<int:commentid>")
 def comment_delete(commentid):
@@ -541,6 +540,7 @@ def comment_delete(commentid):
     if not comment:
         abort(404) # Invalid comment
 
+    # Only commenter and song owner can delete comments
     if not (
         ("userid" in session)
         and ((comment["comment_user"] == session["userid"])

@@ -20,7 +20,7 @@ In reply to:
 {% endif %}
 
 <form method="post">
-    <textarea name="content"></textarea>
+    <textarea name="content">{% if comment %}{{ comment['content'] }}{% endif %}</textarea>
     <input type="submit" value="Post Comment">
 </form>
 
