@@ -264,9 +264,9 @@ def test_edit_other_users_song(client):
     response = client.get("/edit-song?songid=1")
     assert response.status_code == 401
 
-def _create_user_and_song(client):
-    _create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"Success")
+def _create_user_and_song(client, username="user"):
+    _create_user(client, username, "password", login=True)
+    _test_upload_song(client, b"Success", user=username)
 
 def test_update_song_success(client):
     _create_user_and_song(client)
@@ -514,7 +514,7 @@ def test_single_song(client):
     _test_upload_song(client, b"Success", user="user1", title="song1", tags="tag")
 
     songs = _get_song_list_from_page(client, "/song/1/1?action=view")
-    
+
     assert len(songs) == 1
     assert songs[0]["title"] == "song1"
     assert songs[0]["username"] == "user1"
@@ -527,4 +527,161 @@ def test_site_news(client):
     response = client.get("/site-news")
     assert response.status_code == 200
     assert b"Site News" in response.data
+
+################################################################################
+# Comments - Normal Flow
+################################################################################
+
+def _create_user_song_and_comment(client, content):
+    _create_user_and_song(client)
+    response = client.post("/comment?songid=1", data={"content": content})
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/" # No previous page, use homepage
+
+def test_comment_page_no_reply_or_edit(client):
+    _create_user_and_song(client)
+    response = client.get("/comment?songid=1")
+    assert response.status_code == 200
+    assert not b"reply" in response.data
+
+def test_post_comment(client):
+    _create_user_and_song(client)
+    response = client.post("/comment?songid=1", data={"content": "comment text here"})
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/" # No previous page, use homepage
+
+    response = client.get("/song/1/1?action=view")
+    assert b"comment text here" in response.data
+
+def test_edit_comment(client):
+    _create_user_song_and_comment(client, "comment text here")
+
+    response = client.post("/comment?songid=1&commentid=1", data={"content": "new comment content"})
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/" # No previous page, use homepage
+
+    response = client.get("/song/1/1?action=view")
+    assert b"new comment content" in response.data
+
+def test_delete_comment(client):
+    _create_user_song_and_comment(client, "comment text here")
+
+    response = client.get("/delete-comment/1")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "None"
+
+    response = client.get("/song/1/1?action=view")
+    assert b"comment text here" not in response.data
+
+def test_reply_to_comment(client):
+    _create_user_song_and_comment(client, "parent comment")
+
+    response = client.post("/comment?songid=1&replytoid=1", data={"content": "child comment"})
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/" # No previous page, use homepage
+
+    response = client.get("/song/1/1?action=view")
+    assert b"parent comment" in response.data
+    assert b"child comment" in response.data
+
+################################################################################
+# Comments - Auth Status and Errors
+################################################################################
+
+def test_comment_page_redirects_when_not_logged_in(client):
+    _create_user_and_song(client)
+    client.get("/logout")
+
+    response = client.get("/comment?songid=1")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/login"
+
+def test_post_comment_redirects_when_not_logged_in(client):
+    _create_user_and_song(client)
+    client.get("/logout")
+
+    response = client.post("/comment?songid=1", data={"content": "should fail"})
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/login"
+
+def test_add_comment_link_not_shown_when_not_logged_in(client):
+    _create_user_and_song(client)
+    response = client.get("/song/1/1?action=view")
+    assert b"Add a Comment" in response.data
+
+    client.get("/logout")
+    response = client.get("/song/1/1?action=view")
+    assert b"Add a Comment" not in response.data
+
+def test_delete_comment_not_logged_in(client):
+    _create_user_song_and_comment(client, "comment text here")
+    client.get("/logout")
+
+    response = client.get("/delete-comment/1")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/login"
+
+    # Comment not deleted
+    response = client.get("/song/1/1?action=view")
+    assert b"comment text here" in response.data
+
+def test_song_owner_can_delete_other_users_comment(client):
+    _create_user(client, "user1")
+    _create_user_and_song(client, "user2")
+
+    # user1 comments on user2's song
+    client.post("/login", data={"username": "user1", "password": "password"})
+    client.post("/comment?songid=1", data={"content": "mean comment"})
+    response = client.get("/song/2/1?action=view")
+    assert b"mean comment" in response.data
+
+    # user2 deletes user1's rude comment
+    client.post("/login", data={"username": "user2", "password": "password"})
+    response = client.get("/delete-comment/1")
+    assert response.status_code == 302
+    response = client.get("/song/2/1?action=view")
+    assert b"mean comment" not in response.data
+
+def test_rando_cannot_delete_other_users_comment(client):
+    _create_user(client, "user1")
+    _create_user(client, "user2")
+    _create_user_and_song(client, "user3")
+
+    # user1 comments on user3's song
+    client.post("/login", data={"username": "user1", "password": "password"})
+    client.post("/comment?songid=1", data={"content": "nice comment"})
+    response = client.get("/song/3/1?action=view")
+    assert b"nice comment" in response.data
+
+    # user2 cannot delete user1's comment
+    client.post("/login", data={"username": "user2", "password": "password"})
+    response = client.get("/delete-comment/1")
+    assert response.status_code == 403
+    response = client.get("/song/3/1?action=view")
+    assert b"nice comment" in response.data
+
+def test_cannot_edit_other_users_comment(client):
+    _create_user(client, "user1")
+    _create_user_and_song(client, "user2")
+
+    # user1 comments on user2's song
+    client.post("/login", data={"username": "user1", "password": "password"})
+    client.post("/comment?songid=1", data={"content": "mean comment"})
+    response = client.get("/song/2/1?action=view")
+    assert b"mean comment" in response.data
+
+    # user2 cannot edit user1's rude comment
+    client.post("/login", data={"username": "user2", "password": "password"})
+    response = client.post("/comment?songid=1&commentid=1", data={"content": "im a meanie"})
+    assert response.status_code == 403
+    response = client.get("/song/2/1?action=view")
+    assert b"mean comment" in response.data
+
+# TODO: post/edit/delete invalid comment id, song id, replyto id
+
+################################################################################
+# Activity
+################################################################################
+
+# TODO
 

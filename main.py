@@ -477,6 +477,9 @@ def songs():
 
 @app.route("/comment", methods=["GET", "POST"])
 def comment():
+    if not "userid" in session:
+        return redirect("/login")
+
     if not "songid" in request.args:
         abort(400) # Must have songid
 
@@ -484,9 +487,6 @@ def comment():
         song = Song.by_id(request.args["songid"])
     except ValueError:
         abort(404) # Invald songid
-
-    if not "userid" in session:
-        abort(401) # Must be logged in
 
     # Check for comment being replied to
     replyto = None
@@ -550,24 +550,28 @@ def comment():
 
         get_db().commit()
 
-        if "previous_page" in session:
-            return redirect(session["previous_page"])
-        else:
-            return redirect("/")
+        return redirect_to_previous_page()
+
+def redirect_to_previous_page():
+    previous_page = "/"
+    if "previous_page" in session:
+        previous_page = session["previous_page"]
+        session.pop("previous_page")
+    return redirect(previous_page)
 
 @app.get("/delete-comment/<int:commentid>")
 def comment_delete(commentid):
+    if "userid" not in session:
+        return redirect("/login")
+
     comment = query_db("select c.userid as comment_user, s.userid as song_user from song_comments as c inner join songs as s on c.songid == s.songid where commentid = ?", [commentid], one=True)
-    print(dict(comment))
     if not comment:
         abort(404) # Invalid comment
 
     # Only commenter and song owner can delete comments
-    if not (
-        ("userid" in session)
-        and ((comment["comment_user"] == session["userid"])
-            or (comment["song_user"] == session["userid"]))):
-        abort(401)
+    if not ((comment["comment_user"] == session["userid"])
+            or (comment["song_user"] == session["userid"])):
+        abort(403)
 
     query_db("delete from song_comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])
     get_db().commit()
