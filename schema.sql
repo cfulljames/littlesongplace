@@ -49,4 +49,15 @@ CREATE TABLE song_comments (
 );
 CREATE INDEX idx_comments_by_song ON song_comments(songid);
 CREATE INDEX idx_comments_by_user ON song_comments(userid);
+CREATE INDEX idx_comments_by_replyto ON song_comments(replytoid);
+
+DROP TABLE IF EXISTS song_comment_notifications;
+CREATE TABLE song_comment_notifications (
+    notificationid INTEGER PRIMARY KEY,
+    commentid INTEGER NOT NULL,
+    targetuserid INTEGER NOT NULL,
+    FOREIGN KEY(commentid) REFERENCES song_comments(commentid),
+    FOREIGN KEY(targetuserid) REFERENCES users(userid)
+);
+CREATE INDEX idx_song_comment_notifications_by_target ON song_comment_notifications(targetuserid);
 

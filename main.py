@@ -476,7 +476,7 @@ def songs():
             song_list=render_template("song-list.html", songs=songs))
 
 @app.route("/comment", methods=["GET", "POST"])
-def comment_get():
+def comment():
     if not "songid" in request.args:
         abort(400) # Must have songid
 
@@ -523,9 +523,31 @@ def comment_get():
             userid = session["userid"]
             songid = request.args["songid"]
             replytoid = request.args.get("replytoid", None)
-            query_db(
-                    "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?)",
-                    args=[songid, userid, replytoid, timestamp, content])
+
+            comment = query_db(
+                    "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?) returning (commentid)",
+                    args=[songid, userid, replytoid, timestamp, content], one=True)
+            commentid = comment["commentid"]
+
+            # Notify song owner
+            notification_targets = {song.userid}
+            if replyto:
+                # Notify parent commenter
+                notification_targets.add(replyto["userid"])
+
+                # Notify previous repliers in thread
+                previous_replies = query_db("select * from song_comments where replytoid = ?", [replytoid])
+                for reply in previous_replies:
+                    notification_targets.add(reply["userid"])
+
+            # Don't notify the person who wrote the comment
+            if userid in notification_targets:
+                notification_targets.remove(userid)
+
+            # Create notifications
+            for target in notification_targets:
+                query_db("insert into song_comment_notifications (commentid, targetuserid) values (?, ?)", [commentid, target])
+
         get_db().commit()
 
         if "previous_page" in session:
@@ -557,63 +579,22 @@ def activity():
     if not "userid" in session:
         return redirect("/login")
 
-    # For all:
-    # - Comment content
-    # - Comment created time
-    # - Commenter username
-    # - Song name
-    # - Song username
-
-    # For replies:
-    # - Parent username
-    # - Parent comment
-
-    # Get comments on user's songs
-    comments_on_songs = query_db(
+    # Get comment notifications
+    comments = query_db(
         """\
-        select c.content, c.created, cu.username as comment_username, s.title, su.username as song_username
-        from song_comments as c
+        select c.content, c.commentid, c.replytoid, cu.username as comment_username, s.songid, s.title, s.userid as song_userid, su.username as song_username, rc.content as replyto_content
+        from song_comment_notifications as scn
+        inner join song_comments as c on scn.commentid == c.commentid
+        left join song_comments as rc on c.replytoid == rc.commentid
         inner join songs as s on c.songid == s.songid
         inner join users as su on su.userid == s.userid
         inner join users as cu on cu.userid == c.userid
-        where s.userid = ?""",
+        where scn.targetuserid = ?
+        order by c.created desc
+        """,
         [session["userid"]])
 
-    # Get replies to user's comments
-    replies_to_user = query_db(
-        """\
-        select c.content, c.created, cu.username as comment_username, s.title, su.username as song_username, pu.username as parent_username, p.content as parent_content
-        from song_comments as c
-        inner join songs as s on c.songid == s.songid
-        inner join users as su on su.userid == s.userid
-        inner join users as cu on cu.userid == c.userid
-        inner join song_comments as p on c.replytoid == p.commentid
-        inner join users as pu on pu.userid == p.userid
-        where p.userid == ?""",
-        [session["userid"]])
-
-    # Get comments user has replied to
-    comments_user_replied_to = query_db(
-        "select * from song_comments where (replytoid is not null) and (userid == ?)",
-        [session["userid"]])
-
-
-    # Get replies to comments user has also replied to
-    # TODO:
-    # replies_to_user = query_db(
-    #     """\
-    #     select c.content, c.created, cu.username as comment_username, s.title, su.username as song_username, pu.username as parent_username, p.content as parent_content
-    #     from song_comments as c
-    #     inner join songs as s on c.songid == s.songid
-    #     inner join users as su on su.userid == s.userid
-    #     inner join users as cu on cu.userid == c.userid
-    #     inner join song_comments as p on c.replytoid == p.commentid
-    #     inner join users as pu on pu.userid == p.userid
-    #     where p.userid == ?""",
-    #     [session["userid"]])
-
-    # Filter duplicates
-    return [dict(c) for c in comments_on_songs] + [dict(c) for c in replies_to_user]
+    return render_template("activity.html", comments=comments)
 
 @app.get("/site-news")
 def site_news():

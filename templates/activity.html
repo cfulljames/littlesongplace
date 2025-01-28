@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Activity{% endblock %}
+
+{% block body %}
+
+{% if comments %}
+<h1>Activity</h1>
+
+    {% for comment in comments %}
+        <div class="comment-notification">
+            <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>
+            {% if comment['replyto_content'] %}
+            replied to &quot;{{ comment['replyto_content'] }}&quot;
+            {% else %}
+            commented
+            {% endif %}
+            on
+            <a href="/song/{{ comment['song_userid'] }}/{{ comment['songid'] }}?action=view">{{ comment['title'] }}</a>
+            -
+            <a href="/users/{{ comment['song_username'] }}" class="profile-link">{{ comment['song_username'] }}</a>
+            <div class="top-level-comment">
+                <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>:
+                {{ comment['content'] }}
+
+                <div class="comment-button-container">
+                    {% if comment['replytoid'] %}
+                        <!-- Comment is already part of a thread; reply to the same thread -->
+                        <a href="/comment?songid={{ comment['songid'] }}&replytoid={{ comment['replytoid'] }}">Reply</a>
+                    {% else %}
+                        <!-- Comment is a top-level, reply to the comment -->
+                        <a href="/comment?songid={{ comment['songid'] }}&replytoid={{ comment['commentid'] }}">Reply</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% else %}
+
+    Nothing to show here yet!
+
+{% endif %}
+
+{% endblock %}

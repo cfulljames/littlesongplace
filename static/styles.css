@@ -325,3 +325,11 @@ a.player-button img {
     height: 20px;
     border-radius: 50%;
 }
+
+/* Activity */
+div.comment-notification {
+    margin: 10px;
+    padding: 10px;
+    box-shadow: 0px 0px 5px 0px;
+    border-radius: 10px;
+}
