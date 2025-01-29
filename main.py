@@ -622,6 +622,10 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATA_DIR / "database.db")
+        if os.path.exists('schema_update.sql'):
+            with app.open_resource('schema_update.sql', mode='r') as f:
+                db.cursor().executescript(f.read())
+            db.commit()
         db.row_factory = sqlite3.Row
     return db
 
