@@ -677,11 +677,106 @@ def test_cannot_edit_other_users_comment(client):
     response = client.get("/song/2/1?action=view")
     assert b"mean comment" in response.data
 
-# TODO: post/edit/delete invalid comment id, song id, replyto id
+def test_comment_invalid_songid(client):
+    _create_user_and_song(client)
+    response = client.post("/comment?songid=2", data={"content": "broken comment"})
+    assert response.status_code == 404
+
+    response = client.get("/comment?songid=2")
+    assert response.status_code == 404
+
+def test_comment_invalid_replytoid(client):
+    _create_user_and_song(client)
+    response = client.post("/comment?songid=1&replytoid=1", data={"content": "broken comment"})
+    assert response.status_code == 404
+
+    response = client.get("/comment?songid=1&replytoid=1")
+    assert response.status_code == 404
+
+def test_comment_invalid_commentid(client):
+    _create_user_and_song(client)
+    response = client.post("/comment?songid=1&commentid=1", data={"content": "broken comment"})
+    assert response.status_code == 404
+
+    response = client.get("/comment?songid=1&commentid=1")
+    assert response.status_code == 404
+
+def test_comment_no_songid(client):
+    _create_user_and_song(client)
+    response = client.post("/comment", data={"content": "broken comment"})
+    assert response.status_code == 400
+
+    response = client.get("/comment")
+    assert response.status_code == 400
+
+def test_delete_invalid_comment_id(client):
+    _create_user_and_song(client)
+    response = client.get("/delete-comment/1")
+    assert response.status_code == 404
 
 ################################################################################
 # Activity
 ################################################################################
 
-# TODO
+def test_activity_redirects_when_not_logged_in(client):
+    response = client.get("/activity")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/login"
+
+def test_activity_empty_when_user_has_no_notifications(client):
+    _create_user_and_song(client)
+    response = client.get("/activity")
+    assert b"Nothing to show" in response.data
+
+def test_activity_for_comment_on_song(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    response = client.get("/activity")
+    assert b"Nothing to show" in response.data
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    response = client.get("/activity")
+    assert b"hey cool song" in response.data
+
+def test_activity_for_reply_to_comment(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    client.post("/comment?songid=1&replytoid=1", data={"content": "thank you"})
+
+    client.post("/login", data={"username": "user2", "password": "password"})
+    response = client.get("/activity")
+    assert b"thank you" in response.data
+
+def test_activity_for_reply_to_reply(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2")
+    _create_user(client, "user3", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+
+    client.post("/login", data={"username": "user2", "password": "password"})
+    client.post("/comment?songid=1&replytoid=1", data={"content": "it really is cool"})
+
+    client.post("/login", data={"username": "user3", "password": "password"})
+    client.post("/comment?songid=1&replytoid=1", data={"content": "thanks for agreeing"})
+
+    # Song owner gets all three notifications
+    client.post("/login", data={"username": "user", "password": "password"})
+    response = client.get("/activity")
+    assert b"hey cool song" in response.data
+    assert b"it really is cool" in response.data
+    assert b"thanks for agreeing" in response.data
+
+    # user2 gets reply notification
+    client.post("/login", data={"username": "user2", "password": "password"})
+    response = client.get("/activity")
+    assert b"thanks for agreeing" in response.data
+
+    # user3 gets reply notification
+    client.post("/login", data={"username": "user3", "password": "password"})
+    response = client.get("/activity")
+    assert b"it really is cool" in response.data
 
