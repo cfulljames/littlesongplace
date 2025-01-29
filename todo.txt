@@ -1,5 +1,6 @@
 - Comments:
-    - Notifications
+    - Update DB
+- Fix page scroll when playing song on iOS
 - YouTube importer
 - Autoplay toggle
 - Volume control
