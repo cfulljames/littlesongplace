@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="song-details" hidden>
+        <div class="song-details" {% if request.endpoint != 'song' %}hidden{% endif %}>
             <!-- Song Description -->
             {% if song.description %}
             <div class="song-description">{{ song.description }}</div>

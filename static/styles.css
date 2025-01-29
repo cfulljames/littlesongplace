@@ -203,19 +203,8 @@ a.song-list-button img {
 div.song-details {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 15px;
     align-items: left;
-}
-
-div.song-description {
-    margin: 10px;
-}
-
-div.song-tags {
-    margin: 10px;
-}
-
-div.song-comments {
     margin: 10px;
 }
 
