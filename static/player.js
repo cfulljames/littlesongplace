@@ -42,13 +42,10 @@ function playCurrentSong() {
 // Play or pause the current song in the player
 function songPlayPause() {
     var audio = document.getElementById("player-audio");
-    var button = document.getElementById("play-pause-button");
     if (audio.paused) {
-        button.src = "/static/lsp_btn_pause.gif";
         audio.play();
     }
     else {
-        button.src = "/static/lsp_btn_play.gif";
         audio.pause();
     }
 }
@@ -158,6 +155,17 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     // Next song on audio playback end
     audio.addEventListener("ended", songNext);
+
+    // Show pause button when audio is playing
+    var button = document.getElementById("play-pause-button");
+    audio.addEventListener("play", (event) => {
+        button.src = "/static/lsp_btn_pause.gif";
+    })
+
+    // Show play button when audio is paused
+    audio.addEventListener("pause", (event) => {
+        button.src = "/static/lsp_btn_play.gif";
+    })
 
     // Audio position scrubbing
     var playerPosition = document.getElementById("player-position");
