@@ -23,6 +23,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
+SCRIPT_DIR = Path(__file__).parent
 
 ################################################################################
 # Logging
@@ -622,8 +623,9 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATA_DIR / "database.db")
-        if os.path.exists('schema_update.sql'):
-            with app.open_resource('schema_update.sql', mode='r') as f:
+        schema_update_script = SCRIPT_DIR / 'schema_update.sql'
+        if schema_update_script.exists():
+            with app.open_resource(schema_update_script, mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
         db.row_factory = sqlite3.Row
@@ -646,8 +648,8 @@ def query_db(query, args=(), one=False):
 def init_db():
     """Clear the existing data and create new tables"""
     with app.app_context():
-        db = get_db()
-        with app.open_resource('schema.sql', mode='r') as f:
+        db = sqlite3.connect(DATA_DIR / "database.db")
+        with app.open_resource(SCRIPT_DIR / 'schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
 

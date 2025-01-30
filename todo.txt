@@ -1,6 +1,5 @@
 - Comments:
     - Update DB
-- Fix play button not changing when clicking prev/next while paused
 - YouTube importer
 - Autoplay toggle
 - Volume control

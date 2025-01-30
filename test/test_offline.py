@@ -2,6 +2,7 @@ import html
 import json
 import os
 import re
+import sqlite3
 import sys
 import tempfile
 from pathlib import Path
@@ -23,10 +24,11 @@ def app():
 
         # Initialize Database
         with main.app.app_context():
-            db = main.get_db()
+            db = sqlite3.connect(main.DATA_DIR / "database.db")
             with main.app.open_resource('schema.sql', mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
+            db.close()
 
         yield main.app
 
