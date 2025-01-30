@@ -7,7 +7,6 @@ function play(event) {
     while (!songElement.classList.contains("song"))
     {
         songElement = songElement.parentElement;
-        console.log(songElement);
     }
     m_songIndex = m_allSongs.indexOf(songElement);
     playCurrentSong();
@@ -15,7 +14,6 @@ function play(event) {
 
 function playCurrentSong() {
     var song = m_allSongs[m_songIndex];
-    console.log(song);
     var songData = JSON.parse(song.dataset.song);
 
     var player = document.getElementById("player")
@@ -37,6 +35,30 @@ function playCurrentSong() {
     artist.textContent = songData.username;
     artist.href = `/users/${songData.username}`;
     artist.hidden = false;
+
+    if ("mediaSession" in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: songData.title,
+            artist: songData.username,
+            album: "Little Song Place",
+            artwork: [{src: "/static/lsp_notes.png"}],
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            songNext();
+        });
+
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            songPrevious();
+        });
+
+        navigator.mediaSession.setActionHandler('play', async () => {
+            songPlayPause();
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+            songPlayPause();
+        });
+    }
 }
 
 // Play or pause the current song in the player
@@ -176,7 +198,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     // Song queue
     for (const element of document.getElementsByClassName("song")) {
-        console.log(element);
         m_allSongs.push(element);
     }
 });

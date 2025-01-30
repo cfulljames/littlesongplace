@@ -6,6 +6,7 @@
 - Additional song info in player (collabs, description, tags)
 - Tips and Tricks (or html helper for bio/descriptions?)
 - Multiline/html descriptions
+- Profile pictures
 - Dark mode/site color customization
 - Admin accounts
 - Account deletion
