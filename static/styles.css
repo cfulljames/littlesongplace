@@ -195,7 +195,14 @@ div.song-buttons {
     align-items: center;
 }
 
-a.song-list-button img {
+.song-list-button {
+    border: none;
+    background: var(--yellow);
+    cursor: pointer;
+    padding: 0px;
+}
+
+.song-list-button img {
     image-rendering: pixelated;
     width: 32px;
 }
@@ -278,11 +285,15 @@ div.player-controls {
     padding: 10px;
 }
 
-a.player-button {
+.player-button {
     display: inline-block;
+    background: var(--yellow);
+    cursor: pointer;
+    padding: 0px;
+    border: none;
 }
 
-a.player-button img {
+.player-button img {
     image-rendering: pixelated;
     width: 32px;
 }
@@ -313,6 +324,7 @@ a.player-button img {
     width: 20px;
     height: 20px;
     border-radius: 50%;
+    cursor: pointer;
 }
 
 /* Activity */

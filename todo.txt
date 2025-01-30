@@ -1,6 +1,6 @@
 - Comments:
     - Update DB
-- Fix page scroll when playing song on iOS
+- Fix play button not changing when clicking prev/next while paused
 - YouTube importer
 - Autoplay toggle
 - Volume control
