@@ -575,6 +575,15 @@ def test_delete_comment(client):
     response = client.get("/song/1/1?action=view")
     assert b"comment text here" not in response.data
 
+def test_delete_song_with_comments(client):
+    _create_user_song_and_comment(client, "comment text here")
+    response = client.get("/delete-song/1")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "None" # No previous page, use homepage
+
+    response = client.get("/song/1/1?action=view")
+    assert response.status_code == 404  # Song deleted
+
 def test_reply_to_comment(client):
     _create_user_song_and_comment(client, "parent comment")
 
@@ -781,4 +790,30 @@ def test_activity_for_reply_to_reply(client):
     client.post("/login", data={"username": "user3", "password": "password"})
     response = client.get("/activity")
     assert b"it really is cool" in response.data
+
+def test_activity_deleted_when_song_deleted(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    response = client.get("/activity")
+    assert b"hey cool song" in response.data
+
+    client.get("/delete-song/1")
+    response = client.get("/activity")
+    assert b"hey cool song" not in response.data
+
+def test_activity_deleted_when_comment_deleted(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    response = client.get("/activity")
+    assert b"hey cool song" in response.data
+
+    client.get("/delete-comment/1")
+    response = client.get("/activity")
+    assert b"hey cool song" not in response.data
 
