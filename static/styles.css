@@ -98,6 +98,34 @@ div.page-header {
     padding: 5px;
 }
 
+/* Sliders (e.g. volume) */
+
+input[type=range] {
+  -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+  background: var(--black); /* Otherwise white in Chrome */
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 14px;
+    width: 14px;
+    border-radius: 7px;
+    background: var(--purple);
+    cursor: pointer;
+}
+
+input[type=range]::-moz-range-thumb {
+    border: none;
+    height: 14px;
+    width: 14px;
+    border-radius: 7px;
+    background: var(--purple);
+    cursor: pointer;
+}
+
 /* Navbar */
 div.navbar {
     display: flex;
@@ -273,7 +301,7 @@ div.player-info {
     padding: 10px;
 }
 
-div.player-controls {
+.player-controls {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -292,16 +320,11 @@ div.player-controls {
     border: none;
 }
 
-.player-button img {
-    image-rendering: pixelated;
-    width: 32px;
-}
-
 #player-position {
     display: inline-block;
     position: relative;
-    width: 50%;
     height: 32px;
+    width: 50%;
 }
 
 #player-position-bar {
@@ -312,12 +335,12 @@ div.player-controls {
     top: 14px;
     width: 100%;
     height: 4px;
+    border-radius: 2px;
 }
 
 #player-position-dot {
     position: absolute;
     display: inline-block;
-    visibility: hidden;
     background-color: var(--purple);
     top: 6px;
     width: 20px;
@@ -326,10 +349,30 @@ div.player-controls {
     cursor: pointer;
 }
 
+.player-button img {
+    image-rendering: pixelated;
+    width: 32px;
+}
+
+#volume-slider {
+    width: 25%;
+}
+
+.player-label {
+    font-size: 14px;
+}
+
 /* Activity */
 div.comment-notification {
     margin: 10px;
     padding: 10px;
     box-shadow: 0px 0px 5px 0px;
     border-radius: 10px;
+}
+
+/* Platform-specific global overrides */
+@media screen and (max-width: 480px) {
+    .desktop-only {
+        display: none;
+    }
 }

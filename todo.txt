@@ -1,6 +1,7 @@
+- Activity indicator
+- Favicon
 - YouTube importer
 - Autoplay toggle
-- Volume control
 - Shuffle all
 - Song sorter for song lists
 - Additional song info in player (collabs, description, tags)

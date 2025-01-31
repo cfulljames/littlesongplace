@@ -200,5 +200,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
     for (const element of document.getElementsByClassName("song")) {
         m_allSongs.push(element);
     }
+
+    // Volume
+    var vol = document.getElementById("volume-slider");
+    vol.oninput = function() {
+        console.log("updateVolume", vol);
+        audio.volume = vol.value;
+    }
+
 });
 
