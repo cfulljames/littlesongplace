@@ -1,5 +1,4 @@
 - Activity indicator
-- Favicon
 - YouTube importer
 - Autoplay toggle
 - Shuffle all
