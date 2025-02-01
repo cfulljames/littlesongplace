@@ -14,10 +14,13 @@ def url(path):
 def s():
     s = requests.Session()
     # User may already exist, but that's fine - we'll just ignore the signup error
-    response = s.post(url("/signup"), data={"username": "user", "password": "1234asdf!@#$", "password_confirm": "1234asdf!@#$"})
-    response = s.post(url("/login"), data={"username": "user", "password": "1234asdf!@#$"})
-    response.raise_for_status()
+    _login(s, "user", "1234asdf!@#$")
     yield s
+
+def _login(s, username, password):
+    s.post(url("/signup"), data={"username": username, "password": password, "password_confirm": password})
+    response = s.post(url("/login"), data={"username": username, "password": password})
+    response.raise_for_status()
 
 def _get_song_list_from_page(page_contents):
     matches = re.findall('data-song="(.*)">', page_contents)
@@ -50,4 +53,47 @@ def test_upload_and_delete_song(s):
     response.raise_for_status()
     songs = _get_song_list_from_page(response.text)
     assert not any(song["songid"] == songid for song in songs)
+
+def test_comments_and_activity(s):
+    # Upload song
+    response = s.post(
+        url("/upload-song"),
+        files={"song": open("sample-3s.mp3", "rb")},
+        data={"title": "song title", "description": "", "tags": "", "collabs": ""},
+    )
+    response.raise_for_status()
+    songs = _get_song_list_from_page(response.text)
+    song = songs[0]
+    songid = song["songid"]
+
+    try:
+        _login(s, "user1", "1234asdf!@#$")
+
+        # Comment on song as new user
+        response = s.get(
+                url(f"/comment?songid={songid}"),
+                headers={"referer": "/users/user"})
+        response.raise_for_status()
+        response = s.post(
+                url(f"/comment?songid={songid}"),
+                headers={"referer": f"/comment?songid={songid}"},
+                data={"content": "hey cool song"})
+        response.raise_for_status()
+        assert "hey cool song" in response.text
+
+        # Check activity status as original user
+        _login(s, "user", "1234asdf!@#$")
+        response = s.get(url("/new-activity"))
+        assert response.json()["new_activity"] is True
+
+        # Check activity page
+        response = s.get(url("/activity"))
+        assert "hey cool song" in response.text
+
+    finally:
+        # Delete song
+        response = s.get(url(f"/delete-song/{songid}"), headers={"referer": "/users/user"})
+        response.raise_for_status()
+        songs = _get_song_list_from_page(response.text)
+        assert not any(song["songid"] == songid for song in songs)
 
