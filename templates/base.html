@@ -22,7 +22,7 @@
                 <a href="/site-news">News</a>
                 {% if "username" in session %}
                     <a href="/users/{{ session["username"] }}">My Profile</a>
-                    <a href="/activity">Activity</a>
+                    <a href="/activity"><span id="activity-indicator" hidden></span>Activity</a>
                     <a href="/logout">Sign Out</a>
                 {% else %}
                     <a href="/signup">Create Account</a>
@@ -34,6 +34,25 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if "username" in session %}
+        <!-- Periodically update activity status indicator -->
+        <script>
+            async function checkForNewActivity() {
+                const indicator = document.getElementById("activity-indicator")
+                const response = await fetch("/new-activity");
+                if (!response.ok) {
+                    console.log(`Failed to get activity: ${response.status}`);
+                }
+                const json = await response.json();
+                indicator.hidden = !json.new_activity;
+            }
+
+            // Check for new activity every 10s
+            setInterval(checkForNewActivity, 10000);
+            checkForNewActivity();  // Check immediately
+        </script>
+        {% endif %}
 
         <!-- Stite Status Messages -->
         {% with messages = get_flashed_messages(with_categories=True) %}

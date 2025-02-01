@@ -817,3 +817,40 @@ def test_activity_deleted_when_comment_deleted(client):
     response = client.get("/activity")
     assert b"hey cool song" not in response.data
 
+################################################################################
+# New Activity Status
+################################################################################
+
+def test_no_new_activity_when_not_logged_in(client):
+    response = client.get("/new-activity")
+    assert response.status_code == 200
+    assert not response.json["new_activity"]
+
+def test_no_new_activity_when_no_activity(client):
+    _create_user_and_song(client)
+    response = client.get("/new-activity")
+    assert response.status_code == 200
+    assert not response.json["new_activity"]
+
+def test_new_activity_after_comment(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    response = client.get("/new-activity")
+    assert response.status_code == 200
+    assert response.json["new_activity"]
+
+def test_no_new_activity_after_checking(client):
+    _create_user_and_song(client)
+    _create_user(client, "user2", login=True)
+    client.post("/comment?songid=1", data={"content": "hey cool song"})
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    client.get("/activity")  # Check activity page
+
+    response = client.get("/new-activity")
+    assert response.status_code == 200
+    assert not response.json["new_activity"]
+

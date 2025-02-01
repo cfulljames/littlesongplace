@@ -2,7 +2,7 @@
 :root {
     --yellow: #e8e6b5;
     --purple: #9373a9;
-    --blue: #8dcbc2;
+    --blue: #44b7b7;
     --black: #695c73;
 }
 
@@ -134,7 +134,15 @@ div.navbar {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    padding: 10px;
+    padding-bottom: 10px;
+}
+
+#activity-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--blue);
+    display: inline-block;
 }
 
 /* Upload/Edit Form */

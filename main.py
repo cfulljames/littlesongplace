@@ -22,6 +22,7 @@ from flask import Flask, render_template, request, redirect, g, session, abort, 
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+DB_VERSION = 1
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 SCRIPT_DIR = Path(__file__).parent
 
@@ -121,12 +122,14 @@ def login_post():
         session["userid"] = user_data["userid"]
         session.permanent = True
         app.logger.info(f"{username} logged in")
+
         return redirect(f"/users/{username}")
 
     flash("Invalid username/password", "error")
     app.logger.info(f"Failed login for {username}")
 
     return render_template("login.html")
+
 
 @app.get("/logout")
 def logout():
@@ -599,7 +602,35 @@ def activity():
         """,
         [session["userid"]])
 
+    timestamp = datetime.now(timezone.utc).isoformat()
+    query_db("update users set activitytime = ? where userid = ?", [timestamp, session["userid"]])
+    get_db().commit()
+
     return render_template("activity.html", comments=comments)
+
+@app.get("/new-activity")
+def new_activity():
+    has_new_activity = False
+    if "userid" in session:
+        user_data = query_db("select activitytime from users where userid = ?", [session["userid"]], one=True)
+        comment_data = query_db(
+            """\
+            select sc.created from song_comment_notifications as scn
+            inner join song_comments as sc on scn.commentid = sc.commentid
+            where scn.targetuserid = ?
+            order by sc.created desc
+            limit 1""",
+            [session["userid"]],
+            one=True)
+
+        if comment_data:
+            comment_time = comment_data["created"]
+            last_checked = user_data["activitytime"]
+
+            if (last_checked is None) or (last_checked < comment_time):
+                has_new_activity = True
+
+    return {"new_activity": has_new_activity}
 
 @app.get("/site-news")
 def site_news():
@@ -623,8 +654,13 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATA_DIR / "database.db")
+
+        # Get current version
+        user_version = query_db("pragma user_version", one=True)[0]
+
+        # Run update script if DB is out of date
         schema_update_script = SCRIPT_DIR / 'schema_update.sql'
-        if schema_update_script.exists():
+        if user_version < DB_VERSION and schema_update_script.exists():
             with app.open_resource(schema_update_script, mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
