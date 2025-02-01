@@ -30,21 +30,21 @@
                 <!-- Owner-Specific Buttons (Edit/Delete) -->
                 {% if session["userid"] == song.userid %}
                 <a href="/edit-song?songid={{ song.songid }}" class="song-list-button">
-                    <img src="/static/lsp_btn_edit.gif" alt="Edit">
+                    <img src="/static/lsp_btn_edit02.gif" alt="Edit">
                 </a>
                 <a href="/delete-song/{{ song.songid }}" onclick="return confirm(&#34;Are you sure you want to delete this song?&#34;)" class="song-list-button">
-                    <img src="/static/lsp_btn_delete.gif" alt="Delete">
+                    <img src="/static/lsp_btn_delete02.gif" alt="Delete">
                 </a>
                 {% endif %}
 
                 <!-- Details Button -->
                 <button onclick="return showDetails(event)" class="song-list-button">
-                    <img src="/static/lsp_btn_show.gif" alt="Show Details">
+                    <img src="/static/lsp_btn_show02.gif" alt="Show Details">
                 </button>
 
                 <!-- Play Button -->
                 <button onclick="return play(event)" class="song-list-button">
-                    <img src="/static/lsp_btn_play.gif" alt="Play">
+                    <img src="/static/lsp_btn_play02.gif" alt="Play">
                 </button>
             </div>
         </div>
@@ -156,13 +156,13 @@ function showDetails(event) {
                 // Show details
                 child.hidden = false;
                 event.target.alt = "Hide Details";
-                event.target.src = "/static/lsp_btn_hide.gif";
+                event.target.src = "/static/lsp_btn_hide02.gif";
             }
             else {
                 // Hide details
                 child.hidden = true;
                 event.target.alt = "Show Details";
-                event.target.src = "/static/lsp_btn_show.gif";
+                event.target.src = "/static/lsp_btn_show02.gif";
             }
         }
     }
