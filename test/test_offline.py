@@ -354,6 +354,26 @@ def test_update_song_other_users_song(client):
     response = client.post(f"/upload-song?songid=1", data=data)
     assert response.status_code == 401
 
+def test_uppercase_tags(client):
+    _create_user(client, "user", "password", login=True)
+    _test_upload_song(client, b"Success", tags="TAG1, tag2")
+    response = client.get("/users/user")
+
+    # Both tag versions present
+    assert b"TAG1" in response.data
+    assert b"tag2" in response.data
+
+    # Edit song
+    _test_upload_song(client, b"Success", tags="T1, t2", songid=1)
+
+    # Uppercase tags still work
+    response = client.get("/users/user")
+    assert b"TAG1" not in response.data
+    assert b"T1" in response.data
+
+    assert b"tag2" not in response.data
+    assert b"t2" in response.data
+
 ################################################################################
 # Delete Song
 ################################################################################
