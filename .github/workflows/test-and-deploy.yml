@@ -18,6 +18,7 @@ jobs:
 
     - name: Install ffmpeg
       run: |
+        sudo apt update
         sudo apt install ffmpeg
 
     - name: Install mpck
