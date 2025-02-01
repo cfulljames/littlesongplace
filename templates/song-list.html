@@ -52,7 +52,7 @@
         <div class="song-details" {% if request.endpoint != 'song' %}hidden{% endif %}>
             <!-- Song Description -->
             {% if song.description %}
-            <div class="song-description">{{ song.description }}</div>
+            <div class="song-description">{{ (song.description.replace("\n", "<br>"))|safe  }}</div>
             {% endif %}
 
             <!-- Song Tags -->
@@ -74,7 +74,7 @@
                 <div class="top-level-comment">
 
                     <a href="/users/{{ comment['username'] }}" class="profile-link">{{ comment['username'] }}</a>:
-                    {{ comment['content'] }}
+                    {{ (comment['content'].replace("\n", "<br>"))|safe }}
 
                     {% if session['userid'] == comment['userid'] or session['userid'] == song.userid %}
                     <div class="comment-button-container">

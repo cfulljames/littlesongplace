@@ -26,7 +26,7 @@ Most standard audio/video formats are supported - .wav, .mp3, .ogg, .mp4, etc.
         <input type="text" name="title" id="song-title" value="{{ song.title }}" maxlength="80" required>
     </div>
     <div class="upload-form">
-        <label for="description">Description</label><br>
+        <label for="description">Description</label> (Common HTML tags (&lt;a&gt;, &lt;b&gt;, &lt;i&gt;, &lt;img&gt;, etc.) are allowed.)<br>
         <textarea name="description" maxlength="10000">{{ song.description }}</textarea>
     </div>
     <div class="upload-form">

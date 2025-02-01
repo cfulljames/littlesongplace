@@ -156,26 +156,7 @@ def users_profile(profile_username):
     # Sanitize bio
     profile_bio = ""
     if profile_data["bio"] is not None:
-        allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({
-            'area', 'br', 'div', 'img', 'map', 'hr', 'header', 'hgroup', 'table', 'tr', 'td',
-            'th', 'thead', 'tbody', 'span', 'small', 'p', 'q', 'u', 'pre',
-        })
-        allowed_attributes = {
-            "*": ["style"], "a": ["href", "title"], "abbr": ["title"], "acronym": ["title"],
-            "img": ["src", "alt", "usemap", "width", "height"], "map": ["name"],
-            "area": ["shape", "coords", "alt", "href"]
-        }
-        allowed_css_properties = {
-            "font-size", "font-style", "font-variant", "font-family", "font-weight", "color",
-            "background-color", "background-image", "border", "border-color",
-            "border-image", "width", "height"
-        }
-        css_sanitizer = CSSSanitizer(allowed_css_properties=allowed_css_properties)
-        profile_bio = bleach.clean(
-                profile_data["bio"],
-                tags=allowed_tags,
-                attributes=allowed_attributes,
-                css_sanitizer=css_sanitizer)
+        profile_bio = sanitize_user_text(profile_data["bio"])
 
     return render_template(
             "profile.html",
@@ -646,6 +627,28 @@ def flash_and_log(msg, category=None):
     else:
         app.logger.info(logmsg)
 
+def sanitize_user_text(text):
+        allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({
+            'area', 'br', 'div', 'img', 'map', 'hr', 'header', 'hgroup', 'table', 'tr', 'td',
+            'th', 'thead', 'tbody', 'span', 'small', 'p', 'q', 'u', 'pre',
+        })
+        allowed_attributes = {
+            "*": ["style"], "a": ["href", "title"], "abbr": ["title"], "acronym": ["title"],
+            "img": ["src", "alt", "usemap", "width", "height"], "map": ["name"],
+            "area": ["shape", "coords", "alt", "href"]
+        }
+        allowed_css_properties = {
+            "font-size", "font-style", "font-variant", "font-family", "font-weight", "color",
+            "background-color", "background-image", "border", "border-color",
+            "border-image", "width", "height"
+        }
+        css_sanitizer = CSSSanitizer(allowed_css_properties=allowed_css_properties)
+        return bleach.clean(
+                text,
+                tags=allowed_tags,
+                attributes=allowed_attributes,
+                css_sanitizer=css_sanitizer)
+
 ################################################################################
 # Database
 ################################################################################
@@ -715,6 +718,10 @@ class Song:
 
     def get_comments(self):
         comments = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where songid = ?", [self.songid])
+        comments = [dict(c) for c in comments]
+        for c in comments:
+            c["content"] = sanitize_user_text(c["content"])
+
         # Top-level comments
         song_comments = sorted([dict(c) for c in comments if c["replytoid"] is None], key=lambda c: c["created"])
         song_comments = list(reversed(song_comments))
@@ -760,7 +767,7 @@ class Song:
         for sd in songs_data:
             song_tags = [t["tag"] for t in tags[sd["songid"]]]
             song_collabs = [c["name"] for c in collabs[sd["songid"]]]
-            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sd["description"], song_tags, song_collabs))
+            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), song_tags, song_collabs))
 
         return songs
 

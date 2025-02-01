@@ -1,8 +1,4 @@
 UPDATE 1.1
-- Activity indicator
-- Tips and Tricks (or html helper for bio/descriptions?)
-- Multiline/html descriptions, comments
-- Title gif spacing? worse on mobile?
 - Update news
 
 UNSORTED
