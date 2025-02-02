@@ -29,39 +29,42 @@ h2 {
 
 textarea {
     font-family: sans-serif;
+    font-size: 16px;
     color: var(--black);
     border: 3px solid var(--purple);
     border-radius: 10px;
     padding: 10px;
     background: var(--yellow);
     height: 100px;
-    width: 100%;
-    margin: 5px;
+    width: calc(100% - 20px);
     box-sizing: border-box;
     resize: vertical;
+    margin: 10px;
 }
 
 input[type=text], input[type=password] {
     background: var(--yellow);
+    margin: 10px;
     font-family: sans-serif;
-    font-weight: bold;
+    font-size: 16px;
     color: var(--black);
     border: 3px solid var(--purple);
     border-radius: 10px;
     padding: 5px;
     width: 200px;
-    margin: 5px;
 }
 
 .button, input[type=submit] {
+    cursor: pointer;
     font-family: sans-serif;
+    font-size: 16px;
     font-weight: bold;
     color: var(--yellow);
     background: var(--purple);
     border: 0px;
     border-radius: 5px;
     padding: 8px;
-    margin: 5px;
+    margin: 10px;
 }
 
 div.main {
@@ -79,7 +82,7 @@ div.page-header {
 .flashes {
     border: 3px solid var(--blue);
     border-radius: 10px;
-    margin-top: 20px;
+    margin: 20px;
 }
 
 .title-image {
@@ -148,7 +151,7 @@ div.navbar {
 /* Upload/Edit Form */
 
 div.upload-form input[type=text] {
-    width: 100%;
+    width: calc(100% - 20px);
     box-sizing: border-box;
 }
 

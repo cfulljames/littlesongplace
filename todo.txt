@@ -1,10 +1,10 @@
 NEXT
-- Textarea text size on mobile
+??
 
 UNSORTED
 - YouTube importer
-- Autoplay toggle
 - Shuffle all
+- Autoplay toggle
 - Song sorter for song lists
 - Additional song info in player (collabs, description, tags)
 - Profile pictures
