@@ -45,7 +45,7 @@ def client(app):
 
 def test_signup_get(client):
     response = client.get("/signup")
-    assert b"Rules" in response.data
+    assert b"Create a new account" in response.data
 
 def _post_signup_form(client, username, password, password_confirm=None):
     if password_confirm is None:
