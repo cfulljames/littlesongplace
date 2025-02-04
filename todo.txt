@@ -1,13 +1,11 @@
-NEXT
+NOW
 - Profile pictures
 - Dark mode/site color customization
 - YouTube importer
 - Additional song info in player (collabs, description, tags)
 
-UNSORTED
+SOON
 - Shuffle all
-- Song sorter for song lists
-- Song downloads
 - AJAX pages so songs can play during navigation
 - Play Queue:
     - Add songs
@@ -23,9 +21,11 @@ UNSORTED
     - Delete
     - Pin to profile
     - Albums?
-- Song/User Search
 
 LATER
+- Song/User Search
+- Song sorter for song lists
+- Song downloads
 - Autoplay toggle
 - Admin accounts
 - Account deletion
