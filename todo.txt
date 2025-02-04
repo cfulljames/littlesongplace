@@ -1,17 +1,12 @@
 NEXT
-??
-
-UNSORTED
-- YouTube importer
-- Shuffle all
-- Autoplay toggle
-- Song sorter for song lists
-- Additional song info in player (collabs, description, tags)
 - Profile pictures
 - Dark mode/site color customization
-- Admin accounts
-- Account deletion
-- Change password (require email?)
+- YouTube importer
+- Additional song info in player (collabs, description, tags)
+
+UNSORTED
+- Shuffle all
+- Song sorter for song lists
 - Song downloads
 - AJAX pages so songs can play during navigation
 - Play Queue:
@@ -30,3 +25,8 @@ UNSORTED
     - Albums?
 - Song/User Search
 
+LATER
+- Autoplay toggle
+- Admin accounts
+- Account deletion
+- Change password (require email?)
