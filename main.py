@@ -165,17 +165,29 @@ def users_profile(profile_username):
             bio=profile_bio,
             song_list=render_template("song-list.html", songs=songs))
 
-@app.post("/update-bio")
-def update_bio():
+@app.post("/edit-profile")
+def edit_profile():
+    if not "userid" in session:
+        abort(401)
+
     query_db(
             "update users set bio = ? where userid = ?",
             [request.form["bio"], session["userid"]])
     get_db().commit()
-    flash("Bio updated successfully")
+
+    if request.files["pfp"]:
+        pfp_path = get_user_images_path(session["userid"]) / "pfp"
+        request.files["pfp"].save(pfp_path)
+
+    flash("Profile updated successfully")
 
     app.logger.info(f"{session['username']} updated bio")
 
     return redirect(f"/users/{session['username']}")
+
+@app.get("/pfp/<int:userid>")
+def pfp(userid):
+    return send_from_directory(DATA_DIR / "images" / str(userid), "pfp")
 
 @app.get("/edit-song")
 def edit_song():
@@ -267,8 +279,14 @@ def validate_song_form():
 
     return error
 
-def get_user_path(userid):
+def get_user_songs_path(userid):
     userpath = DATA_DIR / "songs" / str(userid)
+    if not userpath.exists():
+        os.makedirs(userpath)
+    return userpath
+
+def get_user_images_path(userid):
+    userpath = DATA_DIR / "images" / str(userid)
     if not userpath.exists():
         os.makedirs(userpath)
     return userpath
@@ -300,7 +318,7 @@ def update_song():
 
             if passed:
                 # Move file to permanent location
-                filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
+                filepath = get_user_songs_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
                 shutil.move(tmp_file.name, filepath)
             else:
                 error = True
@@ -345,7 +363,7 @@ def create_song():
                     "insert into songs (userid, title, description, created) values (?, ?, ?, ?) returning (songid)",
                     [session["userid"], title, description, timestamp], one=True)
             songid = song_data["songid"]
-            filepath = get_user_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
+            filepath = get_user_songs_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
 
             # Move file to permanent location
             shutil.move(tmp_file.name, filepath)

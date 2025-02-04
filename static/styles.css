@@ -59,6 +59,7 @@ input[type=text], input[type=password] {
     font-family: sans-serif;
     font-size: 16px;
     font-weight: bold;
+    text-decoration: none;
     color: var(--yellow);
     background: var(--purple);
     border: 0px;
@@ -165,8 +166,26 @@ input[type=file] {
     font-size: 40px;
 }
 
+.big-pfp-container {
+    margin: 0 auto;
+    width: 200px;
+    max-width: 80%;
+    background: var(--purple);
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.big-pfp {
+    width: 100%;
+    max-height: 200px;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    border-radius: 5px;
+}
+
 .profile-action {
-    margin: 10px;
+    margin-bottom: 20px;
 }
 
 .profile-edit-buttons {

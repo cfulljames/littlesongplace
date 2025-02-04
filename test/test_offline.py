@@ -165,12 +165,41 @@ def test_default_bio_empty(client):
 def test_update_bio(client):
     _create_user(client, "user", "password", login=True)
 
-    response = client.post("/update-bio", data={"bio": "this is the bio"})
+    response = client.post("/edit-profile", data={"bio": "this is the bio", "pfp": (b"", "", "aplication/octet-stream")})
     assert response.status_code == 302
     assert response.headers["Location"] == "/users/user"
 
     response = client.get("/users/user")
     assert b'<div class="profile-bio" id="profile-bio">this is the bio</div>' in response.data
+
+def test_upload_pfp(client):
+    _create_user(client, "user", "password", login=True)
+    response = client.post("/edit-profile", data={"bio": "", "pfp": open("lsp_notes.png", "rb")})
+    assert response.status_code == 302
+
+def test_edit_profile_not_logged_in(client):
+    response = client.post("/edit-profile", data={"bio": "", "pfp": open("lsp_notes.png", "rb")})
+    assert response.status_code == 401
+
+def test_get_pfp(client):
+    _create_user(client, "user", "password", login=True)
+    client.post("/edit-profile", data={"bio": "", "pfp": open("lsp_notes.png", "rb")})
+
+    response = client.get("/pfp/1")
+    assert response.status_code == 200
+    with open("lsp_notes.png", "rb") as expected:
+        assert expected.read() == response.data
+
+def test_get_pfp_no_file(client):
+    _create_user(client, "user", "password", login=True)
+    # User exists but doesn't have a pfp
+    response = client.get("/pfp/1")
+    assert response.status_code == 404
+
+def test_get_pfp_invalid_user(client):
+    response = client.get("/pfp/1")
+    # User doesn't exist
+    assert response.status_code == 404
 
 ################################################################################
 # Upload Song

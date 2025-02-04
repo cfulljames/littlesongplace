@@ -1,8 +1,8 @@
 NOW
-- Profile pictures
+- PFP in song list
+- Additional song info in player (collabs, description, tags, pfp)
 - Dark mode/site color customization
 - YouTube importer
-- Additional song info in player (collabs, description, tags)
 
 SOON
 - Shuffle all
