@@ -1,6 +1,5 @@
 NOW
-- Player position slider
-- Dark mode/site color customization
+- Site color customization
 - YouTube importer
 
 SOON
