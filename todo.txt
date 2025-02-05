@@ -1,6 +1,4 @@
 NOW
-- PFP in song list
-- Additional song info in player (collabs, description, tags, pfp)
 - Dark mode/site color customization
 - YouTube importer
 
@@ -23,6 +21,7 @@ SOON
     - Albums?
 
 LATER
+- Show song info for song in player (description, tags)
 - Song/User Search
 - Song sorter for song lists
 - Song downloads

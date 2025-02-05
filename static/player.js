@@ -25,6 +25,10 @@ function playCurrentSong() {
     audio.currentTime = 0;
     audio.play();
 
+    var pfp = document.getElementById("player-pfp")
+    pfp.style.display = "inline-block";
+    pfp.src = `/pfp/${songData.userid}`
+
     var title = document.getElementById("player-title");
     title.textContent = songData.title;
 
@@ -35,6 +39,29 @@ function playCurrentSong() {
     artist.textContent = songData.username;
     artist.href = `/users/${songData.username}`;
     artist.hidden = false;
+
+    var collabs = document.getElementById("player-collabs");
+    collabs.textContent = "";
+
+    var collaborators = songData.collaborators;
+    for (i = 0; i < collaborators.length; i ++) {
+        if (collaborators[i].startsWith("@")) {
+            var collabname = collaborators[i].substr(1, collaborators[i].length - 1);
+            var link = document.createElement("a");
+            link.href = `/users/${collabname}`;
+            link.classList.add("profile-link")
+            link.textContent = collabname;
+            collabs.appendChild(link);
+        }
+        else {
+            var name = document.createElement("span");
+            name.textContent = " " + collaborators[i];
+            collabs.appendChild(name);
+        }
+    }
+
+    //collabs.textContent = songData.collaborators.join(", ")
+
 
     if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({

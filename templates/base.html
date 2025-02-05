@@ -80,10 +80,11 @@
         <div class="player-container" id="player-container">
             <div class="player" id="player" hidden>
                 <div class="player-info">
-                    <!-- TODO: Show song title, artist -->
+                    <img id="player-pfp" class="small-pfp" src="" onerror="this.style.display = 'none'">
                     <span id="player-title">Not Playing</span>
                     <span id="player-info-sep" hidden>-</span>
                     <a id="player-artist" class="profile-link" hidden></a>
+                    <span id="player-collabs"></span>
                 </div>
                 <div class="player-controls">
                     <button onclick="songPrevious()" class="player-button">
