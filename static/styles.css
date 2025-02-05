@@ -169,7 +169,7 @@ input[type=file] {
 .big-pfp-container {
     margin: 0 auto;
     width: 200px;
-    max-width: 80%;
+    max-width: 40%;
     background: var(--purple);
     padding: 5px;
     border-radius: 10px;
@@ -182,6 +182,13 @@ input[type=file] {
     padding: 0px;
     display: block;
     border-radius: 5px;
+}
+
+.small-pfp {
+    max-width: 32px;
+    max-height: 32px;
+    margin: 0px;
+    margin-left: 10px;
 }
 
 .profile-action {
@@ -220,9 +227,7 @@ div.song {
 div.song-main {
     display: flex;
     flex-wrap: nowrap;
-    gap: 10px;
     align-items: center;
-    margin: 5px;
 }
 
 div.song-info {
@@ -230,15 +235,16 @@ div.song-info {
     flex-wrap: wrap;
     flex-direction: row;
     gap: 10px;
-    align-items: flex-start;
+    align-items: center;
     flex-grow: 1;
-    margin: 10px
+    margin: 10px;
 }
 
 /* Artist on separate line for mobile */
 @media screen and (max-width: 480px) {
     div.song-info {
         flex-direction: column;
+        align-items: flex-start;
     }
 
     div.song-info-sep {
@@ -250,6 +256,7 @@ div.song-buttons {
     display: flex;
     gap: 10px;
     align-items: center;
+    margin: 5px;
 }
 
 .song-list-button {
