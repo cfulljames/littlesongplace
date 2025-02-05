@@ -132,67 +132,16 @@ function getTimeString(time) {
 // Update the player while the song plays
 function songUpdate() {
     var audio = document.getElementById("player-audio");
-    var bar = document.getElementById("player-position-bar");
-    var dot = document.getElementById("player-position-dot");
-    var songProgress = audio.currentTime / audio.duration;
-    var maxPosition = bar.offsetWidth - dot.offsetWidth
-    var dotPosition = songProgress * maxPosition;
-
-    dot.style.left = `${dotPosition}px`;
-    dot.style.visibility = "visible";
+    var position = document.getElementById("position-slider");
+    if (audio.duration) {
+        position.value = audio.currentTime / audio.duration;
+    }
+    else {
+        position.value = 0;
+    }
 
     document.getElementById("player-current-time").textContent = getTimeString(audio.currentTime);
     document.getElementById("player-total-time").textContent = getTimeString(audio.duration);
-}
-
-// Mouse scrub state
-var m_isScrubbing = false;
-var m_scrubPosition = 0;
-
-// Handle a mouse event that scrubs the song position
-function songScrub(event) {
-    var audio = document.getElementById("player-audio");
-    var bar = document.getElementById("player-position-bar");
-    var dot = document.getElementById("player-position-dot");
-    var maxPosition = bar.offsetWidth - dot.offsetWidth
-    if (event.type == "mousedown") {
-        // Start scrub
-        m_isScrubbing = true;
-        if (event.target === dot) {
-            // Clicked dot - start scrub, but don't move yet
-            var songProgress = audio.currentTime / audio.duration;
-            m_scrubPosition = songProgress * maxPosition;
-        }
-        else {
-            // Clicked outside of dot, set dot position immediately
-            var dotPosition = event.offsetX - (dot.offsetWidth / 2);
-            updateScrubPosition(dot, audio, dotPosition, maxPosition);
-        }
-    }
-    else if (["mouseup", "mouseleave"].includes(event.type)) {
-        // End scrub
-        m_isScrubbing = false;
-    }
-    else if (event.type == "mousemove" && m_isScrubbing) {
-        // Scrub
-        var dotPosition = m_scrubPosition + event.movementX;
-        updateScrubPosition(dot, audio, dotPosition, maxPosition);
-    }
-
-    // Prevent drag event from being used for selection
-    if (event.stopPropagation) event.stopPropagation();
-    if (event.preventDefault) event.preventDefault();
-    event.cancelBubble = true;
-    event.returnValue = false;
-}
-
-// Update scrub dot position
-function updateScrubPosition(dot, audio, dotPosition, maxPosition) {
-    if (dotPosition < 0) { dotPosition = 0; }
-    if (dotPosition > maxPosition) { dotPosition = maxPosition; }
-    dot.style.left = `${dotPosition}px`;
-    m_scrubPosition = dotPosition;
-    audio.currentTime = audio.duration * (dotPosition / maxPosition);
 }
 
 // Add event listeners
@@ -217,23 +166,18 @@ document.addEventListener("DOMContentLoaded", (event) => {
     })
 
     // Audio position scrubbing
-    var playerPosition = document.getElementById("player-position");
-    playerPosition.addEventListener("mousedown", songScrub);
-    playerPosition.addEventListener("mouseup", songScrub);
-    playerPosition.addEventListener("mouseleave", songScrub);
-    playerPosition.addEventListener("mousemove", songScrub);
+    document.getElementById("position-slider").oninput = function(event) {
+        audio.currentTime = audio.duration * event.target.value;
+    }
+
+    // Volume
+    document.getElementById("volume-slider").oninput = function(event) {
+        audio.volume = event.target.value;
+    }
 
     // Song queue
     for (const element of document.getElementsByClassName("song")) {
         m_allSongs.push(element);
     }
-
-    // Volume
-    var vol = document.getElementById("volume-slider");
-    vol.oninput = function() {
-        console.log("updateVolume", vol);
-        audio.volume = vol.value;
-    }
-
 });
 

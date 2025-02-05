@@ -96,10 +96,7 @@
                     <button onclick="songNext()" class="player-button">
                         <img src="/static/lsp_btn_next02.gif" alt="Next">
                     </button>
-                    <div id="player-position">
-                        <span id="player-position-bar"></span>
-                        <span id="player-position-dot"></span>
-                    </div>
+                    <input id="position-slider" name="song-position" type="range" min="0" max="1" step="any" value="0"/>
                     <span class="player-time" id="player-current-time">0:00</span>
                     <span class="player-time-sep">/</span>
                     <span class="player-time" id="player-total-time">0:00</span>
