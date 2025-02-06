@@ -2,4 +2,5 @@ bcrypt
 bleach[css]
 flask
 gunicorn
+pillow
 

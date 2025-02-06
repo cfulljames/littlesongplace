@@ -19,6 +19,7 @@ import click
 from bleach.css_sanitizer import CSSSanitizer
 from flask import Flask, render_template, request, redirect, g, session, abort, \
         send_from_directory, flash, get_flashed_messages
+from PIL import Image, UnidentifiedImageError
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -176,8 +177,32 @@ def edit_profile():
     get_db().commit()
 
     if request.files["pfp"]:
-        pfp_path = get_user_images_path(session["userid"]) / "pfp"
-        request.files["pfp"].save(pfp_path)
+        pfp_path = get_user_images_path(session["userid"]) / "pfp.png"
+
+        try:
+            with Image.open(request.files["pfp"]) as im:
+                target_size = 256  # Square (same width/height)
+                # Resize
+                if im.width >= im.height:
+                    scale = 256 / im.height
+                else:
+                    scale = 256 / im.width
+
+                im = im.resize((round(im.width*scale), round(im.height*scale)))
+
+                # Crop to square
+                center_h = im.width / 2
+                center_v = im.height / 2
+                left = center_h - (target_size // 2)
+                right = center_h + (target_size // 2)
+                top = center_v - (target_size // 2)
+                bottom = center_v + (target_size // 2)
+                im = im.crop((left, top, right, bottom))
+
+                # Save to permanent location
+                im.save(pfp_path)
+        except UnidentifiedImageError:
+            abort(400)  # Invalid image
 
     flash("Profile updated successfully")
 
@@ -187,7 +212,7 @@ def edit_profile():
 
 @app.get("/pfp/<int:userid>")
 def pfp(userid):
-    return send_from_directory(DATA_DIR / "images" / str(userid), "pfp")
+    return send_from_directory(DATA_DIR / "images" / str(userid), "pfp.png")
 
 @app.get("/edit-song")
 def edit_song():
