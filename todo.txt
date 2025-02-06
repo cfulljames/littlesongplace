@@ -1,4 +1,5 @@
 NOW
+- Fix pfp test
 - Site color customization
 - YouTube importer
 
