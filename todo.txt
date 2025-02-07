@@ -1,5 +1,5 @@
 NOW
-- Site color customization
+- Site color customization: apply custom colors to images
 - YouTube importer
 
 SOON

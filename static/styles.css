@@ -203,6 +203,22 @@ input[type=file] {
     margin: 10px;
 }
 
+/* Coloris Color Picker */
+
+.clr-field button {
+    width: 22px !important;
+    height: 22px !important;
+    left: 7px;
+    right: auto;
+    border-radius: 5px;
+}
+
+.clr-field input {
+    padding-left: 36px;
+    width: 100px;
+    cursor: pointer;
+}
+
 /* Filters on /songs page */
 .filter {
     margin: 5px;

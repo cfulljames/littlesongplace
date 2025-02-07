@@ -23,7 +23,7 @@ from PIL import Image, UnidentifiedImageError
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-DB_VERSION = 1
+DB_VERSION = 2
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 SCRIPT_DIR = Path(__file__).parent
 
@@ -164,6 +164,9 @@ def users_profile(profile_username):
             name=profile_username,
             userid=profile_userid,
             bio=profile_bio,
+            user_fgcolor=profile_data["fgcolor"],
+            user_bgcolor=profile_data["bgcolor"],
+            user_accolor=profile_data["accolor"],
             song_list=render_template("song-list.html", songs=songs))
 
 @app.post("/edit-profile")
@@ -172,8 +175,8 @@ def edit_profile():
         abort(401)
 
     query_db(
-            "update users set bio = ? where userid = ?",
-            [request.form["bio"], session["userid"]])
+            "update users set bio = ?, bgcolor = ?, fgcolor = ?, accolor = ? where userid = ?",
+            [request.form["bio"], request.form["bgcolor"], request.form["fgcolor"], request.form["accolor"], session["userid"]])
     get_db().commit()
 
     if request.files["pfp"]:
