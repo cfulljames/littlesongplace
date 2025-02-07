@@ -7,13 +7,15 @@
 <link rel="stylesheet" href="/static/coloris.min.css"/>
 <script src="/static/coloris.min.js"></script>
 
-<style>
-:root {
-    {% if user_bgcolor %} --yellow: {{ user_bgcolor }} !important; {% endif %}
-    {% if user_fgcolor %} --black:  {{ user_fgcolor }} !important; {% endif %}
-    {% if user_accolor %} --purple: {{ user_accolor }} !important; {% endif %}
-}
-</style>
+<script>
+    // Apply user colors
+    document.addEventListener("DOMContentLoaded", (event) => {
+        var rootStyle = document.documentElement.style;
+        {% if user_bgcolor %} rootStyle.setProperty('--yellow', "{{ user_bgcolor }}"); {% endif %}
+        {% if user_fgcolor %} rootStyle.setProperty('--black', "{{ user_fgcolor }}"); {% endif %}
+        {% if user_accolor %} rootStyle.setProperty('--purple', "{{ user_accolor }}"); {% endif %}
+    });
+</script>
 
 {% endblock %}
 
