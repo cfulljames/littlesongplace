@@ -1,8 +1,8 @@
 NOW
-- Site color customization: apply custom colors to images
 - YouTube importer
 
 SOON
+- Apply user colors to songs in lists outside profile
 - Player minimize button
 - Shuffle all
 - AJAX pages so songs can play during navigation

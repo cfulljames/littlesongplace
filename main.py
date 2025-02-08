@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -694,6 +695,23 @@ def sanitize_user_text(text):
                 tags=allowed_tags,
                 attributes=allowed_attributes,
                 css_sanitizer=css_sanitizer)
+
+def get_gif_data():
+    gifs = []
+    static_path = Path(__file__).parent / "static"
+    for child in static_path.iterdir():
+        if child.suffix == ".gif":
+            with open(child, "rb") as gif:
+                b64 = base64.b64encode(gif.read()).decode()
+                gifs.append(f'<div class="img-data" id="{child.stem}" data-img-b64="{b64}"></div>')
+
+    gifs = "\n".join(gifs)
+    return gifs
+
+@app.context_processor
+def inject_global_vars():
+    return dict(gif_data=get_gif_data())
+
 
 ################################################################################
 # Database

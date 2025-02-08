@@ -157,12 +157,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
     // Show pause button when audio is playing
     var button = document.getElementById("play-pause-button");
     audio.addEventListener("play", (event) => {
-        button.src = "/static/lsp_btn_pause02.gif";
+        button.className = "lsp_btn_pause02";
+        button.src = customImage(document.getElementById("lsp_btn_pause02"));
     })
 
     // Show play button when audio is paused
     audio.addEventListener("pause", (event) => {
-        button.src = "/static/lsp_btn_play02.gif";
+        button.className = "lsp_btn_play02";
+        button.src = customImage(document.getElementById("lsp_btn_play02"));
     })
 
     // Audio position scrubbing
