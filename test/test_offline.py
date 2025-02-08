@@ -169,14 +169,20 @@ def test_update_bio(client):
         "bio": "this is the bio",
         "pfp": (b"", "", "aplication/octet-stream"),
         "fgcolor": "#000000",
-        "bgcolor": "#000000",
-        "accolor": "#000000",
+        "bgcolor": "#FFFF00",
+        "accolor": "#FF00FF",
     })
     assert response.status_code == 302
     assert response.headers["Location"] == "/users/user"
 
+    # Check bio updated
     response = client.get("/users/user")
     assert b'<div class="profile-bio" id="profile-bio">this is the bio</div>' in response.data
+
+    # Check user colors applied
+    assert b'"--yellow", "#FFFF00"' in response.data
+    assert b'"--black", "#000000"' in response.data
+    assert b'"--purple", "#FF00FF"' in response.data
 
 def test_upload_pfp(client):
     _create_user(client, "user", "password", login=True)

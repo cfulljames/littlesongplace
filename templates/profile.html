@@ -11,9 +11,9 @@
     // Apply user colors
     document.addEventListener("DOMContentLoaded", (event) => {
         var rootStyle = document.documentElement.style;
-        {% if user_bgcolor %} rootStyle.setProperty('--yellow', "{{ user_bgcolor }}"); {% endif %}
-        {% if user_fgcolor %} rootStyle.setProperty('--black', "{{ user_fgcolor }}"); {% endif %}
-        {% if user_accolor %} rootStyle.setProperty('--purple', "{{ user_accolor }}"); {% endif %}
+        {% if user_bgcolor %} rootStyle.setProperty("--yellow", "{{ user_bgcolor }}"); {% endif %}
+        {% if user_fgcolor %} rootStyle.setProperty("--black", "{{ user_fgcolor }}"); {% endif %}
+        {% if user_accolor %} rootStyle.setProperty("--purple", "{{ user_accolor }}"); {% endif %}
     });
 </script>
 
