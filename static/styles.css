@@ -188,7 +188,9 @@ input[type=file] {
     max-width: 32px;
     max-height: 32px;
     margin: 0px;
-    margin-left: 10px;
+    margin-left: 6px;
+    border-radius: 5px;
+    border: solid 2px var(--purple);
 }
 
 .profile-action {
