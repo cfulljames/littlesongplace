@@ -53,23 +53,38 @@
     <table>
         <tr>
             <td> <label for="bgcolor">Background</label> </td>
-            <td> <input name="bgcolor" type="text" value="{{ user_bgcolor }}" data-coloris oninput="updateColor('--yellow', this.value)"/> </td>
+            <td> <input name="bgcolor" type="text" id="bgcolor-input" value="{{ user_bgcolor or '#e8e6b5' }}" data-coloris oninput="updateColor('--yellow', this.value)"/> </td>
         </tr>
         <tr>
             <td> <label for="fgcolor">Text</label> </td>
-            <td> <input name="fgcolor" type="text" value="{{ user_fgcolor }}" data-coloris oninput="updateColor('--black', this.value)"/> </td>
+            <td> <input name="fgcolor" type="text" id="fgcolor-input" value="{{ user_fgcolor or '#695c73' }}" data-coloris oninput="updateColor('--black', this.value)"/> </td>
         </tr>
         <tr>
             <td> <label for="accolor">Accent</label> </td>
-            <td> <input name="accolor" type="text" value="{{ user_accolor }}" data-coloris oninput="updateColor('--purple', this.value)"/> </td>
+            <td> <input name="accolor" type="text" id="accolor-input" value="{{ user_accolor or '#9373a9' }}" data-coloris oninput="updateColor('--purple', this.value)"/> </td>
         </tr>
         <script>
             function updateColor(name, value) {
                 document.documentElement.style.setProperty(name, value);
                 updateImageColors();
             }
+
+            function resetColors() {
+                var bginput = document.getElementById("bgcolor-input");
+                bginput.value = "#e8e6b5";
+                bginput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                var fginput = document.getElementById("fgcolor-input");
+                fginput.value = "#695c73";
+                fginput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                var acinput = document.getElementById("accolor-input");
+                acinput.value = "#9373a9";
+                acinput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         </script>
     </table>
+    <button type="button" class="button" onclick="resetColors()">Reset Colors</button>
     <script>
         Coloris({
           alpha: false
