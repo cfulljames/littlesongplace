@@ -97,3 +97,20 @@ def test_comments_and_activity(s):
         songs = _get_song_list_from_page(response.text)
         assert not any(song["songid"] == songid for song in songs)
 
+def test_upload_song_from_youtube(s):
+    _login(s, "user", "1234asdf!@#$")
+
+    response = s.post(
+        url("/upload-song"),
+        data={"title": "yt-song", "description": "", "tags": "", "collabs": "", "song-url": "https://youtu.be/5e5Z6gZWiEs"},
+    )
+    response.raise_for_status()
+    songs = _get_song_list_from_page(response.text)
+    song = songs[0]
+    songid = song["songid"]
+    try:
+        assert song["title"] == "yt-song"
+    finally:
+        response = s.get(url(f"/delete-song/{songid}"), headers={"referer": "/users/user"})
+        response.raise_for_status()
+

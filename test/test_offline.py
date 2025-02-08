@@ -303,6 +303,7 @@ def test_upload_song_from_mp4(client):
     _create_user(client, "user", "password", login=True)
     _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename="sample-4s.mp4")
 
+@pytest.skip
 def test_upload_song_from_youtube(client):
     _create_user(client, "user", "password", login=True)
     data = {
@@ -353,6 +354,7 @@ def test_update_song_success(client):
     with open("sample-6s.mp3", "rb") as expected_file:
         assert response.data == expected_file.read()
 
+@pytest.skip
 def test_update_song_from_youtube(client):
     _create_user_and_song(client)
     data = {
