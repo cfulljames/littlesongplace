@@ -165,7 +165,13 @@ def test_default_bio_empty(client):
 def test_update_bio(client):
     _create_user(client, "user", "password", login=True)
 
-    response = client.post("/edit-profile", data={"bio": "this is the bio", "pfp": (b"", "", "aplication/octet-stream")})
+    response = client.post("/edit-profile", data={
+        "bio": "this is the bio",
+        "pfp": (b"", "", "aplication/octet-stream"),
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
     assert response.status_code == 302
     assert response.headers["Location"] == "/users/user"
 
@@ -174,16 +180,34 @@ def test_update_bio(client):
 
 def test_upload_pfp(client):
     _create_user(client, "user", "password", login=True)
-    response = client.post("/edit-profile", data={"bio": "", "pfp": open("lsp_notes.png", "rb")})
+    response = client.post("/edit-profile", data={
+        "bio": "",
+        "pfp": open("lsp_notes.png", "rb"),
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
     assert response.status_code == 302
 
 def test_edit_profile_not_logged_in(client):
-    response = client.post("/edit-profile", data={"bio": "", "pfp": open("lsp_notes.png", "rb")})
+    response = client.post("/edit-profile", data={
+        "bio": "",
+        "pfp": open("lsp_notes.png", "rb"),
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
     assert response.status_code == 401
 
 def test_get_pfp(client):
     _create_user(client, "user", "password", login=True)
-    client.post("/edit-profile", data={"bio": "", "pfp": open("lsp_notes.png", "rb")})
+    client.post("/edit-profile", data={
+        "bio": "",
+        "pfp": open("lsp_notes.png", "rb"),
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
 
     response = client.get("/pfp/1")
     assert response.status_code == 200
