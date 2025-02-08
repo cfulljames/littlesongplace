@@ -1,5 +1,4 @@
 NOW
-- YouTube importer
 
 SOON
 - Apply user colors to songs in lists outside profile
