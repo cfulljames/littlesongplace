@@ -239,7 +239,7 @@ def _test_upload_song(client, msg, error=False, songid=None, user="user", filena
     song_file = open(filename, "rb")
 
     data = {
-        "song": song_file,
+        "song-file": song_file,
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -401,14 +401,13 @@ def test_update_song_collab_too_long(client):
 
 def test_update_song_invalid_mp3(client):
     _create_user_and_song(client)
-    song_file = open(__file__, "rb")
-    _test_upload_song(client, b"Invalid audio file", error=True, songid=1, song=song_file)
+    _test_upload_song(client, b"Invalid audio file", error=True, songid=1, filename=__file__)
 
 def test_update_song_invalid_song(client):
     _create_user_and_song(client)
 
     data = {
-        "song": open("sample-3s.mp3", "rb"),
+        "song-file": open("sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -422,7 +421,7 @@ def test_update_song_invalid_id(client):
     _create_user_and_song(client)
 
     data = {
-        "song": open("sample-3s.mp3", "rb"),
+        "song-file": open("sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -437,7 +436,7 @@ def test_update_song_other_users_song(client):
     _create_user(client, "user2", login=True)
 
     data = {
-        "song": open("sample-3s.mp3", "rb"),
+        "song-file": open("sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",

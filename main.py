@@ -328,7 +328,7 @@ def update_song():
     except ValueError:
         abort(400)
 
-    file = request.files["song"] if "song" in request.files else None
+    file = request.files["song-file"] if "song-file" in request.files else None
     yt_url = request.form["song-url"] if "song-url" in request.form else None
     title = request.form["title"]
     description = request.form["description"]
@@ -376,7 +376,7 @@ def update_song():
     return error
 
 def create_song():
-    file = request.files["song"] if "song" in request.files else None
+    file = request.files["song-file"] if "song-file" in request.files else None
     yt_url = request.form["song-url"] if "song-url" in request.form else None
     title = request.form["title"]
     description = request.form["description"]
