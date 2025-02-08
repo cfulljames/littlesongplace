@@ -303,6 +303,22 @@ def test_upload_song_from_mp4(client):
     _create_user(client, "user", "password", login=True)
     _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename="sample-4s.mp4")
 
+def test_upload_song_from_youtube(client):
+    _create_user(client, "user", "password", login=True)
+    data = {
+        "song-url": "https://youtu.be/5e5Z6gZWiEs",
+        "title": "song title",
+        "description": "song description",
+        "tags": "tag",
+        "collabs": "collab",
+    }
+    response = client.post("/upload-song", data=data)
+    assert response.status_code == 302
+
+    response = client.get(f"/users/user")
+    assert response.status_code == 200
+    assert b"Successfully uploaded &#39;song title&#39;" in response.data
+
 ################################################################################
 # Edit Song
 ################################################################################
@@ -336,6 +352,22 @@ def test_update_song_success(client):
     assert response.status_code == 200
     with open("sample-6s.mp3", "rb") as expected_file:
         assert response.data == expected_file.read()
+
+def test_update_song_from_youtube(client):
+    _create_user_and_song(client)
+    data = {
+        "song-url": "https://youtu.be/5e5Z6gZWiEs",
+        "title": "song title",
+        "description": "song description",
+        "tags": "tag",
+        "collabs": "collab",
+    }
+    response = client.post("/upload-song?songid=1", data=data)
+    assert response.status_code == 302
+
+    response = client.get(f"/users/user")
+    assert response.status_code == 200
+    assert b"Successfully updated &#39;song title&#39;" in response.data
 
 def test_update_song_bad_title(client):
     _create_user_and_song(client)

@@ -23,6 +23,8 @@ from flask import Flask, render_template, request, redirect, g, session, abort, 
 from PIL import Image, UnidentifiedImageError
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
+from yt_dlp import YoutubeDL
+from yt_dlp.utils import DownloadError
 
 DB_VERSION = 2
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
@@ -271,7 +273,6 @@ def upload_song():
         return redirect(request.referrer)
 
 def validate_song_form():
-    file = request.files["song"]
     title = request.form["title"]
     description = request.form["description"]
 
@@ -327,7 +328,8 @@ def update_song():
     except ValueError:
         abort(400)
 
-    file = request.files["song"]
+    file = request.files["song"] if "song" in request.files else None
+    yt_url = request.form["song-url"] if "song-url" in request.form else None
     title = request.form["title"]
     description = request.form["description"]
     tags = [t.strip() for t in request.form["tags"].split(",")]
@@ -341,9 +343,9 @@ def update_song():
         abort(401)
 
     error = False
-    if file:
+    if file or yt_url:
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            passed = convert_song(tmp_file, file)
+            passed = convert_song(tmp_file, file, yt_url)
 
             if passed:
                 # Move file to permanent location
@@ -374,14 +376,15 @@ def update_song():
     return error
 
 def create_song():
-    file = request.files["song"]
+    file = request.files["song"] if "song" in request.files else None
+    yt_url = request.form["song-url"] if "song-url" in request.form else None
     title = request.form["title"]
     description = request.form["description"]
     tags = [t.strip() for t in request.form["tags"].split(",")]
     collaborators = [c.strip() for c in request.form["collabs"].split(",")]
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        passed = convert_song(tmp_file, file)
+        passed = convert_song(tmp_file, file, yt_url)
 
         if not passed:
             return True
@@ -410,9 +413,20 @@ def create_song():
             flash_and_log(f"Successfully uploaded '{title}'", "success")
             return False
 
-def convert_song(tmp_file, request_file):
-    request_file.save(tmp_file)
-    tmp_file.close()
+def convert_song(tmp_file, request_file, yt_url):
+    if request_file:
+        # Get uploaded file
+        request_file.save(tmp_file)
+        tmp_file.close()
+    else:
+        # Import from YouTube
+        tmp_file.close()
+        os.unlink(tmp_file.name)  # Delete file so yt-dlp doesn't complain
+        try:
+            yt_import(tmp_file, yt_url)
+        except DownloadError:
+            flash_and_log(f"Failed to import from YouTube URL: {yt_url}")
+            return False
 
     result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
     res_stdout = result.stdout.decode()
@@ -438,6 +452,14 @@ def convert_song(tmp_file, request_file):
 
     flash_and_log("Invalid audio file", "error")
     return False
+
+def yt_import(tmp_file, yt_url):
+    ydl_opts = {
+        'format': 'm4a/bestaudio/best',
+        'outtmpl': tmp_file.name,
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.download([yt_url])
 
 @app.get("/delete-song/<int:songid>")
 def delete_song(songid):

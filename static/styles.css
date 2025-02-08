@@ -42,7 +42,7 @@ textarea {
     margin: 10px;
 }
 
-input[type=text], input[type=password] {
+input[type=text], input[type=password], input[type=url] {
     background: var(--yellow);
     margin: 10px;
     font-family: sans-serif;
@@ -151,7 +151,11 @@ div.navbar {
 
 /* Upload/Edit Form */
 
-div.upload-form input[type=text] {
+div.upload-form {
+    margin-bottom: 10px;
+}
+
+div.upload-form input[type=text], div.upload-form input[type=url] {
     width: calc(100% - 20px);
     box-sizing: border-box;
 }

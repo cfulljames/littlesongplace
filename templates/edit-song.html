@@ -11,15 +11,27 @@ Most standard audio/video formats are supported - .wav, .mp3, .ogg, .mp4, etc.
 </p>
 
 {% if song %}
-<form action="/upload-song?songid={{ song.songid }}" method="post" enctype="multipart/form-data">
+<form action="/upload-song?songid={{ song.songid }}" method="post" enctype="multipart/form-data" onsubmit="onUpload()">
     <h2>Edit Song</h2>
 {% else %}
-<form action="/upload-song" method="post" enctype="multipart/form-data">
+<form action="/upload-song" method="post" enctype="multipart/form-data" onsubmit="onUpload()">
     <h2>Upload a New Song</h2>
 {% endif %}
     <div class="upload-form">
-        <label for="song">{% if song %}Replace {% endif %}Audio File</label><br>
-        <input type="file" name="song" id="file-select" {% if not song %}required{% endif %}>
+        <input type="radio" id="file" name="upload-type" value="file" onchange="selectUploadMethod()" checked />
+        <label for="file">Upload a song from my device</label><br/>
+    </div>
+    <div class="upload-form">
+        <input type="radio" id="yt" name="upload-type" value="yt" onchange="selectUploadMethod()" />
+        <label for="yt">Import a song from YouTube</label>
+    </div>
+    <div class="upload-form" id="audio-file">
+        <label for="song-file">{% if song %}Replace {% endif %}Audio File</label><br>
+        <input type="file" name="song-file" id="song-file" {% if not song %}required{% endif %}>
+    </div>
+    <div class="upload-form" id="yt-url" hidden>
+        <label for="song-url">YouTube URL</label><br>
+        <input type="url" name="song-url" id="song-url">
     </div>
     <div class="upload-form">
         <label for="title">Title</label><br>
@@ -39,16 +51,16 @@ Most standard audio/video formats are supported - .wav, .mp3, .ogg, .mp4, etc.
     </div>
     <div class="upload-form">
         {% if song %}
-        <input type="submit" value="Update" onclick="onUpload(event)">
+        <input type="submit" value="Update" />
         {% else %}
-        <input type="submit" value="Upload" onclick="onUpload(event)">
+        <input type="submit" value="Upload" />
         {% endif %}
         <p id="uploading" hidden>uploading...</p>
     </div>
 </form>
 
-<!-- Automatically set song name from file name -->
 <script>
+// Automatically set song name from file name
 document.getElementById("file-select").addEventListener("change", function(e) {
     var songTitle = document.getElementById("song-title");
     if (e.target.files[0] && !songTitle.value) {
@@ -57,10 +69,34 @@ document.getElementById("file-select").addEventListener("change", function(e) {
     }
 });
 
+// Show uploading text on submit
 function onUpload(event) {
     var uploading = document.getElementById("uploading")
     uploading.hidden = false;
 }
+
+// Toggle YouTube import/File upload
+function selectUploadMethod() {
+    if (document.getElementById("file").checked) {
+        // Show audio file upload button
+        document.getElementById("yt-url").hidden = true;
+        document.getElementById("song-url").required = false;
+
+        document.getElementById("audio-file").hidden = false;
+        document.getElementById("song-file").required = {% if song %}false{% else %}true{% endif %};
+    }
+    else {
+        // Show youtube import URL box
+        document.getElementById("yt-url").hidden = false;
+        document.getElementById("song-url").required = {% if song %}false{% else %}true{% endif %};
+
+        document.getElementById("audio-file").hidden = true;
+        document.getElementById("song-file").required = false;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", selectUploadMethod());
+
 </script>
 
 {% endblock %}
