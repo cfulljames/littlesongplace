@@ -53,15 +53,15 @@
     <table>
         <tr>
             <td> <label for="bgcolor">Background</label> </td>
-            <td> <input name="bgcolor" type="text" id="bgcolor-input" value="{{ user_bgcolor or '#e8e6b5' }}" data-coloris oninput="updateColor('--yellow', this.value)"/> </td>
+            <td> <input name="bgcolor" type="text" id="bgcolor-input" value="{{ user_bgcolor or '#e8e6b5' }}" readonly data-coloris oninput="updateColor('--yellow', this.value)"/> </td>
         </tr>
         <tr>
             <td> <label for="fgcolor">Text</label> </td>
-            <td> <input name="fgcolor" type="text" id="fgcolor-input" value="{{ user_fgcolor or '#695c73' }}" data-coloris oninput="updateColor('--black', this.value)"/> </td>
+            <td> <input name="fgcolor" type="text" id="fgcolor-input" value="{{ user_fgcolor or '#695c73' }}" readonly data-coloris oninput="updateColor('--black', this.value)"/> </td>
         </tr>
         <tr>
             <td> <label for="accolor">Accent</label> </td>
-            <td> <input name="accolor" type="text" id="accolor-input" value="{{ user_accolor or '#9373a9' }}" data-coloris oninput="updateColor('--purple', this.value)"/> </td>
+            <td> <input name="accolor" type="text" id="accolor-input" value="{{ user_accolor or '#9373a9' }}" readonly data-coloris oninput="updateColor('--purple', this.value)"/> </td>
         </tr>
         <script>
             function updateColor(name, value) {
@@ -87,7 +87,8 @@
     <button type="button" class="button" onclick="resetColors()">Reset Colors</button>
     <script>
         Coloris({
-          alpha: false
+            alpha: false,
+            focusInput: false,
         });
     </script>
 
