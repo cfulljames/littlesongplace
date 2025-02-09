@@ -217,7 +217,7 @@ def test_get_pfp(client):
 
     response = client.get("/pfp/1")
     assert response.status_code == 200
-    assert response.mimetype == "image/png"
+    assert response.mimetype == "image/jpeg"
     # Can't check image file, since site has modified it
 
 def test_get_pfp_no_file(client):

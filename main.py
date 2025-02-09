@@ -183,10 +183,14 @@ def edit_profile():
     get_db().commit()
 
     if request.files["pfp"]:
-        pfp_path = get_user_images_path(session["userid"]) / "pfp.png"
+        pfp_path = get_user_images_path(session["userid"]) / "pfp.jpg"
 
         try:
             with Image.open(request.files["pfp"]) as im:
+                # Drop alpha channel
+                if im.mode in ("RGBA", "P"):
+                    im = im.convert("RGB")
+
                 target_size = 256  # Square (same width/height)
                 # Resize
                 if im.width >= im.height:
@@ -218,7 +222,7 @@ def edit_profile():
 
 @app.get("/pfp/<int:userid>")
 def pfp(userid):
-    return send_from_directory(DATA_DIR / "images" / str(userid), "pfp.png")
+    return send_from_directory(DATA_DIR / "images" / str(userid), "pfp.jpg")
 
 @app.get("/edit-song")
 def edit_song():
