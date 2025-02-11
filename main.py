@@ -690,6 +690,47 @@ def new_activity():
 def site_news():
     return render_template("news.html")
 
+@app.post("/create-playlist")
+def create_playlist():
+    if not "userid" in session:
+        return redirect("/login")
+
+    name = request.form["name"]
+    if not name:
+        flash_and_log("Playlist must have a name", "error")
+        return redirect(request.referrer)
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    private = request.form["type"] == "private"
+
+    query_db(
+        "insert into playlists (created, updated, userid, name, private) values (?, ?, ?, ?, ?)",
+        args=[
+            timestamp,
+            timestamp,
+            session["userid"],
+            name,
+            private,
+        ]
+    )
+
+@app.post("/delete-playlist/<int:playlistid>")
+def delete_playlist(playlistid):
+    query_db("delete from playlists where playlistid = ?", args=[playlistid])
+
+@app.get("/edit-playlist")
+def edit_playlist_get():
+    abort(404)
+
+@app.post("/edit-playlist")
+def edit_playlist_post():
+    abort(404)
+
+@app.get("/playlists/<int:playlistid>")
+def playlists(playlistid):
+    abort(404)
+
 def flash_and_log(msg, category=None):
     flash(msg, category)
     username = session["username"] if "username" in session else "N/A"

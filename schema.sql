@@ -5,7 +5,10 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     password BLOB NOT NULL,
     bio TEXT,
-    activitytime TEXT
+    activitytime TEXT,
+    bgcolor TEXT,
+    fgcolor TEXT,
+    accolor TEXT,
 );
 CREATE INDEX users_by_name ON users(username);
 
@@ -63,5 +66,5 @@ CREATE TABLE song_comment_notifications (
 );
 CREATE INDEX idx_song_comment_notifications_by_target ON song_comment_notifications(targetuserid);
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
 
