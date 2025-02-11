@@ -1,6 +1,6 @@
 <div class="song-list">
 {% for song in songs %}
-    <div class="song" data-song="{{ song.json() }}">
+<div class="song" style="{% if song.bgcolor %}--yellow: {{ song.bgcolor }};{% endif %} {% if song.fgcolor %}--black: {{ song.fgcolor }};{% endif %} {% if song.accolor %}--purple: {{ song.accolor }};{% endif %}" data-song="{{ song.json() }}">
         <div class="song-main">
             <!-- Profile Picture -->
             <img class="small-pfp" src="/pfp/{{ song.userid }}" onerror="this.style.display = 'none'" />
@@ -161,14 +161,14 @@ function showDetails(event) {
                 child.hidden = false;
                 event.target.alt = "Hide Details";
                 event.target.className = "lsp_btn_hide02";
-                event.target.src = customImage(document.getElementById("lsp_btn_hide02"));
+                event.target.src = customImage(document.getElementById("lsp_btn_hide02"), event.target);
             }
             else {
                 // Hide details
                 child.hidden = true;
                 event.target.alt = "Show Details";
                 event.target.className = "lsp_btn_show02";
-                event.target.src = customImage(document.getElementById("lsp_btn_show02"));
+                event.target.src = customImage(document.getElementById("lsp_btn_show02"), event.target);
             }
         }
     }

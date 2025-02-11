@@ -802,6 +802,9 @@ class Song:
     description: str
     tags: list[str]
     collaborators: list[str]
+    fgcolor: str
+    bgcolor: str
+    accolor: str
 
     def json(self):
         return json.dumps(vars(self))
@@ -857,7 +860,18 @@ class Song:
         for sd in songs_data:
             song_tags = [t["tag"] for t in tags[sd["songid"]]]
             song_collabs = [c["name"] for c in collabs[sd["songid"]]]
-            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), song_tags, song_collabs))
+            songs.append(cls(
+                sd["songid"],
+                sd["userid"],
+                sd["username"],
+                sd["title"],
+                sanitize_user_text(sd["description"]),
+                song_tags,
+                song_collabs,
+                sd["fgcolor"],
+                sd["bgcolor"],
+                sd["accolor"],
+            ))
 
         return songs
 
