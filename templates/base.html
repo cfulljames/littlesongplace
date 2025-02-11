@@ -17,19 +17,19 @@
 
         <script>
 
-            function customImage(source, target) {
+            function customImage(element) {
                 // Customize an image by performing a palette swap on the .gif
                 // file.  The source element must contain a data-img-b64 attribute
                 // containing the base64 representation of a .gif file.  The byte
                 // indexes match .gifs from Aseprite, and may not work for all
                 // .gif files.
 
-                var style = window.getComputedStyle(target);
+                var style = window.getComputedStyle(document.body);
                 var bgcolor = style.getPropertyValue("--yellow");
                 var accolor = style.getPropertyValue("--purple");
 
                 // Convert base64 string to Uint8Array so we can modify it
-                var data = atob(source.dataset.imgB64);
+                var data = atob(element.dataset.imgB64);
                 var bytes = Uint8Array.from(data, c => c.charCodeAt(0));
 
                 // Replace background color palette bytes in gif file
@@ -52,9 +52,9 @@
             function updateImageColors() {
                 // Perform a palette swap on all gifs based on current page colors
 
-                document.querySelectorAll(".img-data").forEach(s => {
-                    document.querySelectorAll(`.${s.id}`).forEach(t => {
-                        t.src = customImage(s, t);
+                document.querySelectorAll(".img-data").forEach(e => {
+                    document.querySelectorAll(`.${e.id}`).forEach(t => {
+                        t.src = customImage(e);
                     });
                 });
             }
