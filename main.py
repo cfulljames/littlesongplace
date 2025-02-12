@@ -714,22 +714,129 @@ def create_playlist():
             private,
         ]
     )
+    flash_and_log(f"Created playlist {plist_data['name']}", "success")
+    return redirect(request.referrer)
 
 @app.post("/delete-playlist/<int:playlistid>")
 def delete_playlist(playlistid):
+    if not "userid" in session:
+        abort(401)
+
+    # Make sure playlist exists
+    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
+    if not plist_data:
+        abort(404)
+
+    # Cannot delete other user's playlist
+    if session["userid"] != plist_data["userid"]:
+        abort(401)
+
+    # Delete playlist
     query_db("delete from playlists where playlistid = ?", args=[playlistid])
+    get_db().commit()
 
-@app.get("/edit-playlist")
-def edit_playlist_get():
-    abort(404)
+    flash_and_log(f"Deleted playlist {plist_data['name']}", "success")
+    return redirect(request.referrer)
 
-@app.post("/edit-playlist")
-def edit_playlist_post():
-    abort(404)
+@app.post("/append-to-playlist/<int:playlistid>")
+def append_to_playlist(playlistid):
+    if not "userid" in session:
+        abort(401)
+
+    # Make sure playlist exists
+    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
+    if not plist_data:
+        abort(404)
+
+    # Cannot edit other user's playlist
+    if session["userid"] != plist_data["userid"]:
+        abort(401)
+
+    songid = request.args["songid"]
+
+    # Make sure song exists
+    song_data = query_db("select * from songs where songid = ?", args=[songid])
+    if not song_data:
+        abort(404)
+
+    # Set index to count of songs in list
+    existing_songs = query_db("select * from playlist_songs where playlistid = ?", args=[playlistid])
+    new_position = len(existing_songs)
+
+    # Add to playlist
+    query_db("insert into playlist_songs (playlistid, position, songid) values (?, ?, ?)", args=[playlistid, position, songid])
+
+    # Update modification time
+    timestamp = datetime.now(timezone.utc).isoformat()
+    query_db("update playlists set updated = ? where playlistid = ?", args=[timestamp, playlistid])
+
+    return {"status": "ok"}
+
+@app.post("/edit-playlist/<int:playlistid>")
+def edit_playlist_post(playlistid):
+    if not "userid" in session:
+        abort(401)
+
+    # Make sure playlist exists
+    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
+    if not plist_data:
+        abort(404)
+
+    # Cannot edit other user's playlist
+    if session["userid"] != plist_data["userid"]:
+        abort(401)
+
+    private = request.form["type"] == "private"
+
+    # Make sure all songs are valid
+    songids = []
+    for field, value in request.form.items():
+        if field.startswith("position-"):
+            try:
+                position = int(field[len("position-"):])
+                songid = int(value)
+            except ValueError:
+                abort(400)
+
+            song_data = query_db("select * from songs where songid = ?", args=[songid])
+            if not song_data:
+                abort(400)
+
+            # Song is valid, add to list
+            songids.append((position, songid))
+
+    # All songs valid - delete old songs
+    query_db("delete from playlist_songs where playlistid = ?", args=[playlistid])
+
+    # Re-add songs with new positions
+    for position, songid in songids:
+        query_db("insert into playlist_songs (playlistid, position, songid) values (?, ?, ?)", args=[playlistid, position, songid])
+
+    get_db().commit()
+
+    flash_and_log("Playlist updated", "success")
+    return redirect(request.referrer)
 
 @app.get("/playlists/<int:playlistid>")
 def playlists(playlistid):
-    abort(404)
+
+    # Make sure playlist exists
+    plist_data = query_db("select * from playlists inner join users on playlists.userid = users.userid where playlistid = ?", args=[playlistid])
+    if not plist_data:
+        abort(404)
+
+    # Protect private playlists
+    if plist_data["private"]:
+        if "userid" not in session:
+            return redirect("/login")
+        elif session["userid"] != plist_data["userid"]:
+            abort(401)  # Cannot view other user's private playlist
+
+    # Get songs
+    songs = Song.get_for_playlist(playlistid)
+
+    # Show page
+    return render_template("playlist.html", name=plist_data["name"], username=plist_data["username"], songs=songs)
 
 def flash_and_log(msg, category=None):
     flash(msg, category)
@@ -889,6 +996,15 @@ class Song:
     @classmethod
     def get_latest(cls, count):
         return cls._from_db("select * from songs inner join users on songs.userid = users.userid order by songs.created desc limit ?", [count])
+
+    @classmethod
+    def get_for_playlist(cls, playlistid):
+        return cls._from_db("""\
+            select * from playlist_songs
+            inner join songs on palylist_songs.songid = songs.songid
+            inner join users on songs.userid = users.userid
+            order by playlist_songs.position asc
+            """, [count])
 
     @classmethod
     def _from_db(cls, query, args=()):
