@@ -54,6 +54,13 @@
         </div>
 
         <div class="song-details" {% if request.endpoint != 'song' %}hidden{% endif %}>
+            {% if playlists %}
+            <!-- Add to Playlist Buttons -->
+            <div class="song-playlist-controls">
+                <button type="button" onclick="return showPlaylistSelector(event, {{ song.songid }})">Add to Playlist</button>
+            </div>
+            {% endif %}
+
             <!-- Song Description -->
             {% if song.description %}
             <div class="song-description">{{ (song.description.replace("\n", "<br>"))|safe  }}</div>
@@ -138,21 +145,19 @@
                 </div>
                 {% endfor %}
             </div>
-
         </div>
     </div>
 {% endfor %}
+
+    <!-- Playlist selector, shown when Add to Playlist is clicked -->
+    <div class="playlist-selector" hidden>
+        <!-- TODO -->
+    </div>
 </div>
 
 <script>
 function showDetails(event) {
-    // Find song-main
-    var songElement = event.target;
-    while (!songElement.classList.contains("song"))
-    {
-        songElement = songElement.parentElement;
-        console.log(songElement);
-    }
+    var songElement = event.target.closest(".song");
 
     for (const child of songElement.children) {
         if (child.classList.contains("song-details")) {
@@ -172,6 +177,15 @@ function showDetails(event) {
             }
         }
     }
+    return false;
+}
+
+var m_addToPlaylistSongid = null;
+function showPlaylistSelector(event, songid) {
+    m_addToPlaylistSongid = songid;
+    var songList = event.target.closest(".song-list");
+    var playlistSelector = songList.querySelector(".playlist-selector");
+    playlistSelector.hidden = false;
     return false;
 }
 </script>
