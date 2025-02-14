@@ -1,5 +1,13 @@
 NOW
-- Apply user colors to songs in lists outside profile
+- Playlists:
+    - Create
+    - Play
+    - Remove song
+    - Reorder songs
+    - Delete
+    - Pin to profile
+    - Albums?
+- Show upload date in song list
 
 SOON
 - Player minimize button
@@ -11,14 +19,6 @@ SOON
     - Remove songs
     - Reorder songs
     - Automatically use songs on page when queue ends
-- Playlists:
-    - Create
-    - Play
-    - Remove song
-    - Reorder songs
-    - Delete
-    - Pin to profile
-    - Albums?
 
 LATER
 - Show song info for song in player (description, tags)

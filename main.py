@@ -738,12 +738,17 @@ def delete_playlist(playlistid):
     flash_and_log(f"Deleted playlist {plist_data['name']}", "success")
     return redirect(request.referrer)
 
-@app.post("/append-to-playlist/<int:playlistid>")
-def append_to_playlist(playlistid):
+@app.post("/append-to-playlist")
+def append_to_playlist():
     if not "userid" in session:
         abort(401)
 
     # Make sure playlist exists
+    try:
+        playlistid = int(request.form["playlistid"])
+    except ValueError:
+        abort(400)
+
     plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
     if not plist_data:
         abort(404)
@@ -752,7 +757,7 @@ def append_to_playlist(playlistid):
     if session["userid"] != plist_data["userid"]:
         abort(401)
 
-    songid = request.args["songid"]
+    songid = request.form["songid"]
 
     # Make sure song exists
     song_data = query_db("select * from songs where songid = ?", args=[songid])
