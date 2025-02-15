@@ -47,9 +47,9 @@ function deletePlaylist() {
         <input name="name" type="text" maxlength="100" value="{{ name }}"/><br>
 
         <label for="type">Playlist Type:</label>
-        <input name="type" type="radio" value="private" checked />
+        <input name="type" type="radio" value="private" {% if private %}checked{% endif %} />
         <label for="private">Private</label>
-        <input name="type" type="radio" value="public" />
+        <input name="type" type="radio" value="public" {% if not private %}checked{% endif %}/>
         <label for="public">Public</label><br>
 
         <input id="playlist-songids-input" type="hidden" name="songids" value="-1" /> <!-- Populated by script on submit -->
@@ -58,12 +58,12 @@ function deletePlaylist() {
 
         <div class="edit-list">
             {%- for song in songs %}
-            <div class="draggable-song" draggable="true" ondragstart="onSongDragStart(event)" ondragover="onSongDragOver(event)" ondrop="onSongDrop(event)">
+            <div class="draggable-song" draggable="true" ondragstart="onSongDragStart(event)" ondragend="clearDragMarker(event)" ondragover="onSongDragOver(event)" ondrop="onSongDrop(event)">
                 <span class="songid" hidden>{{ song.songid }}</span>
                 <span class="song-title">{{ song.title }}</span> -
                 <span class="song-artist">{{ song.username }}</span>
-                <span style="width: 100%"></span>
-                <button onclick="removeSong(event)" class="song-list-button" title="Remove" style="margin-right: 0px">
+                <span style="margin: auto"></span>
+                <button type="button" onclick="removeSong(event)" class="song-list-button" title="Remove" style="margin-right: 0px">
                     <img class="lsp_btn_delete02" alt="Delete">
                 </button>
             </div>
@@ -87,49 +87,55 @@ function deletePlaylist() {
         for (const entry of editList.children) {
             var songidSpan = entry.querySelector(".songid");
             if (songidSpan) {
-                console.log(songidSpan.textContent);
                 songids.push(songidSpan.textContent);
             }
         }
         songids = songids.join(",");
-        console.log(songids);
 
         var songidsInput = form.querySelector("#playlist-songids-input");
         songidsInput.value = songids;
     }
+
     function onSongDragStart(event) {
         var list = event.currentTarget.closest(".edit-list");
         var index = [...list.children].indexOf(event.currentTarget);
         event.dataTransfer.setData("text", index.toString());
         event.dataTransfer.effectAllowed = "move";
     }
+
     function onSongDragOver(event) {
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
-        var list = event.currentTarget.closest(".edit-list");
-        for (const child of list.children) {
-            child.style.borderTop = "";
-            child.style.borderBottom = "";
-        }
+        clearDragMarker(event);
         if (event.currentTarget.previousElementSibling) {
             event.currentTarget.previousElementSibling.style.borderBottom = "3px solid var(--purple)";
         }
         event.currentTarget.style.borderTop = "3px solid var(--purple)";
     }
+
     function onSongDrop(event) {
         event.preventDefault();
         const data = event.dataTransfer.getData("text");
         var sourceIndex = parseInt(data);
         var list = event.currentTarget.closest(".edit-list");
-        for (const child of list.children) {
-            child.style.borderTop = "";
-            child.style.borderBottom = "";
-        }
         var sourceElement = list.children[sourceIndex];
+        clearDragMarker(event);
         if (sourceElement !== event.currentTarget) {
             sourceElement.remove();
             list.insertBefore(sourceElement, event.currentTarget);
         }
+    }
+
+    function clearDragMarker(event) {
+        var list = event.currentTarget.closest(".edit-list");
+        for (const child of list.children) {
+            child.style.borderTop = "";
+            child.style.borderBottom = "";
+        }
+    }
+
+    function removeSong(event) {
+        event.currentTarget.closest(".draggable-song").remove();
     }
     </script>
 </div>

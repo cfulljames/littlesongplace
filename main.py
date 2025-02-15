@@ -821,6 +821,7 @@ def edit_playlist_post(playlistid):
 
     # Re-add songs with new positions
     for position, songid in enumerate(songids):
+        print(position, songid)
         query_db("insert into playlist_songs (playlistid, position, songid) values (?, ?, ?)", args=[playlistid, position, songid])
 
     # Update private, name
@@ -856,6 +857,7 @@ def playlists(playlistid):
             "playlist.html",
             name=plist_data["name"],
             playlistid=plist_data["playlistid"],
+            private=plist_data["private"],
             userid=plist_data["userid"],
             username=plist_data["username"],
             songs=songs,
@@ -1034,8 +1036,9 @@ class Song:
             select * from playlist_songs
             inner join songs on playlist_songs.songid = songs.songid
             inner join users on songs.userid = users.userid
+            where playlistid = ?
             order by playlist_songs.position asc
-            """)
+            """, [playlistid])
 
     @classmethod
     def _from_db(cls, query, args=()):

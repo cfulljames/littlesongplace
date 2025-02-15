@@ -59,10 +59,10 @@
             <div class="song-playlist-controls">
                 <form action="/append-to-playlist" method="post">
                     <input type="hidden" name="songid" value="{{ song.songid }}" id="playlist-selector-songid"/>
-                    <select name="playlistid">
+                    <select name="playlistid" onchange="this.closest('form').submit()">
                         <option value="-1">Add to Playlist...</option>
                         {% for plist in current_user_playlists -%}
-                        <option value="{{ plist.playlistid }}" onclick="this.closest('form').submit()">{{ plist['name'] }}</option>
+                        <option value="{{ plist.playlistid }}">{{ plist['name'] }}</option>
                         {%- endfor %}
                     </select>
                 </form>
