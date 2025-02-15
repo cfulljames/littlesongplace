@@ -26,7 +26,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
-DB_VERSION = 2
+DB_VERSION = 3
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 SCRIPT_DIR = Path(__file__).parent
 
@@ -146,15 +146,22 @@ def logout():
 
 @app.get("/users/<profile_username>")
 def users_profile(profile_username):
-    username = session.get("username", None)
 
     # Look up user data for current profile
     profile_data = query_db("select * from users where username = ?", [profile_username], one=True)
     if profile_data is None:
         abort(404)
+    profile_userid = profile_data["userid"]
+
+    # Get playlists for current profile
+    userid = session.get("userid", None)
+    show_private = userid == profile_userid
+    if show_private:
+        plist_data = query_db("select * from playlists where userid = ?", [profile_userid])
+    else:
+        plist_data = query_db("select * from playlists where userid = ? and private = 0", [profile_userid])
 
     # Get songs for current profile
-    profile_userid = profile_data["userid"]
     songs = Song.get_all_for_userid(profile_userid)
 
     # Sanitize bio
@@ -170,6 +177,8 @@ def users_profile(profile_username):
             user_fgcolor=profile_data["fgcolor"],
             user_bgcolor=profile_data["bgcolor"],
             user_accolor=profile_data["accolor"],
+            playlists=plist_data,
+            songs=songs,
             song_list=render_template("song-list.html", songs=songs))
 
 @app.post("/edit-profile")
@@ -696,7 +705,7 @@ def create_playlist():
         return redirect("/login")
 
     name = request.form["name"]
-    if not name:
+    if not name or len(name) > 200:
         flash_and_log("Playlist must have a name", "error")
         return redirect(request.referrer)
 
@@ -714,7 +723,8 @@ def create_playlist():
             private,
         ]
     )
-    flash_and_log(f"Created playlist {plist_data['name']}", "success")
+    get_db().commit()
+    flash_and_log(f"Created playlist {name}", "success")
     return redirect(request.referrer)
 
 @app.post("/delete-playlist/<int:playlistid>")
@@ -749,7 +759,7 @@ def append_to_playlist():
     except ValueError:
         abort(400)
 
-    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
+    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid], one=True)
     if not plist_data:
         abort(404)
 
@@ -769,11 +779,12 @@ def append_to_playlist():
     new_position = len(existing_songs)
 
     # Add to playlist
-    query_db("insert into playlist_songs (playlistid, position, songid) values (?, ?, ?)", args=[playlistid, position, songid])
+    query_db("insert into playlist_songs (playlistid, position, songid) values (?, ?, ?)", args=[playlistid, new_position, songid])
 
     # Update modification time
     timestamp = datetime.now(timezone.utc).isoformat()
     query_db("update playlists set updated = ? where playlistid = ?", args=[timestamp, playlistid])
+    get_db().commit()
 
     return {"status": "ok"}
 
@@ -826,7 +837,7 @@ def edit_playlist_post(playlistid):
 def playlists(playlistid):
 
     # Make sure playlist exists
-    plist_data = query_db("select * from playlists inner join users on playlists.userid = users.userid where playlistid = ?", args=[playlistid])
+    plist_data = query_db("select * from playlists inner join users on playlists.userid = users.userid where playlistid = ?", args=[playlistid], one=True)
     if not plist_data:
         abort(404)
 
@@ -841,7 +852,11 @@ def playlists(playlistid):
     songs = Song.get_for_playlist(playlistid)
 
     # Show page
-    return render_template("playlist.html", name=plist_data["name"], username=plist_data["username"], songs=songs)
+    return render_template(
+            "playlist.html",
+            name=plist_data["name"],
+            username=plist_data["username"],
+            song_list=render_template("song-list.html", songs=songs))
 
 def flash_and_log(msg, category=None):
     flash(msg, category)
@@ -887,9 +902,16 @@ def get_gif_data():
     gifs = "\n".join(gifs)
     return gifs
 
+def get_current_user_playlists():
+    plist_data = []
+    if "userid" in session:
+        plist_data = query_db("select * from playlists where userid = ?", [session["userid"]])
+
+    return plist_data
+
 @app.context_processor
 def inject_global_vars():
-    return dict(gif_data=get_gif_data())
+    return dict(gif_data=get_gif_data(), current_user_playlists=get_current_user_playlists())
 
 
 ################################################################################
@@ -1006,10 +1028,10 @@ class Song:
     def get_for_playlist(cls, playlistid):
         return cls._from_db("""\
             select * from playlist_songs
-            inner join songs on palylist_songs.songid = songs.songid
+            inner join songs on playlist_songs.songid = songs.songid
             inner join users on songs.userid = users.userid
             order by playlist_songs.position asc
-            """, [count])
+            """)
 
     @classmethod
     def _from_db(cls, query, args=()):

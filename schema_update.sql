@@ -8,6 +8,7 @@ CREATE TABLE playlists (
 
     FOREIGN KEY(userid) REFERENCES users(userid)
 );
+CREATE INDEX playlists_by_userid ON playlists(userid);
 
 CREATE TABLE playlist_songs (
     playlistid INTEGER NOT NULL,

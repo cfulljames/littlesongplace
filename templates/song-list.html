@@ -54,10 +54,10 @@
         </div>
 
         <div class="song-details" {% if request.endpoint != 'song' %}hidden{% endif %}>
-            {% if playlists %}
+            {% if current_user_playlists %}
             <!-- Add to Playlist Buttons -->
             <div class="song-playlist-controls">
-                <button type="button" onclick="return showPlaylistSelector(event, {{ song.songid }})">Add to Playlist</button>
+                <button type="button" class="button" onclick="return showPlaylistSelector(event, {{ song.songid }})">Add to Playlist</button>
             </div>
             {% endif %}
 
@@ -149,14 +149,14 @@
     </div>
 {% endfor %}
 
-    {% if playlists -%}
+    {% if current_user_playlists -%}
     <!-- Playlist selector, shown when Add to Playlist is clicked -->
     <div class="playlist-selector" hidden>
-        <form>
+        <form action="/append-to-playlist" method="post">
             <input type="hidden" name="songid" value="-1" id="playlist-selector-songid"/>
             <select name="playlistid">
-                {% for plist in playlists -%}
-                <option value="{{ plist.playlistid }}">{{ plist.name }}</option>
+                {% for plist in current_user_playlists -%}
+                <option value="{{ plist.playlistid }}">{{ plist['name'] }}</option>
                 {%- endfor %}
             </select>
             <input type="submit" value="submit" />
@@ -190,7 +190,7 @@ function showDetails(event) {
     return false;
 }
 
-{% if playlists %}
+{% if current_user_playlists %}
 var m_addToPlaylistSongid = null;
 function showPlaylistSelector(event, songid) {
     m_addToPlaylistSongid = songid;
@@ -198,8 +198,8 @@ function showPlaylistSelector(event, songid) {
     var playlistSelector = songList.querySelector(".playlist-selector");
     playlistSelector.hidden = false;
     var songidInput = playlistSelector.querySelector("#playlist-selector-songid")
-    songInput.value = songid
+    songidInput.value = songid
     return false;
 }
-{% endif $}
+{% endif %}
 </script>
