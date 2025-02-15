@@ -32,7 +32,7 @@
             <div class="song-buttons">
 
                 <!-- Owner-Specific Buttons (Edit/Delete) -->
-                {% if session["userid"] == song.userid %}
+                {% if session["userid"] == song.userid and is_profile_song_list %}
                 <a href="/edit-song?songid={{ song.songid }}" class="song-list-button">
                     <img class="lsp_btn_edit02" alt="Edit">
                 </a>
@@ -57,7 +57,15 @@
             {% if current_user_playlists %}
             <!-- Add to Playlist Buttons -->
             <div class="song-playlist-controls">
-                <button type="button" class="button" onclick="return showPlaylistSelector(event, {{ song.songid }})">Add to Playlist</button>
+                <form action="/append-to-playlist" method="post">
+                    <input type="hidden" name="songid" value="{{ song.songid }}" id="playlist-selector-songid"/>
+                    <select name="playlistid">
+                        <option value="-1">Add to Playlist...</option>
+                        {% for plist in current_user_playlists -%}
+                        <option value="{{ plist.playlistid }}" onclick="this.closest('form').submit()">{{ plist['name'] }}</option>
+                        {%- endfor %}
+                    </select>
+                </form>
             </div>
             {% endif %}
 
@@ -148,58 +156,26 @@
         </div>
     </div>
 {% endfor %}
-
-    {% if current_user_playlists -%}
-    <!-- Playlist selector, shown when Add to Playlist is clicked -->
-    <div class="playlist-selector" hidden>
-        <form action="/append-to-playlist" method="post">
-            <input type="hidden" name="songid" value="-1" id="playlist-selector-songid"/>
-            <select name="playlistid">
-                {% for plist in current_user_playlists -%}
-                <option value="{{ plist.playlistid }}">{{ plist['name'] }}</option>
-                {%- endfor %}
-            </select>
-            <input type="submit" value="submit" />
-        </form>
-    </div>
-    {%- endif %}
 </div>
 
 <script>
 function showDetails(event) {
     var songElement = event.target.closest(".song");
-
-    for (const child of songElement.children) {
-        if (child.classList.contains("song-details")) {
-            if (child.hidden) {
-                // Show details
-                child.hidden = false;
-                event.target.alt = "Hide Details";
-                event.target.className = "lsp_btn_hide02";
-                event.target.src = customImage(document.getElementById("lsp_btn_hide02"));
-            }
-            else {
-                // Hide details
-                child.hidden = true;
-                event.target.alt = "Show Details";
-                event.target.className = "lsp_btn_show02";
-                event.target.src = customImage(document.getElementById("lsp_btn_show02"));
-            }
-        }
+    var songDetails = songElement.querySelector(".song-details");
+    if (songDetails.hidden) {
+        // Show details
+        songDetails.hidden = false;
+        event.target.alt = "Hide Details";
+        event.target.className = "lsp_btn_hide02";
+        event.target.src = customImage(document.getElementById("lsp_btn_hide02"));
+    }
+    else {
+        // Hide details
+        songDetails.hidden = true;
+        event.target.alt = "Show Details";
+        event.target.className = "lsp_btn_show02";
+        event.target.src = customImage(document.getElementById("lsp_btn_show02"));
     }
     return false;
 }
-
-{% if current_user_playlists %}
-var m_addToPlaylistSongid = null;
-function showPlaylistSelector(event, songid) {
-    m_addToPlaylistSongid = songid;
-    var songList = event.target.closest(".song-list");
-    var playlistSelector = songList.querySelector(".playlist-selector");
-    playlistSelector.hidden = false;
-    var songidInput = playlistSelector.querySelector("#playlist-selector-songid")
-    songidInput.value = songid
-    return false;
-}
-{% endif %}
 </script>

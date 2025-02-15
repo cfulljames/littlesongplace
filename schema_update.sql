@@ -6,7 +6,7 @@ CREATE TABLE playlists (
     name TEXT NOT NULL,
     private INTEGER NOT NULL,
 
-    FOREIGN KEY(userid) REFERENCES users(userid)
+    FOREIGN KEY(userid) REFERENCES users(userid) ON DELETE CASCADE
 );
 CREATE INDEX playlists_by_userid ON playlists(userid);
 
@@ -16,8 +16,8 @@ CREATE TABLE playlist_songs (
     songid INTEGER NOT NULL,
 
     PRIMARY KEY(playlistid, position),
-    FOREIGN KEY(playlistid) REFERENCES playlists(playlistid),
-    FOREIGN KEY(songid) REFERENCES songs(songid)
+    FOREIGN KEY(playlistid) REFERENCES playlists(playlistid) ON DELETE CASCADE,
+    FOREIGN KEY(songid) REFERENCES songs(songid) ON DELETE CASCADE
 );
 CREATE INDEX playlist_songs_by_playlist ON playlist_songs(playlistid);
 

@@ -65,7 +65,15 @@ input[type=text], input[type=password], input[type=url] {
     border: 0px;
     border-radius: 5px;
     padding: 8px;
-    margin: 10px;
+}
+
+select {
+    border: none;
+    background-color: var(--purple);
+    color: var(--yellow);
+    border-radius: 5px;
+    font-size: 16px;
+    padding: 8px;
 }
 
 div.main {
@@ -197,6 +205,10 @@ input[type=file] {
     border: solid 2px var(--purple);
 }
 
+.profile-bio {
+    margin: 10px 0px;
+}
+
 .profile-action {
     margin-bottom: 20px;
 }
@@ -207,6 +219,24 @@ input[type=file] {
     align-items: center;
     gap: 10px;
     margin: 10px;
+}
+
+.playlist-list-entry {
+    box-shadow: 0px 0px 5px 0px;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0px;
+}
+
+.draggable-song {
+    box-shadow: 0px 0px 5px 0px;
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin: 10px 0px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
 }
 
 /* Coloris Color Picker */

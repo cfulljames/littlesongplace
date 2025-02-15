@@ -2,12 +2,137 @@
 
 {% block title %}{{ name }}{% endblock %}
 
-{% block body %}
+{% block body -%}
 
 <h1>{{ name }}</h1>
 
 <p>Playlist by <a href="/users/{{ username }}" class="profile-link">{{ username }}</a></p>
 
+{% if session["userid"] == userid -%}
+<p class="playlist-actions">
+<button class="button" onclick="showPlaylistEditor()">Edit</button>
+<button class="button" onclick="deletePlaylist()">Delete</button>
+</p>
+
+<script>
+function showPlaylistEditor() {
+    document.querySelector(".song-list").hidden = true;
+    document.querySelector(".playlist-actions").hidden = true;
+    document.querySelector(".playlist-editor").hidden = false;
+}
+
+function hidePlaylistEditor() {
+    document.querySelector(".song-list").hidden = false;
+    document.querySelector(".playlist-actions").hidden = false;
+    document.querySelector(".playlist-editor").hidden = true;
+}
+
+function deletePlaylist() {
+    if (confirm("Are you sure you want to delete this playlist?")) {
+        window.location.href = "/delete-playlist/{{ playlistid }}";
+    }
+}
+</script>
+
+{%- endif %}
+
 {{ song_list|safe }}
 
-{% endblock %}
+{% if session["userid"] == userid -%}
+<!-- Drag-and-drop playlist editor -->
+<div class="playlist-editor" hidden>
+    <h2>Edit Playlist</h2>
+    <form action="/edit-playlist/{{ playlistid }}" method="post" onsubmit="updateSongIds(event)">
+        <label for="name">Playlist Name</label><br>
+        <input name="name" type="text" maxlength="100" value="{{ name }}"/><br>
+
+        <label for="type">Playlist Type:</label>
+        <input name="type" type="radio" value="private" checked />
+        <label for="private">Private</label>
+        <input name="type" type="radio" value="public" />
+        <label for="public">Public</label><br>
+
+        <input id="playlist-songids-input" type="hidden" name="songids" value="-1" /> <!-- Populated by script on submit -->
+
+        <p>Drag and drop songs to reorder them, or use the trash icon to remove them from the playlist.</p>
+
+        <div class="edit-list">
+            {%- for song in songs %}
+            <div class="draggable-song" draggable="true" ondragstart="onSongDragStart(event)" ondragover="onSongDragOver(event)" ondrop="onSongDrop(event)">
+                <span class="songid" hidden>{{ song.songid }}</span>
+                <span class="song-title">{{ song.title }}</span> -
+                <span class="song-artist">{{ song.username }}</span>
+                <span style="width: 100%"></span>
+                <button onclick="removeSong(event)" class="song-list-button" title="Remove" style="margin-right: 0px">
+                    <img class="lsp_btn_delete02" alt="Delete">
+                </button>
+            </div>
+            {%- endfor %}
+
+            <!-- dummy song to move to end -->
+            <div class="draggable-song" ondragover="onSongDragOver(event)" ondrop="onSongDrop(event)">
+                &nbsp;
+            </div>
+        </div>
+
+        <a href="javascript:hidePlaylistEditor()">Cancel</a>
+        <input type="submit" value="Save" style="margin: 10px;"/>
+    </form>
+
+    <script>
+    function updateSongIds(event) {
+        var form = event.currentTarget;
+        var editList = form.querySelector(".edit-list");
+        var songids = [];
+        for (const entry of editList.children) {
+            var songidSpan = entry.querySelector(".songid");
+            if (songidSpan) {
+                console.log(songidSpan.textContent);
+                songids.push(songidSpan.textContent);
+            }
+        }
+        songids = songids.join(",");
+        console.log(songids);
+
+        var songidsInput = form.querySelector("#playlist-songids-input");
+        songidsInput.value = songids;
+    }
+    function onSongDragStart(event) {
+        var list = event.currentTarget.closest(".edit-list");
+        var index = [...list.children].indexOf(event.currentTarget);
+        event.dataTransfer.setData("text", index.toString());
+        event.dataTransfer.effectAllowed = "move";
+    }
+    function onSongDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        var list = event.currentTarget.closest(".edit-list");
+        for (const child of list.children) {
+            child.style.borderTop = "";
+            child.style.borderBottom = "";
+        }
+        if (event.currentTarget.previousElementSibling) {
+            event.currentTarget.previousElementSibling.style.borderBottom = "3px solid var(--purple)";
+        }
+        event.currentTarget.style.borderTop = "3px solid var(--purple)";
+    }
+    function onSongDrop(event) {
+        event.preventDefault();
+        const data = event.dataTransfer.getData("text");
+        var sourceIndex = parseInt(data);
+        var list = event.currentTarget.closest(".edit-list");
+        for (const child of list.children) {
+            child.style.borderTop = "";
+            child.style.borderBottom = "";
+        }
+        var sourceElement = list.children[sourceIndex];
+        if (sourceElement !== event.currentTarget) {
+            sourceElement.remove();
+            list.insertBefore(sourceElement, event.currentTarget);
+        }
+    }
+    </script>
+</div>
+{%- endif %}
+
+{%- endblock %}

@@ -179,7 +179,7 @@ def users_profile(profile_username):
             user_accolor=profile_data["accolor"],
             playlists=plist_data,
             songs=songs,
-            song_list=render_template("song-list.html", songs=songs))
+            song_list=render_template("song-list.html", songs=songs, is_profile_song_list=True))
 
 @app.post("/edit-profile")
 def edit_profile():
@@ -727,13 +727,13 @@ def create_playlist():
     flash_and_log(f"Created playlist {name}", "success")
     return redirect(request.referrer)
 
-@app.post("/delete-playlist/<int:playlistid>")
+@app.get("/delete-playlist/<int:playlistid>")
 def delete_playlist(playlistid):
     if not "userid" in session:
         abort(401)
 
     # Make sure playlist exists
-    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
+    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid], one=True)
     if not plist_data:
         abort(404)
 
@@ -746,7 +746,7 @@ def delete_playlist(playlistid):
     get_db().commit()
 
     flash_and_log(f"Deleted playlist {plist_data['name']}", "success")
-    return redirect(request.referrer)
+    return redirect(f"/users/{session['username']}")
 
 @app.post("/append-to-playlist")
 def append_to_playlist():
@@ -770,7 +770,7 @@ def append_to_playlist():
     songid = request.form["songid"]
 
     # Make sure song exists
-    song_data = query_db("select * from songs where songid = ?", args=[songid])
+    song_data = query_db("select * from songs where songid = ?", args=[songid], one=True)
     if not song_data:
         abort(404)
 
@@ -786,7 +786,9 @@ def append_to_playlist():
     query_db("update playlists set updated = ? where playlistid = ?", args=[timestamp, playlistid])
     get_db().commit()
 
-    return {"status": "ok"}
+    flash_and_log(f"Added '{song_data['title']}' to {plist_data['name']}", "success")
+
+    return redirect(request.referrer)
 
 @app.post("/edit-playlist/<int:playlistid>")
 def edit_playlist_post(playlistid):
@@ -794,7 +796,7 @@ def edit_playlist_post(playlistid):
         abort(401)
 
     # Make sure playlist exists
-    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid])
+    plist_data = query_db("select * from playlists where playlistid = ?", args=[playlistid], one=True)
     if not plist_data:
         abort(404)
 
@@ -802,31 +804,29 @@ def edit_playlist_post(playlistid):
     if session["userid"] != plist_data["userid"]:
         abort(401)
 
-    private = request.form["type"] == "private"
-
     # Make sure all songs are valid
-    songids = []
-    for field, value in request.form.items():
-        if field.startswith("position-"):
-            try:
-                position = int(field[len("position-"):])
-                songid = int(value)
-            except ValueError:
-                abort(400)
+    try:
+        songids = [int(s) for s in request.form["songids"].split(",")]
+    except ValueError:
+        # Invalid songid(s)
+        abort(400)
 
-            song_data = query_db("select * from songs where songid = ?", args=[songid])
-            if not song_data:
-                abort(400)
-
-            # Song is valid, add to list
-            songids.append((position, songid))
+    for songid in songids:
+        song_data = query_db("select * from songs where songid = ?", args=[songid])
+        if not song_data:
+            abort(400)
 
     # All songs valid - delete old songs
     query_db("delete from playlist_songs where playlistid = ?", args=[playlistid])
 
     # Re-add songs with new positions
-    for position, songid in songids:
+    for position, songid in enumerate(songids):
         query_db("insert into playlist_songs (playlistid, position, songid) values (?, ?, ?)", args=[playlistid, position, songid])
+
+    # Update private, name
+    private = int(request.form["type"] == "private")
+    name = request.form["name"]
+    query_db("update playlists set private = ?, name = ? where playlistid = ?", [private, name, playlistid])
 
     get_db().commit()
 
@@ -855,7 +855,10 @@ def playlists(playlistid):
     return render_template(
             "playlist.html",
             name=plist_data["name"],
+            playlistid=plist_data["playlistid"],
+            userid=plist_data["userid"],
             username=plist_data["username"],
+            songs=songs,
             song_list=render_template("song-list.html", songs=songs))
 
 def flash_and_log(msg, category=None):
@@ -922,6 +925,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATA_DIR / "database.db")
+        db.cursor().execute("PRAGMA foreign_keys = ON")
 
         # Get current version
         user_version = query_db("pragma user_version", one=True)[0]
