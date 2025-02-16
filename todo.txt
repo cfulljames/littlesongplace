@@ -1,6 +1,5 @@
 NOW
 - Test playlist API
-- Show upload date in song list
 
 SOON
 - 10s skip forwards/backwards with left/right arrow keys

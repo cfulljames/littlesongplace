@@ -989,6 +989,7 @@ class Song:
     username: str
     title: str
     description: str
+    created: str
     tags: list[str]
     collaborators: list[str]
 
@@ -1056,7 +1057,8 @@ class Song:
         for sd in songs_data:
             song_tags = [t["tag"] for t in tags[sd["songid"]]]
             song_collabs = [c["name"] for c in collabs[sd["songid"]]]
-            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), song_tags, song_collabs))
+            created = datetime.fromisoformat(sd["created"]).astimezone().strftime("%Y-%m-%d")
+            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs))
 
         return songs
 
