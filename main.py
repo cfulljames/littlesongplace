@@ -513,10 +513,15 @@ def song(userid, songid):
             song = Song.by_id(songid)
             if song.userid != userid:
                 abort(404)
-
+            
+            user_data = query_db("select * from users where userid = ?", [userid], one=True)
             return render_template(
                     "song.html",
-                    song_list=render_template("song-list.html", songs=[song]), song=song)
+                    song_list=render_template("song-list.html", songs=[song]),
+                    song=song,
+                    user_bgcolor=user_data["bgcolor"],
+                    user_fgcolor=user_data["fgcolor"],
+                    user_accolor=user_data["accolor"])
         except ValueError:
             abort(404)
     else:
@@ -860,6 +865,9 @@ def playlists(playlistid):
             private=plist_data["private"],
             userid=plist_data["userid"],
             username=plist_data["username"],
+            user_bgcolor=plist_data["bgcolor"],
+            user_fgcolor=plist_data["fgcolor"],
+            user_accolor=plist_data["accolor"],
             songs=songs,
             song_list=render_template("song-list.html", songs=songs))
 
