@@ -157,9 +157,9 @@ def users_profile(profile_username):
     userid = session.get("userid", None)
     show_private = userid == profile_userid
     if show_private:
-        plist_data = query_db("select * from playlists where userid = ?", [profile_userid])
+        plist_data = query_db("select * from playlists where userid = ? order by created desc", [profile_userid])
     else:
-        plist_data = query_db("select * from playlists where userid = ? and private = 0", [profile_userid])
+        plist_data = query_db("select * from playlists where userid = ? and private = 0 order by created desc", [profile_userid])
 
     # Get songs for current profile
     songs = Song.get_all_for_userid(profile_userid)

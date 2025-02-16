@@ -6,7 +6,14 @@
 
 <h1>{{ name }}</h1>
 
-<p>Playlist by <a href="/users/{{ username }}" class="profile-link">{{ username }}</a></p>
+<p>
+Playlist by <a href="/users/{{ username }}" class="profile-link">{{ username }}</a>
+{% if session["userid"] == userid -%}
+<span class="playlist-type">
+[{% if private %}Private{% else %}Public{% endif %}]
+</span>
+{%- endif %}
+</p>
 
 {% if session["userid"] == userid -%}
 <p class="playlist-actions">
@@ -139,6 +146,10 @@ function deletePlaylist() {
     }
     </script>
 </div>
+{%- endif %}
+
+{% if not songs -%}
+<p>This playlist doesn't have any songs yet.  To add songs to the playlist, expand song details and use the "Add to Playlist..." dropdown.</p>
 {%- endif %}
 
 {%- endblock %}
