@@ -157,9 +157,9 @@ def users_profile(profile_username):
     userid = session.get("userid", None)
     show_private = userid == profile_userid
     if show_private:
-        plist_data = query_db("select * from playlists where userid = ? order by created desc", [profile_userid])
+        plist_data = query_db("select * from playlists where userid = ? order by updated desc", [profile_userid])
     else:
-        plist_data = query_db("select * from playlists where userid = ? and private = 0 order by created desc", [profile_userid])
+        plist_data = query_db("select * from playlists where userid = ? and private = 0 order by updated desc", [profile_userid])
 
     # Get songs for current profile
     songs = Song.get_all_for_userid(profile_userid)
@@ -744,7 +744,7 @@ def delete_playlist(playlistid):
 
     # Cannot delete other user's playlist
     if session["userid"] != plist_data["userid"]:
-        abort(401)
+        abort(403)
 
     # Delete playlist
     query_db("delete from playlists where playlistid = ?", args=[playlistid])
@@ -770,7 +770,7 @@ def append_to_playlist():
 
     # Cannot edit other user's playlist
     if session["userid"] != plist_data["userid"]:
-        abort(401)
+        abort(403)
 
     songid = request.form["songid"]
 
@@ -809,17 +809,25 @@ def edit_playlist_post(playlistid):
     if session["userid"] != plist_data["userid"]:
         abort(401)
 
-    # Make sure all songs are valid
-    try:
-        songids = [int(s) for s in request.form["songids"].split(",")]
-    except ValueError:
-        # Invalid songid(s)
-        abort(400)
+    # Make sure name is valid
+    name = request.form["name"]
+    if not name or len(name) > 200:
+        flash_and_log("Playlist must have a name", "error")
+        return redirect(request.referrer)
 
-    for songid in songids:
-        song_data = query_db("select * from songs where songid = ?", args=[songid])
-        if not song_data:
+    # Make sure all songs are valid
+    songids = []
+    if request.form["songids"]:
+        try:
+            songids = [int(s) for s in request.form["songids"].split(",")]
+        except ValueError:
+            # Invalid songid(s)
             abort(400)
+
+        for songid in songids:
+            song_data = query_db("select * from songs where songid = ?", args=[songid])
+            if not song_data:
+                abort(400)
 
     # All songs valid - delete old songs
     query_db("delete from playlist_songs where playlistid = ?", args=[playlistid])
@@ -831,7 +839,6 @@ def edit_playlist_post(playlistid):
 
     # Update private, name
     private = int(request.form["type"] == "private")
-    name = request.form["name"]
     query_db("update playlists set private = ?, name = ? where playlistid = ?", [private, name, playlistid])
 
     get_db().commit()
@@ -849,10 +856,8 @@ def playlists(playlistid):
 
     # Protect private playlists
     if plist_data["private"]:
-        if "userid" not in session:
-            return redirect("/login")
-        elif session["userid"] != plist_data["userid"]:
-            abort(401)  # Cannot view other user's private playlist
+        if ("userid" not in session) or (session["userid"] != plist_data["userid"]):
+            abort(404)  # Cannot view other user's private playlist - pretend it doesn't even exist
 
     # Get songs
     songs = Song.get_for_playlist(playlistid)

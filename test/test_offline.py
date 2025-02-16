@@ -966,3 +966,189 @@ def test_no_new_activity_after_checking(client):
     assert response.status_code == 200
     assert not response.json["new_activity"]
 
+################################################################################
+# Playlists
+################################################################################
+
+# Create Playlist ##############################################################
+
+def test_create_playlist(client):
+    _create_user(client, "user", login=True)
+    response = client.post("/create-playlist", data={"name": "my playlist", "type": "private"})
+    assert response.status_code == 302
+
+    response = client.get("/users/user")
+    assert b"my playlist" in response.data
+    assert b"[Private]" in response.data
+
+def test_create_playlist_invalid_name(client):
+    _create_user(client, "user", login=True)
+    response = client.post("/create-playlist", data={"name": "a"*201, "type": "private"})
+    assert response.status_code == 302
+    response = client.get("/users/user")
+    assert b"must have a name" in response.data
+    
+    response = client.post("/create-playlist", data={"name": "", "type": "private"})
+    assert response.status_code == 302
+    response = client.get("/users/user")
+    assert b"must have a name" in response.data
+
+def test_create_playlist_not_logged_in(client):
+    response = client.post("/create-playlist", data={"name": "my playlist", "type": "private"})
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/login"
+
+# Delete Playlist ##############################################################
+
+def _create_user_and_playlist(client):
+    _create_user(client, "user", login=True)
+    client.post("/create-playlist", data={"name": "my playlist", "type": "private"})
+
+def test_delete_playlist(client):
+    _create_user_and_playlist(client)
+    response = client.get("/delete-playlist/1", follow_redirects=True)
+    assert b"Deleted playlist my playlist" in response.data
+
+    response = client.get("/users/user")
+    assert not b"my playlist" in response.data
+
+def test_delete_playlist_invalid_playlistid(client):
+    _create_user_and_playlist(client)
+    response = client.get("/delete-playlist/2")
+    assert response.status_code == 404
+
+def test_delete_playlist_not_logged_in(client):
+    _create_user_and_playlist(client)
+    client.get("/logout")
+
+    response = client.get("/delete-playlist/2")
+    assert response.status_code == 401
+
+def test_delete_playlist_other_users_playlist(client):
+    _create_user_and_playlist(client)
+    _create_user(client, "user2", login=True)
+
+    response = client.get("/delete-playlist/1")
+    assert response.status_code == 403
+
+# Append to Playlist ###########################################################
+
+def _create_user_song_and_playlist(client, playlist_type="private"):
+    _create_user_and_song(client)
+    client.post("/create-playlist", data={"name": "my playlist", "type": playlist_type})
+
+def test_append_to_playlist(client):
+    _create_user_song_and_playlist(client)
+    client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
+    response = client.get("/")
+    assert b"Added &#39;song title&#39; to my playlist" in response.data
+
+def test_append_to_playlist_not_logged_in(client):
+    _create_user_song_and_playlist(client)
+    client.get("/logout")
+    response = client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
+    assert response.status_code == 401
+
+def test_append_to_other_users_playlist(client):
+    _create_user_song_and_playlist(client)
+    _create_user(client, "user2", login=True)
+    response = client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
+    assert response.status_code == 403
+
+def test_append_playlist_invalid_songid(client):
+    _create_user_song_and_playlist(client)
+    response = client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
+    assert response.status_code == 404
+
+def test_append_playlist_invalid_playlistid(client):
+    _create_user_song_and_playlist(client)
+    response = client.post("/append-to-playlist", data={"playlistid": "2", "songid": "1"})
+    assert response.status_code == 404
+
+# Playlist on Profile ##########################################################
+
+def test_playlists_on_own_profile(client):
+    _create_user_song_and_playlist(client)  # Private playlist
+    client.post("/create-playlist", data={"name": "my public playlist", "type": "public"}, follow_redirects=True)
+    client.get("/users/user") # Clear flashes
+
+    # Shows public and private playlists
+    response = client.get("/users/user")
+    assert b"my playlist" in response.data
+    assert b"my public playlist" in response.data
+
+def test_playlists_on_other_users_profile(client):
+    _create_user_song_and_playlist(client)  # Private playlist
+    client.post("/create-playlist", data={"name": "my public playlist", "type": "public"})
+    client.get("/users/user") # Clear flashes
+
+    # Shows only public playlists
+    _create_user(client, "user2", login=True)
+    response = client.get("/users/user")
+    assert b"my playlist" not in response.data
+    assert b"my public playlist" in response.data
+
+# View Playlist ################################################################
+
+def test_view_own_public_playlist(client):
+    _create_user_song_and_playlist(client, playlist_type="public")
+    response = client.get("/playlists/1")
+    assert response.status_code == 200
+    assert b"[Public]" in response.data
+
+def test_view_own_private_playlist(client):
+    _create_user_song_and_playlist(client, playlist_type="private")
+    response = client.get("/playlists/1")
+    assert response.status_code == 200
+    assert b"[Private]" in response.data
+
+def test_view_other_users_public_playlist(client):
+    _create_user_song_and_playlist(client, playlist_type="public")
+    _create_user(client, "user2", login=True)
+    response = client.get("/playlists/1")
+    assert response.status_code == 200
+    assert b"[Public]" not in response.data  # Type not shown
+
+def test_view_other_users_private_playlist(client):
+    _create_user_song_and_playlist(client, playlist_type="private")
+    _create_user(client, "user2", login=True)
+    response = client.get("/playlists/1")
+    assert response.status_code == 404
+
+def test_view_invalid_playlist(client):
+    response = client.get("/playlists/0")
+    assert response.status_code == 404
+
+# Edit Playlist ################################################################
+
+def test_edit_playlist_change_type(client):
+    _create_user_song_and_playlist(client, playlist_type="private")
+    response = client.post("/edit-playlist/1", data={"name": "my playlist", "type": "public", "songids": ""})
+    assert response.status_code == 302
+
+    response = client.get("/playlists/1")
+    assert b"[Public]" in response.data
+
+def test_edit_playlist_change_name(client):
+    _create_user_song_and_playlist(client, playlist_type="private")
+    response = client.post("/edit-playlist/1", data={"name": "cool new playlist name", "type": "private", "songids": ""})
+    assert response.status_code == 302
+
+    response = client.get("/playlists/1")
+    assert b"cool new playlist name" in response.data
+
+def test_edit_playlist_change_name_invalid(client):
+    _create_user_song_and_playlist(client, playlist_type="private")
+    client.get("/playlists/1")  # Clear flashes
+    response = client.post("/edit-playlist/1", data={"name": "", "type": "private", "songids": ""})
+    assert response.status_code == 302
+
+    response = client.get("/playlists/1")
+    assert b"my playlist" in response.data
+    assert b"must have a name" in response.data
+
+# Edit playlist - change song order
+# Edit playlist - remove song(s)
+# Edit playlist - not logged in
+# Edit playlist - other user's playlist
+# Edit playlist - invalid songid

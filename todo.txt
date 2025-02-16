@@ -2,10 +2,11 @@ NOW
 - Test playlist API
 
 SOON
-- Break up main.py
+- Break up main.py, test_offline.py
 - AJAX pages so songs can play during navigation
 - Pinned profile playlists
 
+- Image support in comments, descriptions, bios, etc.
 - Player minimize button
 - Shuffle all page
 - Shuffle song list toggle
