@@ -172,6 +172,29 @@ document.addEventListener("DOMContentLoaded", (event) => {
         audio.currentTime = audio.duration * event.target.value;
     }
 
+    // Use arrow keys for song position
+    document.addEventListener("keydown", (event) => {
+        if (["TEXTAREA", "INPUT"].includes(event.originalTarget.tagName)) {
+            return;  // Only handle key presses if no other element is selected
+        }
+        var newTime = audio.currentTime;
+        switch (event.key) {
+            case "ArrowLeft":
+                newTime -= 10;
+                break;
+            case "ArrowRight":
+                newTime += 10;
+                break;
+        }
+        if (newTime < 0) {
+            newTime = 0;
+        }
+        else if (newTime > audio.duration) {
+            newTime = audio.duration;
+        }
+        audio.currentTime = newTime;
+    });
+
     // Volume
     document.getElementById("volume-slider").oninput = function(event) {
         audio.volume = event.target.value;

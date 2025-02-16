@@ -2,7 +2,7 @@ NOW
 - Test playlist API
 
 SOON
-- 10s skip forwards/backwards with left/right arrow keys
+- Break up main.py
 - AJAX pages so songs can play during navigation
 - Pinned profile playlists
 
