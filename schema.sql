@@ -8,7 +8,7 @@ CREATE TABLE users (
     activitytime TEXT,
     bgcolor TEXT,
     fgcolor TEXT,
-    accolor TEXT,
+    accolor TEXT
 );
 CREATE INDEX users_by_name ON users(username);
 
