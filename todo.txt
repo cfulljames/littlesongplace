@@ -1,18 +1,17 @@
 NOW
-- Playlists:
-    - Create
-    - Play
-    - Remove song
-    - Reorder songs
-    - Delete
-    - Pin to profile
-    - Albums?
+- Test playlist API
 - Show upload date in song list
 
 SOON
-- Player minimize button
-- Shuffle all
+- 10s skip forwards/backwards with left/right arrow keys
 - AJAX pages so songs can play during navigation
+- Pinned profile playlists
+
+- Player minimize button
+- Shuffle all page
+- Shuffle song list toggle
+- Loop song list toggle
+- Profile background/banner image
 - Play Queue:
     - Add songs
     - View songs in queue
@@ -21,6 +20,8 @@ SOON
     - Automatically use songs on page when queue ends
 
 LATER
+- Forum/chat
+- Events page (MMiaH, etc.)
 - Show song info for song in player (description, tags)
 - Song/User Search
 - Song sorter for song lists
