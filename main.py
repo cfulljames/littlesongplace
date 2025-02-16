@@ -513,7 +513,7 @@ def song(userid, songid):
             song = Song.by_id(songid)
             if song.userid != userid:
                 abort(404)
-            
+
             user_data = query_db("select * from users where userid = ?", [userid], one=True)
             return render_template(
                     "song.html",
@@ -807,7 +807,7 @@ def edit_playlist_post(playlistid):
 
     # Cannot edit other user's playlist
     if session["userid"] != plist_data["userid"]:
-        abort(401)
+        abort(403)
 
     # Make sure name is valid
     name = request.form["name"]

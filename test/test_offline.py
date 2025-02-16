@@ -987,7 +987,7 @@ def test_create_playlist_invalid_name(client):
     assert response.status_code == 302
     response = client.get("/users/user")
     assert b"must have a name" in response.data
-    
+
     response = client.post("/create-playlist", data={"name": "", "type": "private"})
     assert response.status_code == 302
     response = client.get("/users/user")
@@ -1147,8 +1147,54 @@ def test_edit_playlist_change_name_invalid(client):
     assert b"my playlist" in response.data
     assert b"must have a name" in response.data
 
-# Edit playlist - change song order
-# Edit playlist - remove song(s)
-# Edit playlist - not logged in
-# Edit playlist - other user's playlist
-# Edit playlist - invalid songid
+def test_edit_playlist_change_song_order(client):
+    _create_user_song_and_playlist(client)
+    _test_upload_song(client, b"Successfully uploaded")
+    client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
+    client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
+    songs = _get_song_list_from_page(client, "/playlists/1")
+    assert songs[0]["songid"] == 1
+    assert songs[1]["songid"] == 2
+
+    client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": "2,1"})
+    songs = _get_song_list_from_page(client, "/playlists/1")
+    assert songs[0]["songid"] == 2
+    assert songs[1]["songid"] == 1
+
+def test_edit_playlist_remove_song(client):
+    _create_user_song_and_playlist(client)
+    _test_upload_song(client, b"Successfully uploaded")
+    client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
+    client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
+    songs = _get_song_list_from_page(client, "/playlists/1")
+    assert len(songs) == 2
+
+    client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": "2"})
+    songs = _get_song_list_from_page(client, "/playlists/1")
+    assert len(songs) == 1
+    assert songs[0]["songid"] == 2
+
+def test_edit_playlist_not_logged_in(client):
+    _create_user_song_and_playlist(client)
+    client.get("/logout")
+
+    response = client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": ""})
+    assert response.status_code == 401
+
+def test_edit_other_users_playlist(client):
+    _create_user_song_and_playlist(client)
+    _create_user(client, "user2", login=True)
+
+    response = client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": ""})
+    assert response.status_code == 403
+
+def test_edit_playlist_invalid_songid(client):
+    _create_user_and_playlist(client)
+    response = client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": "1"})
+    assert response.status_code == 400
+
+def test_edit_playlist_invalid_playlistid(client):
+    _create_user_and_playlist(client)
+    response = client.post("/edit-playlist/2", data={"name": "my playlist", "type": "private", "songids": ""})
+    assert response.status_code == 404
+
