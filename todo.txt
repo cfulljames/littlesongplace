@@ -1,10 +1,13 @@
 NOW
-
-SOON
-- Break up main.py, test_offline.py
 - AJAX pages so songs can play during navigation
+    - Nav bar
+    - Forms
+    - Back (history stack)
+    - Other on-site links (songs, profiles, tags, etc.)
+- Break up main.py, test_offline.py
 - Pinned profile playlists
 
+SOON
 - Image support in comments, descriptions, bios, etc.
 - Player minimize button
 - Shuffle all page

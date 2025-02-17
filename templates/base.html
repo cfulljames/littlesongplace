@@ -9,6 +9,29 @@
         <!-- Page-specific head fields -->
         {% block head %}
         {% endblock %}
+        <script>
+            document.addEventListener("click", (event) => {
+                // TODO - what links do we actually want to match?  Use URL?
+                if (!event.target.matches(".navbar a")) {
+                    return;
+                }
+                event.preventDefault();
+
+                // Update URL in browser window
+                window.history.pushState({}, "", event.target.href);
+
+                // Make AJAX request
+                var url = new URL(event.target.href);
+                url.searchParams.set("request-type", "ajax")
+
+                // Update HTML
+                getPageAjax(url);
+            });
+            async function getPageAjax(url) {
+                var data = await fetch(url).then((response) => response.json());
+                console.log(data);
+            }
+        </script>
     </head>
     <body>
 

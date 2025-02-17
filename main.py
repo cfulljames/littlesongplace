@@ -929,7 +929,8 @@ def get_current_user_playlists():
 
 @app.context_processor
 def inject_global_vars():
-    return dict(gif_data=get_gif_data(), current_user_playlists=get_current_user_playlists())
+    use_json = request.args.get("request-type", None) == "ajax"
+    return dict(gif_data=get_gif_data(), current_user_playlists=get_current_user_playlists(), use_json=use_json, dumps=json.dumps)
 
 
 ################################################################################
