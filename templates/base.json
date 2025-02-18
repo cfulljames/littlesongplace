@@ -1,0 +1,4 @@
+{
+    "title": {{ dumps(self.title()) | safe }},
+    "body": {{ dumps(self.body()) | safe }}
+}

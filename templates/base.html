@@ -17,10 +17,7 @@
                 }
                 event.preventDefault();
 
-                // Update URL in browser window
-                //window.history.pushState({}, "", event.target.href);
-
-                // Make AJAX request
+                // Add AJAX type specifier to URL params
                 var url = new URL(event.target.href);
                 url.searchParams.set("request-type", "ajax")
 
@@ -29,12 +26,18 @@
             });
             async function getPageAjax(url) {
                 fetch(url, {redirect: "follow"}).then(async (response) => {
-                    console.log(response);
-                    window.history.pushState({}, "", response.url);
+                    // Update URL in browser window, minus request-type field
+                    var url = new URL(response.url);
+                    url.searchParams.delete("request-type");
+                    window.history.pushState({}, "", url);
+
+                    // Get page content from JSON response
                     var data = await response.json();
                     console.log(data);
                     document.getElementById("main").innerHTML = data.body;
                     document.title = data.title;
+
+                    // Trigger event to signal new page has loaded
                     var event = new Event("DOMContentLoaded");
                     document.dispatchEvent(event);
                 });
