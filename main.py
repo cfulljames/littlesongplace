@@ -936,7 +936,12 @@ def auto_redirect(url):
 @app.context_processor
 def inject_global_vars():
     use_json = request.args.get("request-type", None) == "ajax"
-    return dict(gif_data=get_gif_data(), current_user_playlists=get_current_user_playlists(), use_json=use_json, dumps=json.dumps)
+    return dict(
+        gif_data=get_gif_data(),
+        current_user_playlists=get_current_user_playlists(),
+        use_json=use_json,
+        dumps=json.dumps,
+    )
 
 
 ################################################################################

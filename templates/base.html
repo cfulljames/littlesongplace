@@ -40,8 +40,18 @@
                     // Trigger event to signal new page has loaded
                     var event = new Event("DOMContentLoaded");
                     document.dispatchEvent(event);
-                });
 
+                    // Refresh navbar in case logged-in status changed
+                    updateNavbar(data.username);
+                });
+            }
+            function updateNavbar(username) {
+                var loggedIn = username ? true : false;
+                document.querySelectorAll(".nav-logged-in").forEach((e) => {e.hidden = !loggedIn;});
+                document.querySelectorAll(".nav-logged-out").forEach((e) => {e.hidden = loggedIn;});
+                if (loggedIn) {
+                    document.getElementById("logged-in-status").innerText = `Signed in as ${username}`;
+                }
             }
         </script>
     </head>
@@ -107,24 +117,23 @@
             <div class="navbar">
                 <a href="/">Home</a>
                 <a href="/site-news">News</a>
-                {% if "username" in session %}
-                    <a href="/users/{{ session["username"] }}">My Profile</a>
-                    <a href="/activity"><span id="activity-indicator" hidden></span>Activity</a>
-                    <a href="/logout">Sign Out</a>
-                {% else %}
-                    <a href="/signup">Create Account</a>
-                    <a href="/login">Sign In</a>
-                {% endif %}
 
-                {% if "username" in session %}
-                    Signed in as {{ session["username"] }}
-                {% endif %}
+                <a href="/users/{{ session["username"] }}" class="nav-logged-in" hidden>My Profile</a>
+                <a href="/activity"><span id="activity-indicator" hidden></span>Activity</a>
+                <a href="/logout" class="nav-logged-in" hidden>Sign Out</a>
+
+                <a href="/signup" class="nav-logged-out">Create Account</a>
+                <a href="/login" class="nav-logged-out">Sign In</a>
+
+                <span class="nav-logged-in" id="logged-in-status" hidden></span>
             </div>
         </div>
 
         {% if "username" in session %}
         <!-- Periodically update activity status indicator -->
         <script>
+            updateNavbar("{{ session["username"] }}");
+
             async function checkForNewActivity() {
                 const indicator = document.getElementById("activity-indicator")
                 const response = await fetch("/new-activity");
