@@ -11,18 +11,25 @@
         {% endblock %}
         <script>
             document.addEventListener("click", (event) => {
-                // TODO - what links do we actually want to match?  Use URL?
-                if (!event.target.matches(".navbar a")) {
+                // Handle all clicks on links
+                if (!event.target.matches("a")) {
                     return;
                 }
+
+                // Only intercept links to other pages on the site
+                var targetUrl = new URL(event.target.href);
+                var currentUrl = new URL(window.location.href);
+                if (targetUrl.origin !== currentUrl.origin) {
+                    return;  // Link to external site
+                }
+
                 event.preventDefault();
 
                 // Add AJAX type specifier to URL params
-                var url = new URL(event.target.href);
-                url.searchParams.set("request-type", "ajax")
+                targetUrl.searchParams.set("request-type", "ajax")
 
                 // Update HTML
-                getPageAjax(url);
+                getPageAjax(targetUrl);
             });
             async function getPageAjax(url) {
                 fetch(url, {redirect: "follow"}).then(async (response) => {
