@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% if use_json %}{% extends "base.json" %}{% else %}{% extends "base.html" %}{% endif %}
 
 {% block title %}Write a Comment{% endblock %}
 

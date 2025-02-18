@@ -97,7 +97,7 @@ def signup_post():
 
     if error:
         app.logger.info("Failed signup attempt")
-        return redirect(request.referrer)
+        return auto_redirect(request.referrer)
 
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -107,7 +107,7 @@ def signup_post():
     flash("User created.  Please sign in to continue.", "success")
     app.logger.info(f"Created user {username}")
 
-    return redirect("/login")
+    return auto_redirect("/login")
 
 @app.get("/login")
 def login_get():
@@ -127,7 +127,7 @@ def login_post():
         session.permanent = True
         app.logger.info(f"{username} logged in")
 
-        return redirect(f"/users/{username}")
+        return auto_redirect(f"/users/{username}")
 
     flash("Invalid username/password", "error")
     app.logger.info(f"Failed login for {username}")
@@ -142,7 +142,7 @@ def logout():
     if "userid" in session:
         session.pop("userid")
 
-    return redirect("/")
+    return auto_redirect("/")
 
 @app.get("/users/<profile_username>")
 def users_profile(profile_username):
@@ -227,7 +227,7 @@ def edit_profile():
 
     app.logger.info(f"{session['username']} updated bio")
 
-    return redirect(f"/users/{session['username']}")
+    return auto_redirect(f"/users/{session['username']}")
 
 @app.get("/pfp/<int:userid>")
 def pfp(userid):
@@ -236,7 +236,7 @@ def pfp(userid):
 @app.get("/edit-song")
 def edit_song():
     if not "userid" in session:
-        return redirect("/login")  # Must be logged in to edit
+        return auto_redirect("/login")  # Must be logged in to edit
 
     song = None
 
@@ -264,7 +264,7 @@ def edit_song():
 @app.post("/upload-song")
 def upload_song():
     if not "userid" in session:
-        return redirect("/login")  # Must be logged in to edit
+        return auto_redirect("/login")  # Must be logged in to edit
 
     error = validate_song_form()
 
@@ -278,12 +278,12 @@ def upload_song():
     if not error:
         username = session["username"]
         app.logger.info(f"{username} uploaded/modified a song")
-        return redirect(f"/users/{username}")
+        return auto_redirect(f"/users/{username}")
 
     else:
         username = session["username"]
         app.logger.info(f"Failed song update - {username}")
-        return redirect(request.referrer)
+        return auto_redirect(request.referrer)
 
 def validate_song_form():
     title = request.form["title"]
@@ -504,7 +504,7 @@ def delete_song(songid):
     app.logger.info(f"{session['username']} deleted song: {song_data['title']}")
     flash_and_log(f"Deleted '{song_data['title']}'", "success")
 
-    return redirect(request.referrer)
+    return auto_redirect(request.referrer)
 
 @app.get("/song/<int:userid>/<int:songid>")
 def song(userid, songid):
@@ -550,7 +550,7 @@ def songs():
 @app.route("/comment", methods=["GET", "POST"])
 def comment():
     if not "userid" in session:
-        return redirect("/login")
+        return auto_redirect("/login")
 
     if not "songid" in request.args:
         abort(400) # Must have songid
@@ -629,12 +629,12 @@ def redirect_to_previous_page():
     if "previous_page" in session:
         previous_page = session["previous_page"]
         session.pop("previous_page")
-    return redirect(previous_page)
+    return auto_redirect(previous_page)
 
 @app.get("/delete-comment/<int:commentid>")
 def comment_delete(commentid):
     if "userid" not in session:
-        return redirect("/login")
+        return auto_redirect("/login")
 
     comment = query_db("select c.userid as comment_user, s.userid as song_user from song_comments as c inner join songs as s on c.songid == s.songid where commentid = ?", [commentid], one=True)
     if not comment:
@@ -648,12 +648,12 @@ def comment_delete(commentid):
     query_db("delete from song_comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])
     get_db().commit()
 
-    return redirect(request.referrer)
+    return auto_redirect(request.referrer)
 
 @app.get("/activity")
 def activity():
     if not "userid" in session:
-        return redirect("/login")
+        return auto_redirect("/login")
 
     # Get comment notifications
     comments = query_db(
@@ -707,12 +707,12 @@ def site_news():
 @app.post("/create-playlist")
 def create_playlist():
     if not "userid" in session:
-        return redirect("/login")
+        return auto_redirect("/login")
 
     name = request.form["name"]
     if not name or len(name) > 200:
         flash_and_log("Playlist must have a name", "error")
-        return redirect(request.referrer)
+        return auto_redirect(request.referrer)
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -730,7 +730,7 @@ def create_playlist():
     )
     get_db().commit()
     flash_and_log(f"Created playlist {name}", "success")
-    return redirect(request.referrer)
+    return auto_redirect(request.referrer)
 
 @app.get("/delete-playlist/<int:playlistid>")
 def delete_playlist(playlistid):
@@ -751,7 +751,7 @@ def delete_playlist(playlistid):
     get_db().commit()
 
     flash_and_log(f"Deleted playlist {plist_data['name']}", "success")
-    return redirect(f"/users/{session['username']}")
+    return auto_redirect(f"/users/{session['username']}")
 
 @app.post("/append-to-playlist")
 def append_to_playlist():
@@ -793,7 +793,7 @@ def append_to_playlist():
 
     flash_and_log(f"Added '{song_data['title']}' to {plist_data['name']}", "success")
 
-    return redirect(request.referrer)
+    return auto_redirect(request.referrer)
 
 @app.post("/edit-playlist/<int:playlistid>")
 def edit_playlist_post(playlistid):
@@ -813,7 +813,7 @@ def edit_playlist_post(playlistid):
     name = request.form["name"]
     if not name or len(name) > 200:
         flash_and_log("Playlist must have a name", "error")
-        return redirect(request.referrer)
+        return auto_redirect(request.referrer)
 
     # Make sure all songs are valid
     songids = []
@@ -844,7 +844,7 @@ def edit_playlist_post(playlistid):
     get_db().commit()
 
     flash_and_log("Playlist updated", "success")
-    return redirect(request.referrer)
+    return auto_redirect(request.referrer)
 
 @app.get("/playlists/<int:playlistid>")
 def playlists(playlistid):
@@ -926,6 +926,12 @@ def get_current_user_playlists():
         plist_data = query_db("select * from playlists where userid = ?", [session["userid"]])
 
     return plist_data
+
+def auto_redirect(url):
+    if request.args.get("request-type", None) == "ajax":
+        return redirect(url + "?request-type=ajax")
+    else:
+        return redirect(url)
 
 @app.context_processor
 def inject_global_vars():

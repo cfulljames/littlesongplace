@@ -4,6 +4,7 @@ NOW
     - Forms
     - Back (history stack)
     - Other on-site links (songs, profiles, tags, etc.)
+    - Update page colors
 - Break up main.py, test_offline.py
 - Pinned profile playlists
 

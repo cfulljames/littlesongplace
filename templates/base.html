@@ -18,7 +18,7 @@
                 event.preventDefault();
 
                 // Update URL in browser window
-                window.history.pushState({}, "", event.target.href);
+                //window.history.pushState({}, "", event.target.href);
 
                 // Make AJAX request
                 var url = new URL(event.target.href);
@@ -28,8 +28,17 @@
                 getPageAjax(url);
             });
             async function getPageAjax(url) {
-                var data = await fetch(url).then((response) => response.json());
-                console.log(data);
+                fetch(url, {redirect: "follow"}).then(async (response) => {
+                    console.log(response);
+                    window.history.pushState({}, "", response.url);
+                    var data = await response.json();
+                    console.log(data);
+                    document.getElementById("main").innerHTML = data.body;
+                    document.title = data.title;
+                    var event = new Event("DOMContentLoaded");
+                    document.dispatchEvent(event);
+                });
+
             }
         </script>
     </head>
@@ -143,7 +152,7 @@
         {% endwith %}
 
         <!-- Page-Specific Content -->
-        <div class="main">
+        <div class="main" id="main">
         {% block body %}
         {% endblock %}
         </div>
