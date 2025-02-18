@@ -25,9 +25,11 @@
 <h1 class="profile-name">{{ name }}</h1>
 
 <!-- Profile Picture -->
+{% if user_has_pfp %}
 <div class="big-pfp-container">
     <img src="/pfp/{{ userid }}" onerror="hidePfp(this)" class="big-pfp">
 </div>
+{% endif %}
 
 <script>
     function hidePfp(pfp) {

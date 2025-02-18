@@ -179,6 +179,7 @@ def users_profile(profile_username):
             user_accolor=profile_data["accolor"],
             playlists=plist_data,
             songs=songs,
+            user_has_pfp=(get_user_images_path(profile_userid)/"pfp.jpg").exists(),
             song_list=render_template("song-list.html", songs=songs, is_profile_song_list=True))
 
 @app.post("/edit-profile")
@@ -1027,6 +1028,9 @@ class Song:
             comment["replies"] = sorted([c for c in comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
 
         return song_comments
+
+    def user_has_pfp(self):
+        return (get_user_images_path(self.userid)/"pfp.jpg").exists()
 
     @classmethod
     def by_id(cls, songid):

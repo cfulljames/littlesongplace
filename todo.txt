@@ -1,12 +1,9 @@
 NOW
 - AJAX pages so songs can play during navigation
-    - Nav bar
     - Forms
     - Back (history stack)
     - Other on-site links (songs, profiles, tags, etc.)
     - Update page colors
-    - PFP on profile when missing PFP
-    - Signout doesn't refresh navbar (should show sign in link)
 - Break up main.py, test_offline.py
 - Pinned profile playlists
 
