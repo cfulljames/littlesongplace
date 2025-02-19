@@ -16,37 +16,48 @@
                     return;
                 }
 
-                // Only intercept links to other pages on the site
                 var targetUrl = new URL(event.target.href);
-                var currentUrl = new URL(window.location.href);
-                if (targetUrl.origin !== currentUrl.origin) {
-                    return;  // Link to external site
+                if (urlIsOnSameSite(targetUrl)) {
+                    event.preventDefault();
+                    fetch(targetUrl, {redirect: "follow", headers: {"Accept": "application/json"}}).then(handleAjaxResponse);
                 }
-
-                event.preventDefault();
-
-                // Update HTML
-                getPageAjax(targetUrl);
-            })
-            async function getPageAjax(url) {
-                fetch(url, {redirect: "follow", headers: {"Accept": "application/json"}}).then(async (response) => {
-                    // Update URL in browser window, minus request-type field
-                    var url = new URL(response.url);
-                    url.searchParams.delete("request-type");
-                    window.history.pushState({}, "", url);
-
-                    // Get page content from JSON response
-                    var data = await response.json();
-                    document.getElementById("main").innerHTML = data.body;
-                    document.title = data.title;
-
-                    // Trigger event to signal new page has loaded
-                    var event = new Event("DOMContentLoaded");
-                    document.dispatchEvent(event);
-
-                    // Refresh navbar in case logged-in status changed
-                    updateNavbar(data.username);
+            });
+            document.addEventListener("DOMContentLoaded", (e) => {
+                document.querySelectorAll("form").forEach((form) => {
+                    console.log("found form");
+                    form.addEventListener("submit", (event) => {
+                        console.log("on submit");
+                        var targetUrl = new URL(event.target.action);
+                        if (urlIsOnSameSite(targetUrl)) {
+                            event.preventDefault();
+                            var formData = new FormData(event.target);
+                            fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method, headers: {"Accept": "application/json"}})
+                                .then(handleAjaxResponse);
+                        }
+                    });
                 });
+            });
+            function urlIsOnSameSite(targetUrl) {
+                var currentUrl = new URL(window.location.href);
+                return targetUrl.origin === currentUrl.origin;
+            }
+            async function handleAjaxResponse(response) {
+                // Update URL in browser window, minus request-type field
+                var url = new URL(response.url);
+                url.searchParams.delete("request-type");
+                window.history.pushState({}, "", url);
+
+                // Get page content from JSON response
+                var data = await response.json();
+                document.getElementById("main").innerHTML = data.body;
+                document.title = data.title;
+
+                // Trigger event to signal new page has loaded
+                var event = new Event("DOMContentLoaded");
+                document.dispatchEvent(event);
+
+                // Refresh navbar in case logged-in status changed
+                updateNavbar(data.username);
             }
             function updateNavbar(username) {
                 var loggedIn = username ? true : false;
