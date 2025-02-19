@@ -25,14 +25,11 @@
 
                 event.preventDefault();
 
-                // Add AJAX type specifier to URL params
-                targetUrl.searchParams.set("request-type", "ajax")
-
                 // Update HTML
                 getPageAjax(targetUrl);
-            });
+            })
             async function getPageAjax(url) {
-                fetch(url, {redirect: "follow"}).then(async (response) => {
+                fetch(url, {redirect: "follow", headers: {"Accept": "application/json"}}).then(async (response) => {
                     // Update URL in browser window, minus request-type field
                     var url = new URL(response.url);
                     url.searchParams.delete("request-type");

@@ -3,6 +3,7 @@ NOW
     - Forms
     - Back (history stack)
     - Update page colors
+    - Use correct content type header for response
 - Break up main.py, test_offline.py
 - Pinned profile playlists
 
