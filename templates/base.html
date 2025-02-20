@@ -22,6 +22,7 @@
                     fetch(targetUrl, {redirect: "follow", headers: {"Accept": "application/json"}}).then(handleAjaxResponse);
                 }
             });
+
             document.addEventListener("DOMContentLoaded", (e) => {
                 document.querySelectorAll("form").forEach((form) => {
                     console.log("found form");
@@ -37,18 +38,30 @@
                     });
                 });
             });
+
             function urlIsOnSameSite(targetUrl) {
                 var currentUrl = new URL(window.location.href);
                 return targetUrl.origin === currentUrl.origin;
             }
+
             async function handleAjaxResponse(response) {
                 // Update URL in browser window, minus request-type field
                 var url = new URL(response.url);
                 url.searchParams.delete("request-type");
-                window.history.pushState({}, "", url);
 
                 // Get page content from JSON response
                 var data = await response.json();
+                console.log("push", data);
+                window.history.pushState(data, "", url);
+
+                updatePageState(data);
+            }
+
+            function updatePageState(data) {
+                console.log("pop", data);
+                if (!data) {
+                    return;  // TODO: How to handle initial page?
+                }
                 document.getElementById("main").innerHTML = data.body;
                 document.title = data.title;
 
@@ -58,7 +71,6 @@
 
                 // Update page colors
                 var rootStyle = document.documentElement.style;
-                console.log(data);
                 rootStyle.setProperty("--yellow", data.bgcolor);
                 rootStyle.setProperty("--black", data.fgcolor);
                 rootStyle.setProperty("--purple", data.accolor);
@@ -67,6 +79,9 @@
                 updateNavbar(data.username);
                 updateImageColors();
             }
+
+            window.addEventListener("popstate", (event) => updatePageState(event.state));
+
             function updateNavbar(username) {
                 var loggedIn = username ? true : false;
                 document.querySelectorAll(".nav-logged-in").forEach((e) => {e.hidden = !loggedIn;});
