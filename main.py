@@ -174,9 +174,9 @@ def users_profile(profile_username):
             name=profile_username,
             userid=profile_userid,
             bio=profile_bio,
-            user_fgcolor=profile_data["fgcolor"],
-            user_bgcolor=profile_data["bgcolor"],
-            user_accolor=profile_data["accolor"],
+            fgcolor=profile_data["fgcolor"],
+            bgcolor=profile_data["bgcolor"],
+            accolor=profile_data["accolor"],
             playlists=plist_data,
             songs=songs,
             user_has_pfp=(get_user_images_path(profile_userid)/"pfp.jpg").exists(),
@@ -520,9 +520,9 @@ def song(userid, songid):
                     "song.html",
                     song_list=render_template("song-list.html", songs=[song]),
                     song=song,
-                    user_bgcolor=user_data["bgcolor"],
-                    user_fgcolor=user_data["fgcolor"],
-                    user_accolor=user_data["accolor"])
+                    bgcolor=user_data["bgcolor"],
+                    fgcolor=user_data["fgcolor"],
+                    accolor=user_data["accolor"])
         except ValueError:
             abort(404)
     else:
@@ -871,9 +871,9 @@ def playlists(playlistid):
             private=plist_data["private"],
             userid=plist_data["userid"],
             username=plist_data["username"],
-            user_bgcolor=plist_data["bgcolor"],
-            user_fgcolor=plist_data["fgcolor"],
-            user_accolor=plist_data["accolor"],
+            bgcolor=plist_data["bgcolor"],
+            fgcolor=plist_data["fgcolor"],
+            accolor=plist_data["accolor"],
             songs=songs,
             song_list=render_template("song-list.html", songs=songs))
 
@@ -936,6 +936,9 @@ def inject_global_vars():
         current_user_playlists=get_current_user_playlists(),
         use_json=use_json,
         dumps=json.dumps,
+        bgcolor="#e8e6b5",
+        fgcolor="#695c73",
+        accolor="#9373a9",
     )
 
 

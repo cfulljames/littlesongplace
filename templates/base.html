@@ -56,8 +56,16 @@
                 var event = new Event("DOMContentLoaded");
                 document.dispatchEvent(event);
 
+                // Update page colors
+                var rootStyle = document.documentElement.style;
+                console.log(data);
+                rootStyle.setProperty("--yellow", data.bgcolor);
+                rootStyle.setProperty("--black", data.fgcolor);
+                rootStyle.setProperty("--purple", data.accolor);
+
                 // Refresh navbar in case logged-in status changed
                 updateNavbar(data.username);
+                updateImageColors();
             }
             function updateNavbar(username) {
                 var loggedIn = username ? true : false;
