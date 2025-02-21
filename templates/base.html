@@ -19,7 +19,7 @@
                 var targetUrl = new URL(event.target.href);
                 if (urlIsOnSameSite(targetUrl)) {
                     event.preventDefault();
-                    fetch(targetUrl, {redirect: "follow", headers: {"Accept": "application/json"}}).then(handleAjaxResponse);
+                    fetch(targetUrl, {redirect: "follow", headers: {"Accept": "application/xml"}}).then(handleAjaxResponse);
                 }
             });
 
@@ -30,7 +30,7 @@
                         if (urlIsOnSameSite(targetUrl)) {
                             event.preventDefault();
                             var formData = new FormData(event.target);
-                            fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method, headers: {"Accept": "application/json"}})
+                            fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method, headers: {"Accept": "application/xml"}})
                                 .then(handleAjaxResponse);
                         }
                     });
@@ -47,8 +47,11 @@
                 var url = new URL(response.url);
                 url.searchParams.delete("request-type");
 
-                // Get page content from JSON response
-                var data = await response.json();
+                // Get page content from XML response
+                var text = await response.text();
+                console.log(text);
+                var parser = new DOMParser();
+                var data = parser.parseFromString(text, "application/xml");
                 window.history.pushState(data, "", url);
 
                 updatePageState(data);
@@ -56,7 +59,7 @@
 
             function updatePageState(data) {
                 if (!data) {
-                    fetch(window.location.href, {redirect: "follow", headers: {"Accept": "application/json"}}).then(handleAjaxResponse);
+                    fetch(window.location.href, {redirect: "follow", headers: {"Accept": "application/xml"}}).then(handleAjaxResponse);
                     return;
                 }
                 document.getElementById("main").innerHTML = data.body;
