@@ -25,9 +25,7 @@
 
             document.addEventListener("DOMContentLoaded", (e) => {
                 document.querySelectorAll("form").forEach((form) => {
-                    console.log("found form");
                     form.addEventListener("submit", (event) => {
-                        console.log("on submit");
                         var targetUrl = new URL(event.target.action);
                         if (urlIsOnSameSite(targetUrl)) {
                             event.preventDefault();
@@ -51,16 +49,15 @@
 
                 // Get page content from JSON response
                 var data = await response.json();
-                console.log("push", data);
                 window.history.pushState(data, "", url);
 
                 updatePageState(data);
             }
 
             function updatePageState(data) {
-                console.log("pop", data);
                 if (!data) {
-                    return;  // TODO: How to handle initial page?
+                    fetch(window.location.href, {redirect: "follow", headers: {"Accept": "application/json"}}).then(handleAjaxResponse);
+                    return;
                 }
                 document.getElementById("main").innerHTML = data.body;
                 document.title = data.title;
