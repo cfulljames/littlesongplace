@@ -3,9 +3,9 @@
     <div class="song" data-song="{{ song.json() }}">
         <div class="song-main">
             <!-- Profile Picture -->
-            {% if song.user_has_pfp %}
+            {% if song.user_has_pfp -%}
             <img class="small-pfp" src="/pfp/{{ song.userid }}" onerror="this.style.display = 'none'" />
-            {% endif %}
+            {%- endif %}
 
             <div class="song-info">
 
@@ -17,34 +17,34 @@
                     -
                 </div>
 
-                <!-- Song Artist -->
+                <!-- Song Artist(s) -->
                 <div class="song-artist">
                     <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
 
-                <!-- Song Collaborators -->
+                    <!-- Song Collaborators -->
                     {% for collab in song.collaborators %}
-                        {% if collab.startswith("@") %}
-                        <a href="/users/{{ collab[1:] }}" class="profile-link">{{ collab[1:] }}</a>
-                        {% else %}
-                        <span class="collab-name">{{ collab }}</span>
-                        {% endif %}
+                    {% if collab.startswith("@") -%}
+                    <a href="/users/{{ collab[1:] }}" class="profile-link">{{ collab[1:] }}</a>
+                    {%- else -%}
+                    <span class="collab-name">{{ collab }}</span>
+                    {%- endif %}
                     {% endfor %}
                 </div>
             </div>
             <div class="song-buttons">
 
+                {% if session["userid"] == song.userid and is_profile_song_list -%}
                 <!-- Owner-Specific Buttons (Edit/Delete) -->
-                {% if session["userid"] == song.userid and is_profile_song_list %}
                 <a href="/edit-song?songid={{ song.songid }}" class="song-list-button">
                     <img class="lsp_btn_edit02" alt="Edit">
                 </a>
                 <a href="/delete-song/{{ song.songid }}" onclick="return confirm(&#34;Are you sure you want to delete this song?&#34;)" class="song-list-button">
                     <img class="lsp_btn_delete02" alt="Delete">
                 </a>
-                {% endif %}
+                {%- endif %}
 
                 <!-- Details Button -->
-                <button onclick="return showDetails(event)" class="song-list-button">
+                <button onclick="return showDetails(event)" class="song-list-button details-toggle">
                     <img class="lsp_btn_show02" alt="Show Details">
                 </button>
 
@@ -56,7 +56,7 @@
         </div>
 
         <div class="song-details" {% if request.endpoint != 'song' %}hidden{% endif %}>
-            {% if current_user_playlists %}
+            {% if current_user_playlists -%}
             <!-- Add to Playlist Buttons -->
             <div class="song-playlist-controls">
                 <form action="/append-to-playlist" method="post">
@@ -69,13 +69,14 @@
                     </select>
                 </form>
             </div>
-            {% endif %}
+            {%- endif %}
 
+            {% if song.description -%}
             <!-- Song Description -->
-            {% if song.description %}
             <div class="song-description">{{ (song.description.replace("\n", "<br>"))|safe  }}</div>
-            {% endif %}
+            {%- endif %}
 
+            {% if song.tags -%}
             <!-- Song Tags -->
             <div class="song-tags">
                 Tags:
@@ -83,6 +84,7 @@
                 <a href="/songs?user={{ song.username }}&tag={{ tag }}">{{ tag }}</a>
                 {% endfor %}
             </div>
+            {%- endif %}
 
             <div class="song-date">
                 Uploaded {{ song.created }}
@@ -168,19 +170,20 @@
 function showDetails(event) {
     var songElement = event.target.closest(".song");
     var songDetails = songElement.querySelector(".song-details");
+    var detailsToggle = songElement.querySelector(".details-toggle img");
     if (songDetails.hidden) {
         // Show details
         songDetails.hidden = false;
-        event.target.alt = "Hide Details";
-        event.target.className = "lsp_btn_hide02";
-        event.target.src = customImage(document.getElementById("lsp_btn_hide02"));
+        detailsToggle.alt = "Hide Details";
+        detailsToggle.className = "lsp_btn_hide02";
+        detailsToggle.src = customImage(document.getElementById("lsp_btn_hide02"));
     }
     else {
         // Hide details
         songDetails.hidden = true;
-        event.target.alt = "Show Details";
-        event.target.className = "lsp_btn_show02";
-        event.target.src = customImage(document.getElementById("lsp_btn_show02"));
+        detailsToggle.alt = "Show Details";
+        detailsToggle.className = "lsp_btn_show02";
+        detailsToggle.src = customImage(document.getElementById("lsp_btn_show02"));
     }
     return false;
 }

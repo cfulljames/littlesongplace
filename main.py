@@ -60,8 +60,7 @@ if "DATA_DIR" in os.environ:
 def index():
     users = [row["username"] for row in query_db("select username from users order by username asc")]
     songs = Song.get_latest(50)
-    song_list = render_template("song-list.html", songs=songs)
-    return render_template("index.html", users=users, song_list=song_list)
+    return render_template("index.html", users=users, songs=songs)
 
 @app.get("/signup")
 def signup_get():
@@ -180,7 +179,7 @@ def users_profile(profile_username):
             playlists=plist_data,
             songs=songs,
             user_has_pfp=(get_user_images_path(profile_userid)/"pfp.jpg").exists(),
-            song_list=render_template("song-list.html", songs=songs, is_profile_song_list=True))
+            is_profile_song_list=True)
 
 @app.post("/edit-profile")
 def edit_profile():
@@ -346,8 +345,8 @@ def update_song():
     yt_url = request.form["song-url"] if "song-url" in request.form else None
     title = request.form["title"]
     description = request.form["description"]
-    tags = [t.strip() for t in request.form["tags"].split(",")]
-    collaborators = [c.strip() for c in request.form["collabs"].split(",")]
+    tags = [t.strip() for t in request.form["tags"].split(",") if t]
+    collaborators = [c.strip() for c in request.form["collabs"].split(",") if c]
 
     # Make sure song exists and the logged-in user owns it
     song_data = query_db("select * from songs where songid = ?", [songid], one=True)
@@ -394,8 +393,8 @@ def create_song():
     yt_url = request.form["song-url"] if "song-url" in request.form else None
     title = request.form["title"]
     description = request.form["description"]
-    tags = [t.strip() for t in request.form["tags"].split(",")]
-    collaborators = [c.strip() for c in request.form["collabs"].split(",")]
+    tags = [t.strip() for t in request.form["tags"].split(",") if t]
+    collaborators = [c.strip() for c in request.form["collabs"].split(",") if c]
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
         passed = convert_song(tmp_file, file, yt_url)
@@ -518,7 +517,7 @@ def song(userid, songid):
             user_data = query_db("select * from users where userid = ?", [userid], one=True)
             return render_template(
                     "song.html",
-                    song_list=render_template("song-list.html", songs=[song]),
+                    songs=[song],
                     song=song,
                     bgcolor=user_data["bgcolor"],
                     fgcolor=user_data["fgcolor"],
@@ -542,11 +541,7 @@ def songs():
     else:
         songs = []
 
-    return render_template(
-            "songs-by-tag.html",
-            user=user,
-            tag=tag,
-            song_list=render_template("song-list.html", songs=songs))
+    return render_template("songs-by-tag.html", user=user, tag=tag, songs=songs)
 
 @app.route("/comment", methods=["GET", "POST"])
 def comment():
@@ -874,8 +869,7 @@ def playlists(playlistid):
             bgcolor=plist_data["bgcolor"],
             fgcolor=plist_data["fgcolor"],
             accolor=plist_data["accolor"],
-            songs=songs,
-            song_list=render_template("song-list.html", songs=songs))
+            songs=songs)
 
 def flash_and_log(msg, category=None):
     flash(msg, category)
@@ -1068,8 +1062,8 @@ class Song:
         tags, collabs = cls._get_info_for_songs(songs_data)
         songs = []
         for sd in songs_data:
-            song_tags = [t["tag"] for t in tags[sd["songid"]]]
-            song_collabs = [c["name"] for c in collabs[sd["songid"]]]
+            song_tags = [t["tag"] for t in tags[sd["songid"]] if t["tag"]]
+            song_collabs = [c["name"] for c in collabs[sd["songid"]] if c["name"]]
             created = datetime.fromisoformat(sd["created"]).astimezone().strftime("%Y-%m-%d")
             user_has_pfp = (get_user_images_path(sd["userid"])/"pfp.jpg").exists()
             songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs, user_has_pfp))

@@ -42,7 +42,7 @@ function hidePlaylistEditor() {
 
 {%- endif %}
 
-{{ song_list|safe }}
+{% include "song-list.html" %}
 
 {% if session["userid"] == userid -%}
 <!-- Drag-and-drop playlist editor -->
