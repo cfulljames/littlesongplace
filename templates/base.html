@@ -19,7 +19,7 @@
                 var targetUrl = new URL(event.target.href);
                 if (urlIsOnSameSite(targetUrl)) {
                     event.preventDefault();
-                    fetch(targetUrl, {redirect: "follow", headers: {"Accept": "application/xml"}}).then(handleAjaxResponse);
+                    fetch(targetUrl, {redirect: "follow"}).then(handleAjaxResponse);
                 }
             });
 
@@ -30,7 +30,7 @@
                         if (urlIsOnSameSite(targetUrl)) {
                             event.preventDefault();
                             var formData = new FormData(event.target);
-                            fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method, headers: {"Accept": "application/xml"}})
+                            fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method})
                                 .then(handleAjaxResponse);
                         }
                     });
@@ -50,19 +50,22 @@
                 // Get page content from XML response
                 var text = await response.text();
                 console.log(text);
-                var parser = new DOMParser();
-                var data = parser.parseFromString(text, "application/xml");
-                window.history.pushState(data, "", url);
+                window.history.pushState(text, "", url);
 
-                updatePageState(data);
+                updatePageState(text);
             }
 
             function updatePageState(data) {
                 if (!data) {
-                    fetch(window.location.href, {redirect: "follow", headers: {"Accept": "application/xml"}}).then(handleAjaxResponse);
+                    fetch(window.location.href, {redirect: "follow"}).then(handleAjaxResponse);
                     return;
                 }
-                document.getElementById("main").innerHTML = data.body;
+                var parser = new DOMParser();
+                data = parser.parseFromString(data, "text/html");
+                //console.log(data.querySelector("body").textContent);
+                var body = parser.parseFromString(data.querySelector("body").innerHTML, "text/html");
+                //console.log(body.documentElement.textContent);
+                document.getElementById("main").innerHTML = body.documentElement.textContent;
                 document.title = data.title;
 
                 // Trigger event to signal new page has loaded
