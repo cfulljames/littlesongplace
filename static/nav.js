@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
     document.querySelectorAll(".nav-logged-out").forEach((e) => {e.hidden = loggedIn;});
     if (loggedIn) {
         document.getElementById("logged-in-status").innerText = `Signed in as ${username}`;
+        document.getElementById("my-profile").href = `/users/${username}`;
     }
 
     // Update activity indicator status
@@ -39,7 +40,7 @@ function onLinkClick(event) {
     if (urlIsOnSameSite(targetUrl)) {
         event.preventDefault();
         event.stopPropagation();
-        fetch(targetUrl, {redirect: "follow"}).then(handleAjaxResponse);
+        fetch(targetUrl, {redirect: "follow"}).then(handleAjaxResponse).catch((err) => console.log(err));
     }
 }
 
@@ -50,7 +51,8 @@ function onFormSubmit(event) {
         event.stopPropagation();
         var formData = new FormData(event.target);
         fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method})
-            .then(handleAjaxResponse);
+            .then(handleAjaxResponse)
+            .catch((err) => window.location.reload());  // Failed to submit form; just reload page (should never happen)
     }
 }
 
@@ -60,6 +62,9 @@ function urlIsOnSameSite(targetUrl) {
 }
 
 async function handleAjaxResponse(response) {
+    if (response.status != 200) {
+        window.location.href = response.url;
+    }
     // Update URL in browser window, minus request-type field
     var url = new URL(response.url);
     url.searchParams.delete("request-type");
@@ -78,7 +83,7 @@ function updatePageState(data) {
     // Replace the contents of the current page with those from data
 
     if (!data) {
-        fetch(window.location.href, {redirect: "follow"}).then(handleAjaxResponse);
+        fetch(window.location.href, {redirect: "follow"}).then(handleAjaxResponse).catch((err) => window.location.reload());
         return;
     }
     var parser = new DOMParser();

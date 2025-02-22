@@ -30,6 +30,10 @@ DB_VERSION = 3
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 SCRIPT_DIR = Path(__file__).parent
 
+BGCOLOR = "#e8e6b5"
+FGCOLOR = "#695c73"
+ACCOLOR = "#9373a9"
+
 ################################################################################
 # Logging
 ################################################################################
@@ -173,9 +177,9 @@ def users_profile(profile_username):
             name=profile_username,
             userid=profile_userid,
             bio=profile_bio,
-            fgcolor=profile_data["fgcolor"],
-            bgcolor=profile_data["bgcolor"],
-            accolor=profile_data["accolor"],
+            bgcolor=profile_data["bgcolor"] or BGCOLOR,
+            fgcolor=profile_data["fgcolor"] or FGCOLOR,
+            accolor=profile_data["accolor"] or ACCOLOR,
             playlists=plist_data,
             songs=songs,
             user_has_pfp=(get_user_images_path(profile_userid)/"pfp.jpg").exists(),
@@ -519,9 +523,9 @@ def song(userid, songid):
                     "song.html",
                     songs=[song],
                     song=song,
-                    bgcolor=user_data["bgcolor"],
-                    fgcolor=user_data["fgcolor"],
-                    accolor=user_data["accolor"])
+                    bgcolor=user_data["bgcolor"] or BGCOLOR,
+                    fgcolor=user_data["fgcolor"] or FGCOLOR,
+                    accolor=user_data["accolor"] or ACCOLOR)
         except ValueError:
             abort(404)
     else:
@@ -866,9 +870,9 @@ def playlists(playlistid):
             private=plist_data["private"],
             userid=plist_data["userid"],
             username=plist_data["username"],
-            bgcolor=plist_data["bgcolor"],
-            fgcolor=plist_data["fgcolor"],
-            accolor=plist_data["accolor"],
+            bgcolor=plist_data["bgcolor"] or BGCOLOR,
+            fgcolor=plist_data["fgcolor"] or FGCOLOR,
+            accolor=plist_data["accolor"] or ACCOLOR,
             songs=songs)
 
 def flash_and_log(msg, category=None):
