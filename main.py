@@ -2,6 +2,7 @@ import base64
 import json
 import logging
 import os
+import random
 import shutil
 import sqlite3
 import subprocess
@@ -62,9 +63,29 @@ if "DATA_DIR" in os.environ:
 
 @app.route("/")
 def index():
-    users = [row["username"] for row in query_db("select username from users order by username asc")]
+    users = query_db("select * from users order by username asc")
+    users = [dict(row) for row in users]
+    for user in users:
+        user["has_pfp"] = user_has_pfp(user["userid"])
+        user["bgcolor"] = user["bgcolor"] or BGCOLOR
+        user["fgcolor"] = user["fgcolor"] or FGCOLOR
+        user["accolor"] = user["accolor"] or ACCOLOR
+
+    titles = [
+            ("Little Song Place", 2.0),
+            ("Lumpy Space Princess", 0.2),
+            ("Language Server Protocol", 0.1),
+            ("Liskov Substitution Principle", 0.1),
+            ("Louisiana State Police", 0.1),
+            ("Local Strategic Partnership", 0.1),
+            ("Light Switch Plate", 0.1),
+            ("Lightest Supersymmetric Particle", 0.1),
+    ]
+    titles, weights = zip(*titles)
+    title = random.choices(titles, weights)[0]
+
     songs = Song.get_latest(50)
-    return render_template("index.html", users=users, songs=songs)
+    return render_template("index.html", users=users, songs=songs, page_title=title)
 
 @app.get("/signup")
 def signup_get():
@@ -182,7 +203,7 @@ def users_profile(profile_username):
             accolor=profile_data["accolor"] or ACCOLOR,
             playlists=plist_data,
             songs=songs,
-            user_has_pfp=(get_user_images_path(profile_userid)/"pfp.jpg").exists(),
+            user_has_pfp=user_has_pfp(profile_userid),
             is_profile_song_list=True)
 
 @app.post("/edit-profile")
@@ -926,6 +947,9 @@ def get_current_user_playlists():
 
     return plist_data
 
+def user_has_pfp(userid):
+    return (get_user_images_path(userid)/"pfp.jpg").exists()
+
 @app.context_processor
 def inject_global_vars():
     return dict(
@@ -1069,8 +1093,8 @@ class Song:
             song_tags = [t["tag"] for t in tags[sd["songid"]] if t["tag"]]
             song_collabs = [c["name"] for c in collabs[sd["songid"]] if c["name"]]
             created = datetime.fromisoformat(sd["created"]).astimezone().strftime("%Y-%m-%d")
-            user_has_pfp = (get_user_images_path(sd["userid"])/"pfp.jpg").exists()
-            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs, user_has_pfp))
+            has_pfp = user_has_pfp(sd["userid"])
+            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs, has_pfp))
         return songs
 
     @classmethod

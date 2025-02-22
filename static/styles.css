@@ -103,11 +103,31 @@ div.page-header {
 
 .profile-link {
     font-weight: bold;
+    text-decoration: none;
     /* color: var(--purple); */
 }
 
+.user-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
 .user-list-entry {
-    padding: 5px;
+    background: var(--yellow);
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px 0px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.user-list-entry span {
+    line-height: 32px;
+    padding: 10px;
+    font-weight: bold;
 }
 
 /* Sliders (e.g. volume) */
@@ -308,6 +328,10 @@ div.song-info {
     }
 }
 
+.song-title a {
+    text-decoration: none;
+}
+
 div.song-buttons {
     display: flex;
     gap: 10px;
@@ -401,6 +425,10 @@ div.player-info {
     align-items: center;
     gap: 10px;
     /*padding: 0px 10px;*/
+}
+
+#player-title {
+    text-decoration: none;
 }
 
 .player-volume {

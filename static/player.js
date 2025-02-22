@@ -42,6 +42,7 @@ function playCurrentSong() {
 
     var title = document.getElementById("player-title");
     title.textContent = songData.title;
+    title.href = `/song/${songData.userid}/${songData.songid}?action=view`;
 
     var separator = document.getElementById("player-info-sep");
     separator.hidden = false;

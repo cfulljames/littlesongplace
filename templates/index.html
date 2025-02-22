@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Little Song Place{% endblock %}
+{% block title %}{{ page_title }}{% endblock %}
 
 {% block body %}
 
@@ -19,10 +19,16 @@ better, I'm open to any thoughts or feedback you have!  Just send me
 <h2>Profiles</h2>
 <p>Check out the music of the fine folks below!{% if not session["userid"] %}  If you create an account, you'll show up here too.{% endif %}</p>
 
-{% for user in users %}
-<a href="/users/{{ user }}" class="profile-link user-list-entry">{{ user }}</a>
-
-{% endfor %}
+<div class="user-list">
+    {% for user in users %}
+    <a href="/users/{{ user['username'] }}" class="user-list-entry" style="--yellow:{{ user['bgcolor'] }};--black:{{ user['fgcolor'] }};--purple:{{ user['accolor'] }};">
+        {% if user['has_pfp'] -%}
+        <img class="small-pfp" src="/pfp/{{ user['userid'] }}" />
+        {%- endif %}
+        <span>{{ user['username'] }}</span>
+    </a>
+    {% endfor %}
+</div>
 
 <h2>Recently Uploaded Songs</h2>
 <p>Listen to all the newest tunes!</p>
