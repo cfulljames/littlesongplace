@@ -122,7 +122,7 @@ def test_login_success(client):
     assert response.headers["Location"] == "/users/username"
 
     response = client.get("/users/username")
-    assert b"Signed in as username" in response.data
+    assert b'username="username"' in response.data
 
 def test_login_invalid_username(client):
     _create_user(client, "username", "password")
@@ -180,9 +180,9 @@ def test_update_bio(client):
     assert b'<div class="profile-bio" id="profile-bio">this is the bio</div>' in response.data
 
     # Check user colors applied
-    assert b'"--yellow", "#FFFF00"' in response.data
-    assert b'"--black", "#000000"' in response.data
-    assert b'"--purple", "#FF00FF"' in response.data
+    assert b'bgcolor="#FFFF00"' in response.data
+    assert b'fgcolor="#000000"' in response.data
+    assert b'accolor="#FF00FF"' in response.data
 
 def test_upload_pfp(client):
     _create_user(client, "user", "password", login=True)
