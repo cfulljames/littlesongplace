@@ -1004,6 +1004,7 @@ class Song:
     created: str
     tags: list[str]
     collaborators: list[str]
+    user_has_pfp: bool
 
     def json(self):
         return json.dumps(vars(self))
@@ -1022,9 +1023,6 @@ class Song:
             comment["replies"] = sorted([c for c in comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
 
         return song_comments
-
-    def user_has_pfp(self):
-        return (get_user_images_path(self.userid)/"pfp.jpg").exists()
 
     @classmethod
     def by_id(cls, songid):
@@ -1073,8 +1071,8 @@ class Song:
             song_tags = [t["tag"] for t in tags[sd["songid"]]]
             song_collabs = [c["name"] for c in collabs[sd["songid"]]]
             created = datetime.fromisoformat(sd["created"]).astimezone().strftime("%Y-%m-%d")
-            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs))
-
+            user_has_pfp = (get_user_images_path(sd["userid"])/"pfp.jpg").exists()
+            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs, user_has_pfp))
         return songs
 
     @classmethod

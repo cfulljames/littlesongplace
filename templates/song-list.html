@@ -3,7 +3,7 @@
     <div class="song" data-song="{{ song.json() }}">
         <div class="song-main">
             <!-- Profile Picture -->
-            {% if song.user_has_pfp() %}
+            {% if song.user_has_pfp %}
             <img class="small-pfp" src="/pfp/{{ song.userid }}" onerror="this.style.display = 'none'" />
             {% endif %}
 

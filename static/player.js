@@ -3,11 +3,14 @@ var m_songIndex = 0;
 
 // Play a new song from the list in the player
 function play(event) {
-    var songElement = event.target;
-    while (!songElement.classList.contains("song"))
-    {
-        songElement = songElement.parentElement;
+    var songElement = event.target.closest(".song");
+
+    // Update song queue with songs on current page
+    m_allSongs = [];
+    for (const element of document.getElementsByClassName("song")) {
+        m_allSongs.push(element);
     }
+
     m_songIndex = m_allSongs.indexOf(songElement);
     playCurrentSong();
 }
@@ -26,8 +29,16 @@ function playCurrentSong() {
     audio.play();
 
     var pfp = document.getElementById("player-pfp")
-    pfp.style.display = "inline-block";
-    pfp.src = `/pfp/${songData.userid}`
+    var albumImg;
+    if (songData.user_has_pfp) {
+        pfp.style.display = "inline-block";
+        pfp.src = `/pfp/${songData.userid}`;
+        albumImg = `/pfp/${songData.userid}`;
+    }
+    else {
+        pfp.style.display = "none";
+        albumImg = "/static/lsp_notes.png";
+    }
 
     var title = document.getElementById("player-title");
     title.textContent = songData.title;
@@ -49,7 +60,7 @@ function playCurrentSong() {
             var collabname = collaborators[i].substr(1, collaborators[i].length - 1);
             var link = document.createElement("a");
             link.href = `/users/${collabname}`;
-            link.classList.add("profile-link")
+            link.classList.add("profile-link");
             link.textContent = collabname;
             collabs.appendChild(link);
         }
@@ -60,16 +71,14 @@ function playCurrentSong() {
         }
     }
 
-    //collabs.textContent = songData.collaborators.join(", ")
-
-
     if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
             title: songData.title,
             artist: songData.username,
             album: "Little Song Place",
-            artwork: [{src: "/static/lsp_notes.png"}],
+            artwork: [{src: albumImg}],
         });
+
         navigator.mediaSession.setActionHandler('nexttrack', () => {
             songNext();
         });
@@ -198,11 +207,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     // Volume
     document.getElementById("volume-slider").oninput = function(event) {
         audio.volume = event.target.value;
-    }
-
-    // Song queue
-    for (const element of document.getElementsByClassName("song")) {
-        m_allSongs.push(element);
     }
 });
 
