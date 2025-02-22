@@ -1,19 +1,10 @@
-{% if use_xml %}{% extends "base.xml" %}{% else %}{% extends "base.html" %}{% endif %}
+{% extends "base.html" %}
 
 {% block title %}{{ name }}{% endblock %}
 
 {% block head -%}
 <meta property="og:title" content="{{ name }}" />
 <meta property="og:description" content="Playlist by {{ username }}" />
-<script>
-    // Apply user colors
-    document.addEventListener("DOMContentLoaded", (event) => {
-        var rootStyle = document.documentElement.style;
-        rootStyle.setProperty("--yellow", "{{ bgcolor }}");
-        rootStyle.setProperty("--black", "{{ fgcolor }}");
-        rootStyle.setProperty("--purple", "{{ accolor }}");
-    });
-</script>
 {%- endblock %}
 
 {% block body -%}
@@ -32,7 +23,7 @@ Playlist by <a href="/users/{{ username }}" class="profile-link">{{ username }}<
 {% if session["userid"] == userid -%}
 <p class="playlist-actions">
 <button class="button" onclick="showPlaylistEditor()">Edit</button>
-<button class="button" onclick="deletePlaylist()">Delete</button>
+<a href="/delete-playlist/{{ playlistid }}" class="button" onclick="return confirm('Are you sure you want to delete this playlist?')">Delete</a>
 </p>
 
 <script>
@@ -46,12 +37,6 @@ function hidePlaylistEditor() {
     document.querySelector(".song-list").hidden = false;
     document.querySelector(".playlist-actions").hidden = false;
     document.querySelector(".playlist-editor").hidden = true;
-}
-
-function deletePlaylist() {
-    if (confirm("Are you sure you want to delete this playlist?")) {
-        window.location.href = "/delete-playlist/{{ playlistid }}";
-    }
 }
 </script>
 

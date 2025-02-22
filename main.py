@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path, PosixPath
 from typing import Optional
-from xml.sax.saxutils import escape
 
 import bcrypt
 import bleach
@@ -931,12 +930,9 @@ def get_current_user_playlists():
 
 @app.context_processor
 def inject_global_vars():
-    use_xml = request.headers["Accept"] == "application/xml"
     return dict(
         gif_data=get_gif_data(),
         current_user_playlists=get_current_user_playlists(),
-        use_xml=use_xml,
-        escape=escape,
         bgcolor="#e8e6b5",
         fgcolor="#695c73",
         accolor="#9373a9",

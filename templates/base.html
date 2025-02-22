@@ -6,36 +6,49 @@
         <link rel="icon" type="image/x-icon" href="/static/lsp_notes.png"/>
         <script src="/static/player.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Include coloris library for color picker -->
+        <link rel="stylesheet" href="/static/coloris.min.css"/>
+        <script src="/static/coloris.min.js"></script>
+
         <!-- Page-specific head fields -->
         {% block head %}
         {% endblock %}
         <script>
-            document.addEventListener("click", (event) => {
-                // Handle all clicks on links
-                if (!event.target.matches("a")) {
-                    return;
-                }
-
-                var targetUrl = new URL(event.target.href);
-                if (urlIsOnSameSite(targetUrl)) {
-                    event.preventDefault();
-                    fetch(targetUrl, {redirect: "follow"}).then(handleAjaxResponse);
-                }
-            });
-
             document.addEventListener("DOMContentLoaded", (e) => {
+
+                // Handle link clicks with AJAX
+                document.querySelectorAll("a").forEach((anchor) => {
+                    anchor.removeEventListener("click", onLinkClick);
+                    anchor.addEventListener("click", onLinkClick);
+                });
+
+                // Handle form submissions with AJAX
                 document.querySelectorAll("form").forEach((form) => {
-                    form.addEventListener("submit", (event) => {
-                        var targetUrl = new URL(event.target.action);
-                        if (urlIsOnSameSite(targetUrl)) {
-                            event.preventDefault();
-                            var formData = new FormData(event.target);
-                            fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method})
-                                .then(handleAjaxResponse);
-                        }
-                    });
+                    form.removeEventListener("submit", onFormSubmit);
+                    form.addEventListener("submit", onFormSubmit);
                 });
             });
+
+            function onLinkClick(event) {
+                var targetUrl = new URL(event.currentTarget.href);
+                if (urlIsOnSameSite(targetUrl)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    fetch(targetUrl, {redirect: "follow"}).then(handleAjaxResponse);
+                }
+            }
+
+            function onFormSubmit(event) {
+                var targetUrl = new URL(event.target.action);
+                if (urlIsOnSameSite(targetUrl)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    var formData = new FormData(event.target);
+                    fetch(targetUrl, {redirect: "follow", body: formData, method: event.target.method})
+                        .then(handleAjaxResponse);
+                }
+            }
 
             function urlIsOnSameSite(targetUrl) {
                 var currentUrl = new URL(window.location.href);
@@ -49,7 +62,6 @@
 
                 // Get page content from XML response
                 var text = await response.text();
-                console.log(text);
                 window.history.pushState(text, "", url);
 
                 updatePageState(text);
@@ -62,25 +74,29 @@
                 }
                 var parser = new DOMParser();
                 data = parser.parseFromString(data, "text/html");
-                //console.log(data.querySelector("body").textContent);
-                var body = parser.parseFromString(data.querySelector("body").innerHTML, "text/html");
-                //console.log(body.documentElement.textContent);
-                document.getElementById("main").innerHTML = body.documentElement.textContent;
+                var newMainDiv = data.getElementById("main");
+                var oldMainDiv = document.getElementById("main");
+                document.body.replaceChild(newMainDiv, oldMainDiv);
                 document.title = data.title;
+
+                // Load inline scripts (DOMParser disables these by default)
+                var scripts = document.getElementById("main").getElementsByTagName("script");
+                for (const script of scripts) {
+                    var newScript = document.createElement("script");
+                    newScript.type = script.type;
+                    newScript.text = script.text;
+                    script.parentElement.replaceChild(newScript, script);
+                }
+
+                // Delete old color picker (will be recreated on DOMContentLoaded)
+                document.getElementById("clr-picker").remove();
 
                 // Trigger event to signal new page has loaded
                 var event = new Event("DOMContentLoaded");
                 document.dispatchEvent(event);
 
-                // Update page colors
-                var rootStyle = document.documentElement.style;
-                rootStyle.setProperty("--yellow", data.bgcolor);
-                rootStyle.setProperty("--black", data.fgcolor);
-                rootStyle.setProperty("--purple", data.accolor);
-
                 // Refresh navbar in case logged-in status changed
-                updateNavbar(data.username);
-                updateImageColors();
+                updateNavbar(newMainDiv.dataset.username);
             }
 
             window.addEventListener("popstate", (event) => updatePageState(event.state));
@@ -93,6 +109,16 @@
                     document.getElementById("logged-in-status").innerText = `Signed in as ${username}`;
                 }
             }
+
+            document.addEventListener("DOMContentLoaded", (event) => {
+                var mainDiv = document.getElementById("main");
+                var rootStyle = document.documentElement.style;
+                rootStyle.setProperty("--yellow", mainDiv.dataset.bgcolor);
+                rootStyle.setProperty("--black", mainDiv.dataset.fgcolor);
+                rootStyle.setProperty("--purple", mainDiv.dataset.accolor);
+
+                updateImageColors();
+            });
         </script>
     </head>
     <body>
@@ -136,17 +162,12 @@
 
             function updateImageColors() {
                 // Perform a palette swap on all gifs based on current page colors
-
                 document.querySelectorAll(".img-data").forEach(e => {
                     document.querySelectorAll(`.${e.id}`).forEach(t => {
                         t.src = customImage(e);
                     });
                 });
             }
-
-            // Update image colors on page load
-            document.addEventListener("DOMContentLoaded", updateImageColors);
-
         </script>
 
         <div class="page-header">
@@ -204,7 +225,7 @@
         {% endwith %}
 
         <!-- Page-Specific Content -->
-        <div class="main" id="main">
+        <div class="main" id="main" data-bgcolor="{{ bgcolor }}" data-fgcolor="{{ fgcolor }}" data-accolor="{{ accolor }}" data-username="{{ session['username'] }}">
         {% block body %}
         {% endblock %}
         </div>

@@ -1,23 +1,6 @@
-{% if use_xml %}{% extends "base.xml" %}{% else %}{% extends "base.html" %}{% endif %}
+{% extends "base.html" %}
 
 {% block title %}{{ name }}'s profile{% endblock %}
-
-{% block head %}
-<!-- Include coloris library for color picker -->
-<link rel="stylesheet" href="/static/coloris.min.css"/>
-<script src="/static/coloris.min.js"></script>
-
-<script>
-    // Apply user colors
-    document.addEventListener("DOMContentLoaded", (event) => {
-        var rootStyle = document.documentElement.style;
-        rootStyle.setProperty("--yellow", "{{ bgcolor }}");
-        rootStyle.setProperty("--black", "{{ fgcolor }}");
-        rootStyle.setProperty("--purple", "{{ accolor }}");
-    });
-</script>
-
-{% endblock %}
 
 {% block body %}
 

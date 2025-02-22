@@ -1,8 +1,0 @@
-{
-    "username": "{{ session['username'] }}",
-    "bgcolor": "{{ bgcolor }}",
-    "fgcolor": "{{ fgcolor }}",
-    "accolor": "{{ accolor }}",
-    "title": {{ dumps(self.title()) | safe }},
-    "body": {{ dumps(self.body()) | safe }}
-}

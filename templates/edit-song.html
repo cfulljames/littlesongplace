@@ -1,4 +1,4 @@
-{% if use_xml %}{% extends "base.xml" %}{% else %}{% extends "base.html" %}{% endif %}
+{% extends "base.html" %}
 
 {% block title %}{% if song %}Edit Song{% else %}Upload Song{% endif %}{% endblock %}
 
@@ -61,7 +61,7 @@ Most standard audio/video formats are supported - .wav, .mp3, .ogg, .mp4, etc.
 
 <script>
 // Automatically set song name from file name
-document.getElementById("file-select").addEventListener("change", function(e) {
+document.getElementById("song-file").addEventListener("change", function(e) {
     var songTitle = document.getElementById("song-title");
     if (e.target.files[0] && !songTitle.value) {
         var name = e.target.files[0].name;

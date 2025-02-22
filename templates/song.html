@@ -1,17 +1,8 @@
-{% if use_xml %}{% extends "base.xml" %}{% else %}{% extends "base.html" %}{% endif %}
+{% extends "base.html" %}
 
 {% block head %}
 <meta property="og:title" content="{{ song.title }}" />
 <meta property="og:description" content="Song by {{ song.username }}" />
-<script>
-    // Apply user colors
-    document.addEventListener("DOMContentLoaded", (event) => {
-        var rootStyle = document.documentElement.style;
-        rootStyle.setProperty("--yellow", "{{ bgcolor }}");
-        rootStyle.setProperty("--black", "{{ fgcolor }}");
-        rootStyle.setProperty("--purple", "{{ accolor }}");
-    });
-</script>
 {% endblock %}
 
 {% block title %}{{ song.title }}{% endblock %}
