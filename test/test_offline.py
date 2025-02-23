@@ -235,7 +235,7 @@ def test_get_pfp_invalid_user(client):
 # Upload Song
 ################################################################################
 
-def _test_upload_song(client, msg, error=False, songid=None, user="user", filename="sample-3s.mp3", **kwargs):
+def _test_upload_song(client, msg, error=False, songid=None, user="user", userid=1, filename="sample-3s.mp3", **kwargs):
     song_file = open(filename, "rb")
 
     data = {
@@ -256,6 +256,8 @@ def _test_upload_song(client, msg, error=False, songid=None, user="user", filena
     assert response.status_code == 302
     if error:
         assert response.headers["Location"] == "None"
+    elif songid:
+        assert response.headers["Location"] == f"/song/{userid}/{songid}?action=view"
     else:
         assert response.headers["Location"] == f"/users/{user}"
 
