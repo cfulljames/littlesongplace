@@ -24,7 +24,7 @@ better, I'm open to any thoughts or feedback you have!  Just send me
     <div class="user-list-entry-container">
         <a href="/users/{{ user['username'] }}" class="user-list-entry" style="--yellow:{{ user['bgcolor'] }};--black:{{ user['fgcolor'] }};--purple:{{ user['accolor'] }};">
             {% if user['has_pfp'] -%}
-            <img class="small-pfp" src="/pfp/{{ user['userid'] }}" />
+            <img class="small-pfp" src="/pfp/{{ user['userid'] }}" width="32" height="32" />
             {%- endif %}
             <span>{{ user['username'] }}</span>
         </a>
