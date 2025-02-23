@@ -36,6 +36,9 @@ document.addEventListener("DOMContentLoaded", (e) => {
 });
 
 function onLinkClick(event) {
+    if (event.defaultPrevented) {
+        return;
+    }
     var targetUrl = new URL(event.currentTarget.href);
     if (urlIsOnSameSite(targetUrl)) {
         event.preventDefault();
@@ -45,6 +48,9 @@ function onLinkClick(event) {
 }
 
 function onFormSubmit(event) {
+    if (event.defaultPrevented) {
+        return;
+    }
     var targetUrl = new URL(event.target.action);
     if (urlIsOnSameSite(targetUrl)) {
         event.preventDefault();
