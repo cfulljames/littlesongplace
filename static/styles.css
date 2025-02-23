@@ -252,6 +252,10 @@ input[type=file] {
     opacity: 50%;
 }
 
+.playlist-name {
+    text-decoration: none;
+}
+
 .draggable-song {
     box-shadow: 0px 0px 5px 0px;
     border-radius: 10px;
