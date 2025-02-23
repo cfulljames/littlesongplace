@@ -100,11 +100,15 @@
     function showEditForm() {
         document.getElementById("profile-bio").hidden = true;
         document.getElementById("profile-bio-edit-btn").hidden = true;
+        document.getElementById("profile-playlists").hidden = true;
+        document.getElementById("profile-songs").hidden = true;
         document.getElementById("profile-edit-form").hidden = false;
     }
     function hideEditForm() {
         document.getElementById("profile-bio").hidden = false;
         document.getElementById("profile-bio-edit-btn").hidden = false;
+        document.getElementById("profile-playlists").hidden = false;
+        document.getElementById("profile-songs").hidden = false;
         document.getElementById("profile-edit-form").hidden = true;
     }
 </script>
@@ -112,68 +116,73 @@
 {% endif %}
 
 {% if session["userid"] == userid or playlists -%}
-<h2>Playlists</h2>
-{%- endif %}
+<div id="profile-playlists">
+    <h2>Playlists</h2>
 
-<!-- Add Playlist button/form -->
-{% if session["userid"] == userid -%}
-<div class="profile-action">
-    <button type="button" class="song-list-button" id="add-playlist-button" onclick="showAddPlaylist()" title="Add Playlist"><img class="lsp_btn_add02" /></button>
-    <form action="/create-playlist" method="post" id="create-playlist-form" hidden>
-        <label for="name">Playlist Name</label><br>
-        <input name="name" type="text" maxlength="100" /><br>
+    <!-- Add Playlist button/form -->
+    {% if session["userid"] == userid -%}
+    <div class="profile-action">
+        <button type="button" class="song-list-button" id="add-playlist-button" onclick="showAddPlaylist()" title="Add Playlist"><img class="lsp_btn_add02" /></button>
+        <form action="/create-playlist" method="post" id="create-playlist-form" hidden>
+            <label for="name">Playlist Name</label><br>
+            <input name="name" type="text" maxlength="100" /><br>
 
-        <label for="type">Playlist Type:</label>
-        <input name="type" type="radio" value="private" checked/>
-        <label for="private">Private</label>
-        <input name="type" type="radio" value="public"/>
-        <label for="public">Public</label><br>
+            <label for="type">Playlist Type:</label>
+            <input name="type" type="radio" value="private" checked/>
+            <label for="private">Private</label>
+            <input name="type" type="radio" value="public"/>
+            <label for="public">Public</label><br>
 
-        <a href="javascript:hideAddPlaylist();">Cancel</a>
-        <input type="submit" value="Create Playlist" style="margin: 10px;"/>
-    </form>
-    <script>
-        function showAddPlaylist() {
-            document.getElementById("add-playlist-button").hidden = true;
-            document.getElementById("create-playlist-form").hidden = false;
-        }
-        function hideAddPlaylist() {
-            document.getElementById("add-playlist-button").hidden = false;
-            document.getElementById("create-playlist-form").hidden = true;
-        }
-    </script>
-</div>
-{%- endif %}
-
-{% if playlists -%}
-<div class="playlist-list">
-    {% for plist in playlists -%}
-    <div class="playlist-list-entry">
-        <a class="playlist-name" href="/playlists/{{ plist['playlistid'] }}">{{ plist['name'] }}</a>
-        <!-- Only show playlist type to owner, everyone else only sees public playlists -->
-        {% if session["userid"] == userid -%}
-        <span class="playlist-type">
-        [{% if plist['private'] %}Private{% else %}Public{% endif %}]
-        </span>
-        {%- endif %}
+            <a href="javascript:hideAddPlaylist();">Cancel</a>
+            <input type="submit" value="Create Playlist" style="margin: 10px;"/>
+        </form>
+        <script>
+            function showAddPlaylist() {
+                document.getElementById("add-playlist-button").hidden = true;
+                document.getElementById("create-playlist-form").hidden = false;
+            }
+            function hideAddPlaylist() {
+                document.getElementById("add-playlist-button").hidden = false;
+                document.getElementById("create-playlist-form").hidden = true;
+            }
+        </script>
     </div>
-    {%- endfor %}
+    {%- endif %}
+
+    {% if playlists -%}
+    <div class="playlist-list">
+        {% for plist in playlists -%}
+        <div class="playlist-list-entry">
+            <a class="playlist-name" href="/playlists/{{ plist['playlistid'] }}">{{ plist['name'] }}</a>
+            <!-- Only show playlist type to owner, everyone else only sees public playlists -->
+            {% if session["userid"] == userid -%}
+            <span class="playlist-type">
+            [{% if plist['private'] %}Private{% else %}Public{% endif %}]
+            </span>
+            {%- endif %}
+        </div>
+        {%- endfor %}
+    </div>
+    {%- endif %}
 </div>
 {%- endif %}
 
 {% if session["userid"] == userid or songs %}
-<h2>Songs</h2>
-{% endif %}
+<div id="profile-songs">
+    <h2>Songs</h2>
 
-<!-- Add Song button -->
-{% if session["userid"] == userid %}
-<div class="profile-action">
-    <a class="song-list-button" href="/edit-song" title="Add Song"><img class="lsp_btn_add02" /></a>
+    <!-- Add Song button -->
+    {% if session["userid"] == userid %}
+    <div class="profile-action">
+        <a class="song-list-button" href="/edit-song" title="Add Song"><img class="lsp_btn_add02" /></a>
+    </div>
+    {% endif %}
+
+    <!-- Song List -->
+    {% include "song-list.html" %}
 </div>
-{% endif %}
 
-<!-- Song List -->
-{% include "song-list.html" %}
+{% endif %}
 
 {% endblock %}
 

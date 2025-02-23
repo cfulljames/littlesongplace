@@ -1,7 +1,7 @@
 NOW
 
 SOON
-- Hide playlists & songs while editing profile
+- Use profile colors for song edit, songs by tag (w/ username)
 - Use edit/delete icons in comments
 - Break up main.py, test_offline.py
 - Pinned profile playlists
