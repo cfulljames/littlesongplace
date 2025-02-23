@@ -315,6 +315,10 @@ div.song-main {
     align-items: center;
 }
 
+.song-list-pfp-container {
+    margin: 5px;
+}
+
 div.song-info {
     display: flex;
     flex-wrap: wrap;
@@ -322,7 +326,9 @@ div.song-info {
     gap: 10px;
     align-items: center;
     flex-grow: 1;
-    margin: 5px;
+    margin: 5px 0px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 /* Artist on separate line for mobile */
@@ -420,7 +426,7 @@ div.player {
 div.player-info {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 10px;

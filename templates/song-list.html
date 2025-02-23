@@ -2,14 +2,14 @@
 {% for song in songs %}
     <div class="song" data-song="{{ song.json() }}">
         <div class="song-main">
-            <div class="song-info">
+            <div class="song-list-pfp-container">
                 {%- if song.user_has_pfp %}
                 <!-- Profile Picture -->
                 <img class="small-pfp" src="/pfp/{{ song.userid }}" onerror="this.style.display = 'none'" />
-                {%- else -%}
-                <div class="spacer"></div>
                 {%- endif %}
+            </div>
 
+            <div class="song-info">
                 <!-- Song Title -->
                 <div class="song-title"><a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a></div>
 
