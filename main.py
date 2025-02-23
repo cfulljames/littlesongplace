@@ -698,7 +698,7 @@ def activity():
     query_db("update users set activitytime = ? where userid = ?", [timestamp, session["userid"]])
     get_db().commit()
 
-    return render_template("activity.html", comments=comments, **get_user_colors(session["userid"]))
+    return render_template("activity.html", comments=comments)
 
 @app.get("/new-activity")
 def new_activity():
