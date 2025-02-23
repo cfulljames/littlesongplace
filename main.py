@@ -34,6 +34,7 @@ SCRIPT_DIR = Path(__file__).parent
 BGCOLOR = "#e8e6b5"
 FGCOLOR = "#695c73"
 ACCOLOR = "#9373a9"
+DEFAULT_COLORS = dict(bgcolor=BGCOLOR, fgcolor=FGCOLOR, accolor=ACCOLOR)
 
 ################################################################################
 # Logging
@@ -67,9 +68,8 @@ def index():
     users = [dict(row) for row in users]
     for user in users:
         user["has_pfp"] = user_has_pfp(user["userid"])
-        user["bgcolor"] = user["bgcolor"] or BGCOLOR
-        user["fgcolor"] = user["fgcolor"] or FGCOLOR
-        user["accolor"] = user["accolor"] or ACCOLOR
+        for key, value in get_user_colors(user).items():
+            user[key] = value
 
     titles = [
             ("Little Song Place", 2.0),
@@ -194,9 +194,7 @@ def users_profile(profile_username):
             name=profile_username,
             userid=profile_userid,
             bio=profile_bio,
-            bgcolor=profile_data["bgcolor"] or BGCOLOR,
-            fgcolor=profile_data["fgcolor"] or FGCOLOR,
-            accolor=profile_data["accolor"] or ACCOLOR,
+            **get_user_colors(profile_data),
             playlists=plist_data,
             songs=songs,
             user_has_pfp=user_has_pfp(profile_userid),
@@ -261,6 +259,8 @@ def edit_song():
 
     song = None
 
+    colors = get_user_colors(session["userid"])
+
     if "songid" in request.args:
         try:
             songid = int(request.args["songid"])
@@ -280,7 +280,7 @@ def edit_song():
             app.logger.warning(f"Failed song edit - {session['username']} - song doesn't exist ({songid})")
             abort(404)
 
-    return render_template("edit-song.html", song=song)
+    return render_template("edit-song.html", song=song, **colors)
 
 @app.post("/upload-song")
 def upload_song():
@@ -541,14 +541,11 @@ def song(userid, songid):
             if song.userid != userid:
                 abort(404)
 
-            user_data = query_db("select * from users where userid = ?", [userid], one=True)
             return render_template(
                     "song.html",
                     songs=[song],
                     song=song,
-                    bgcolor=user_data["bgcolor"] or BGCOLOR,
-                    fgcolor=user_data["fgcolor"] or FGCOLOR,
-                    accolor=user_data["accolor"] or ACCOLOR)
+                    **get_user_colors(userid))
         except ValueError:
             abort(404)
     else:
@@ -559,6 +556,10 @@ def songs():
     tag = request.args.get("tag", None)
     user = request.args.get("user", None)
 
+    colors = DEFAULT_COLORS
+    if user:
+        colors = get_user_colors(user)
+
     if tag and user:
         songs = Song.get_all_for_username_and_tag(user, tag)
     elif tag:
@@ -568,7 +569,7 @@ def songs():
     else:
         songs = []
 
-    return render_template("songs-by-tag.html", user=user, tag=tag, songs=songs)
+    return render_template("songs-by-tag.html", user=user, tag=tag, songs=songs, **colors)
 
 @app.route("/comment", methods=["GET", "POST"])
 def comment():
@@ -697,7 +698,7 @@ def activity():
     query_db("update users set activitytime = ? where userid = ?", [timestamp, session["userid"]])
     get_db().commit()
 
-    return render_template("activity.html", comments=comments)
+    return render_template("activity.html", comments=comments, **get_user_colors(session["userid"]))
 
 @app.get("/new-activity")
 def new_activity():
@@ -893,9 +894,7 @@ def playlists(playlistid):
             private=plist_data["private"],
             userid=plist_data["userid"],
             username=plist_data["username"],
-            bgcolor=plist_data["bgcolor"] or BGCOLOR,
-            fgcolor=plist_data["fgcolor"] or FGCOLOR,
-            accolor=plist_data["accolor"] or ACCOLOR,
+            **get_user_colors(plist_data),
             songs=songs)
 
 def flash_and_log(msg, category=None):
@@ -949,6 +948,21 @@ def get_current_user_playlists():
 
     return plist_data
 
+def get_user_colors(user_data):
+    if isinstance(user_data, int):
+        # Get colors for userid
+        user_data = query_db("select * from users where userid = ?", [user_data], one=True)
+    elif isinstance(user_data, str):
+        # Get colors for username
+        user_data = query_db("select * from users where username = ?", [user_data], one=True)
+
+    colors = dict(bgcolor=BGCOLOR, fgcolor=FGCOLOR, accolor=ACCOLOR)
+    for key in colors:
+        if user_data[key]:
+            colors[key] = user_data[key]
+
+    return colors
+
 def user_has_pfp(userid):
     return (get_user_images_path(userid)/"pfp.jpg").exists()
 
@@ -957,9 +971,7 @@ def inject_global_vars():
     return dict(
         gif_data=get_gif_data(),
         current_user_playlists=get_current_user_playlists(),
-        bgcolor="#e8e6b5",
-        fgcolor="#695c73",
-        accolor="#9373a9",
+        **DEFAULT_COLORS,
     )
 
 

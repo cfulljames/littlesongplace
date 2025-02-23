@@ -1,7 +1,6 @@
 NOW
 
 SOON
-- Use profile colors for song edit, songs by tag (w/ username)
 - Break up main.py, test_offline.py
 - Pinned profile playlists
 - Image support in comments, descriptions, bios, etc.
