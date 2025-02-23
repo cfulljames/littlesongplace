@@ -76,10 +76,6 @@ def index():
             ("Lumpy Space Princess", 0.2),
             ("Language Server Protocol", 0.1),
             ("Liskov Substitution Principle", 0.1),
-            ("Louisiana State Police", 0.1),
-            ("Local Strategic Partnership", 0.1),
-            ("Light Switch Plate", 0.1),
-            ("Lightest Supersymmetric Particle", 0.1),
     ]
     titles, weights = zip(*titles)
     title = random.choices(titles, weights)[0]
