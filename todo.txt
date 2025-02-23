@@ -1,6 +1,8 @@
 NOW
 
 SOON
+- Hide playlists & songs while editing profile
+- Use edit/delete icons in comments
 - Break up main.py, test_offline.py
 - Pinned profile playlists
 - Image support in comments, descriptions, bios, etc.

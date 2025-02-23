@@ -287,10 +287,11 @@ def upload_song():
     if not "userid" in session:
         return redirect("/login")  # Must be logged in to edit
 
+    userid = session["userid"]
+
     error = validate_song_form()
 
     if not error:
-        userid = session["userid"]
         if "songid" in request.args:
             error = update_song()
         else:
@@ -299,7 +300,12 @@ def upload_song():
     if not error:
         username = session["username"]
         app.logger.info(f"{username} uploaded/modified a song")
-        return redirect(f"/users/{username}")
+        if "songid" in request.args:
+            # After editing an existing song, go back to song page
+            return redirect(f"/song/{userid}/{request.args['songid']}?action=view")
+        else:
+            # After creating a new song, go back to profile
+            return redirect(f"/users/{username}")
 
     else:
         username = session["username"]
@@ -525,7 +531,7 @@ def delete_song(songid):
     app.logger.info(f"{session['username']} deleted song: {song_data['title']}")
     flash_and_log(f"Deleted '{song_data['title']}'", "success")
 
-    return redirect(request.referrer)
+    return redirect(f"/users/{session['username']}")
 
 @app.get("/song/<int:userid>/<int:songid>")
 def song(userid, songid):

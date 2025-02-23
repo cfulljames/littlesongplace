@@ -304,7 +304,7 @@ div.song-list {
     gap: 10px;
 }
 
-div.song {
+.song-list .song {
     box-shadow: 0px 0px 5px 0px;
     border-radius: 10px;
 }
@@ -372,6 +372,9 @@ div.song-details {
     flex-direction: column;
     gap: 15px;
     align-items: left;
+}
+
+.song .song-details {
     margin: 10px;
 }
 

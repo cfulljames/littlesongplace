@@ -1,3 +1,5 @@
+{% from "song-macros.html" import song_info, song_details %}
+
 <div class="song-list">
 {% for song in songs %}
     <div class="song" data-song="{{ song.json() }}">
@@ -9,160 +11,21 @@
                 {%- endif %}
             </div>
 
-            <div class="song-info">
-                <!-- Song Title -->
-                <div class="song-title"><a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a></div>
+            {{ song_info(song) | indent(12) }}
 
-                <!-- Separator -->
-                <div class="song-info-sep">
-                    -
-                </div>
-
-                <!-- Song Artist(s) -->
-                <div class="song-artist">
-                    <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
-
-                    <!-- Song Collaborators -->
-                    {% for collab in song.collaborators %}
-                    {% if collab.startswith("@") -%}
-                    <a href="/users/{{ collab[1:] }}" class="profile-link">{{ collab[1:] }}</a>
-                    {%- else -%}
-                    <span class="collab-name">{{ collab }}</span>
-                    {%- endif %}
-                    {% endfor %}
-                </div>
-            </div>
             <div class="song-buttons">
-
-                {% if session["userid"] == song.userid and is_profile_song_list -%}
-                <!-- Owner-Specific Buttons (Edit/Delete) -->
-                <a href="/edit-song?songid={{ song.songid }}" class="song-list-button">
-                    <img class="lsp_btn_edit02" alt="Edit">
-                </a>
-                <a href="/delete-song/{{ song.songid }}" onclick="return confirm(&#34;Are you sure you want to delete this song?&#34;)" class="song-list-button">
-                    <img class="lsp_btn_delete02" alt="Delete">
-                </a>
-                {%- endif %}
-
                 <!-- Details Button -->
-                <button onclick="return showDetails(event)" class="song-list-button details-toggle">
+                <button onclick="return showDetails(event)" class="song-list-button details-toggle" title="Toggle Details">
                     <img class="lsp_btn_show02" alt="Show Details">
                 </button>
 
                 <!-- Play Button -->
-                <button onclick="return play(event)" class="song-list-button">
+                <button onclick="return play(event)" class="song-list-button" title="Play">
                     <img class="lsp_btn_play02" alt="Play">
                 </button>
             </div>
         </div>
-
-        <div class="song-details" {% if request.endpoint != 'song' %}hidden{% endif %}>
-            {% if current_user_playlists -%}
-            <!-- Add to Playlist Buttons -->
-            <div class="song-playlist-controls">
-                <form action="/append-to-playlist" method="post">
-                    <input type="hidden" name="songid" value="{{ song.songid }}" id="playlist-selector-songid"/>
-                    <select name="playlistid" onchange="this.closest('form').requestSubmit()">
-                        <option value="-1">Add to Playlist...</option>
-                        {% for plist in current_user_playlists -%}
-                        <option value="{{ plist.playlistid }}">{{ plist['name'] }}</option>
-                        {%- endfor %}
-                    </select>
-                </form>
-            </div>
-            {%- endif %}
-
-            {% if song.description -%}
-            <!-- Song Description -->
-            <div class="song-description">{{ (song.description.replace("\n", "<br>"))|safe  }}</div>
-            {%- endif %}
-
-            {% if song.tags -%}
-            <!-- Song Tags -->
-            <div class="song-tags">
-                Tags:
-                {% for tag in song.tags %}
-                <a href="/songs?user={{ song.username }}&tag={{ tag }}">{{ tag }}</a>
-                {% endfor %}
-            </div>
-            {%- endif %}
-
-            <div class="song-date">
-                Uploaded {{ song.created }}
-            </div>
-
-            <!-- Song Comments -->
-            <div class="song-comments">
-                Comments:<br>
-                {% if session['userid'] %}
-                <a href="/comment?songid={{ song.songid }}">Add a Comment</a>
-                {% endif %}
-
-                {% for comment in song.get_comments() %}
-                <div class="top-level-comment">
-
-                    <a href="/users/{{ comment['username'] }}" class="profile-link">{{ comment['username'] }}</a>:
-                    {{ (comment['content'].replace("\n", "<br>"))|safe }}
-
-                    {% if session['userid'] == comment['userid'] or session['userid'] == song.userid %}
-                    <div class="comment-button-container">
-                    {% endif %}
-
-                        <!-- Only commenter can edit comment -->
-                        {% if session['userid'] == comment['userid'] %}
-                        <a href="/comment?commentid={{ comment['commentid'] }}&songid={{ song.songid }}" class="comment-button">
-                            Edit
-                        </a>
-                        {% endif %}
-
-                        <!-- Commenter and song owner can delete comment -->
-                        {% if session['userid'] == comment['userid'] or session['userid'] == song.userid %}
-                        <a href="/delete-comment/{{ comment['commentid'] }}" onclick="return confirm(&#34;Are you sure you want to delete this comment?&#34;)" class="comment-button">
-                            Delete
-                        </a>
-                        {% endif %}
-
-                    {% if session['userid'] == comment['userid'] or session['userid'] == song.userid %}
-                    </div>
-                    {% endif %}
-
-                    {% for reply in comment['replies'] %}
-                    <div class="reply-comment">
-
-                        <a href="/users/{{ reply['username'] }}" class="profile-link">{{ reply['username'] }}</a>:
-                        {{ reply['content'] }}
-
-                        {% if session['userid'] == reply['userid'] or session['userid'] == song.userid %}
-                        <div class="comment-button-container">
-                        {% endif %}
-
-                            <!-- Only commenter can edit comment -->
-                            {% if session['userid'] == reply['userid'] %}
-                            <a href="/comment?commentid={{ reply['commentid'] }}&songid={{ song.songid }}&replytoid={{ comment['commentid'] }}" class="comment-button">
-                                Edit
-                            </a>
-                            {% endif %}
-
-                            <!-- Commenter and song owner can delete comment -->
-                            {% if session['userid'] == reply['userid'] or session['userid'] == song.userid %}
-                            <a href="/delete-comment/{{ reply['commentid'] }}" onclick="return confirm(&#34;Are you sure you want to delete this comment?&#34;)" class="comment-button">
-                                Delete
-                            </a>
-                            {% endif %}
-
-                        {% if session['userid'] == reply['userid'] or session['userid'] == song.userid %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-
-                    <div class="comment-button-container">
-                        <a href="/comment?songid={{ song.songid }}&replytoid={{ comment['commentid'] }}">Reply</a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {{ song_details(song, current_user_playlists) | indent(8) }}
     </div>
 {% endfor %}
 </div>

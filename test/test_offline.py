@@ -474,7 +474,7 @@ def test_delete_song_success(client):
     _create_user_and_song(client)
     response = client.get("/delete-song/1")
     assert response.status_code == 302
-    assert response.headers["Location"] == "None"
+    assert response.headers["Location"] == "/users/user"
 
     response = client.get("/")
     assert b"Deleted &#39;song title&#39;" in response.data
@@ -691,7 +691,7 @@ def test_delete_song_with_comments(client):
     _create_user_song_and_comment(client, "comment text here")
     response = client.get("/delete-song/1")
     assert response.status_code == 302
-    assert response.headers["Location"] == "None" # No previous page, use homepage
+    assert response.headers["Location"] == "/users/user"
 
     response = client.get("/song/1/1?action=view")
     assert response.status_code == 404  # Song deleted

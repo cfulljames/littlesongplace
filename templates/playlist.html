@@ -22,8 +22,8 @@ Playlist by <a href="/users/{{ username }}" class="profile-link">{{ username }}<
 
 {% if session["userid"] == userid -%}
 <p class="playlist-actions">
-<button class="button" onclick="showPlaylistEditor()">Edit</button>
-<a href="/delete-playlist/{{ playlistid }}" class="button" onclick="return confirm('Are you sure you want to delete this playlist?')">Delete</a>
+<button class="song-list-button" onclick="showPlaylistEditor()" title="Edit"><img class="lsp_btn_edit02" /></button>
+<a href="/delete-playlist/{{ playlistid }}" class="song-list-button" onclick="return confirm('Are you sure you want to delete this playlist?')" title="Delete"><img class="lsp_btn_delete02" /></a>
 </p>
 
 <script>

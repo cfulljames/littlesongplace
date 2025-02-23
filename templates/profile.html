@@ -27,7 +27,7 @@
 {% if session["userid"] == userid %}
 
 <div class="profile-action">
-    <button class="button" onclick="showEditForm()" id="profile-bio-edit-btn">Edit Profile</button>
+    <button class="song-list-button" onclick="showEditForm()" id="profile-bio-edit-btn" title="Edit Profile"><img class="lsp_btn_edit02" /></button>
 </div>
 
 <form id="profile-edit-form" action="/edit-profile" method="post" enctype="multipart/form-data" hidden>
@@ -118,7 +118,7 @@
 <!-- Add Playlist button/form -->
 {% if session["userid"] == userid -%}
 <div class="profile-action">
-    <button type="button" class="button" id="add-playlist-button" onclick="showAddPlaylist()">Add Playlist</button>
+    <button type="button" class="song-list-button" id="add-playlist-button" onclick="showAddPlaylist()" title="Add Playlist"><img class="lsp_btn_add02" /></button>
     <form action="/create-playlist" method="post" id="create-playlist-form" hidden>
         <label for="name">Playlist Name</label><br>
         <input name="name" type="text" maxlength="100" /><br>
@@ -168,7 +168,7 @@
 <!-- Add Song button -->
 {% if session["userid"] == userid %}
 <div class="profile-action">
-    <a class="button" href="/edit-song">Add Song</a>
+    <a class="song-list-button" href="/edit-song" title="Add Song"><img class="lsp_btn_add02" /></a>
 </div>
 {% endif %}
 
