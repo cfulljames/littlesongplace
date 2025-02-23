@@ -83,15 +83,15 @@
 
                 <!-- Only commenter can edit comment -->
                 {% if session['userid'] == comment['userid'] %}
-                <a href="/comment?commentid={{ comment['commentid'] }}&songid={{ song.songid }}" class="comment-button">
-                    Edit
+                <a href="/comment?commentid={{ comment['commentid'] }}&songid={{ song.songid }}" class="song-list-button" title="Edit">
+                    <img class="lsp_btn_edit02" />
                 </a>
                 {% endif %}
 
                 <!-- Commenter and song owner can delete comment -->
                 {% if session['userid'] == comment['userid'] or session['userid'] == song.userid %}
-                <a href="/delete-comment/{{ comment['commentid'] }}" onclick="return confirm(&#34;Are you sure you want to delete this comment?&#34;)" class="comment-button">
-                    Delete
+                <a href="/delete-comment/{{ comment['commentid'] }}" onclick="return confirm(&#34;Are you sure you want to delete this comment?&#34;)" class="song-list-button" title="Delete">
+                    <img class="lsp_btn_delete02" />
                 </a>
                 {% endif %}
 
@@ -111,15 +111,15 @@
 
                     <!-- Only commenter can edit comment -->
                     {% if session['userid'] == reply['userid'] %}
-                    <a href="/comment?commentid={{ reply['commentid'] }}&songid={{ song.songid }}&replytoid={{ comment['commentid'] }}" class="comment-button">
-                        Edit
+                    <a href="/comment?commentid={{ reply['commentid'] }}&songid={{ song.songid }}&replytoid={{ comment['commentid'] }}" class="song-list-button" title="Edit">
+                        <img class="lsp_btn_edit02" />
                     </a>
                     {% endif %}
 
                     <!-- Commenter and song owner can delete comment -->
                     {% if session['userid'] == reply['userid'] or session['userid'] == song.userid %}
-                    <a href="/delete-comment/{{ reply['commentid'] }}" onclick="return confirm(&#34;Are you sure you want to delete this comment?&#34;)" class="comment-button">
-                        Delete
+                    <a href="/delete-comment/{{ reply['commentid'] }}" onclick="return confirm(&#34;Are you sure you want to delete this comment?&#34;)" class="song-list-button" title="delete">
+                        <img class="lsp_btn_delete02" />
                     </a>
                     {% endif %}
 
