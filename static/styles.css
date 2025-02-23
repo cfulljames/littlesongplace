@@ -104,7 +104,6 @@ div.page-header {
 .profile-link {
     font-weight: bold;
     text-decoration: none;
-    /* color: var(--purple); */
 }
 
 .user-list {
@@ -113,21 +112,27 @@ div.page-header {
     gap: 10px;
 }
 
-.user-list-entry {
-    background: var(--yellow);
+.user-list-entry-container {
     border-radius: 10px;
     box-shadow: 0px 0px 5px 0px;
-    height: 48px;
+}
+
+.user-list-entry {
+    box-sizing: border-box;
+    height: 100%;
+    background: var(--yellow);
+    border-radius: 10px;
+    padding: 5px;
 
     display: flex;
     align-items: center;
     text-decoration: none;
+    gap: 5px;
 }
 
 .user-list-entry span {
-    line-height: 32px;
-    padding: 10px;
     font-weight: bold;
+    color: var(--purple);
 }
 
 /* Sliders (e.g. volume) */
@@ -219,10 +224,10 @@ input[type=file] {
 .small-pfp {
     max-width: 32px;
     max-height: 32px;
-    margin: 0px;
-    margin-left: 6px;
     border-radius: 5px;
     border: solid 2px var(--purple);
+    background-color: var(--purple);
+    vertical-align: middle;
 }
 
 .profile-bio {
@@ -317,7 +322,7 @@ div.song-info {
     gap: 10px;
     align-items: center;
     flex-grow: 1;
-    margin: 10px;
+    margin: 5px;
 }
 
 /* Artist on separate line for mobile */
@@ -353,6 +358,7 @@ div.song-buttons {
 .song-list-button img {
     image-rendering: pixelated;
     width: 32px;
+    vertical-align: middle;
 }
 
 div.song-details {

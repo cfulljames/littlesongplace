@@ -63,13 +63,14 @@ function urlIsOnSameSite(targetUrl) {
 
 async function handleAjaxResponse(response) {
     if (response.status != 200) {
+        // Got an error; redirect to the error page
         window.location.href = response.url;
     }
     // Update URL in browser window, minus request-type field
     var url = new URL(response.url);
     url.searchParams.delete("request-type");
 
-    // Get page content from XML response
+    // Get page content from response
     var text = await response.text();
     window.history.pushState(text, "", url);
 
