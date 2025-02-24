@@ -1,27 +1,22 @@
 NOW
-
-SOON
-- Break up main.py, test_offline.py
+- Fix vertical spacing in player
 - Pinned profile playlists
-- Image support in comments, descriptions, bios, etc.
 - Player minimize button
 - Shuffle all page
 - Shuffle song list toggle
 - Loop song list toggle
+
+SOON
+- Break up main.py, test_offline.py
+- Image support in comments, descriptions, bios, etc.
 - Profile background/banner image
-- Play Queue:
-    - Add songs
-    - View songs in queue
-    - Remove songs
-    - Reorder songs
-    - Automatically use songs on page when queue ends
+- Song sorter for song lists
+- Song/User Search
 
 LATER
 - Forum/chat
 - Events page (MMiaH, etc.)
-- Show song info for song in player (description, tags)
-- Song/User Search
-- Song sorter for song lists
+- Play Queue (Now Playing)
 - Song downloads
 - Autoplay toggle
 - Admin accounts
