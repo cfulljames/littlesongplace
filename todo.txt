@@ -1,5 +1,4 @@
 NOW
-- Fix vertical spacing in player
 - Pinned profile playlists
 - Player minimize button
 - Shuffle all page
