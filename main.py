@@ -567,7 +567,7 @@ def songs():
     elif user:
         songs = Song.get_all_for_username(user)
     else:
-        songs = []
+        songs = Song.get_random(50)
 
     return render_template("songs-by-tag.html", user=user, tag=tag, songs=songs, **colors)
 
@@ -1087,6 +1087,12 @@ class Song:
     @classmethod
     def get_latest(cls, count):
         return cls._from_db("select * from songs inner join users on songs.userid = users.userid order by songs.created desc limit ?", [count])
+
+    @classmethod
+    def get_random(cls, count):
+        songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songid in (select songid from songs order by random() limit ?)", [count])
+        random.shuffle(songs)
+        return songs
 
     @classmethod
     def get_for_playlist(cls, playlistid):

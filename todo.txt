@@ -1,8 +1,6 @@
 NOW
 - Pinned profile playlists
 - Player minimize button
-- Shuffle all page
-- Shuffle song list toggle
 - Loop song list toggle
 
 SOON
