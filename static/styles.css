@@ -298,13 +298,17 @@ input[type=file] {
 }
 
 /* Song Entry in Song List */
-div.song-list {
+.song-list-controls {
+    padding-bottom: 5px;
+}
+
+div.song-list-songs {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.song-list .song {
+.song-list-songs .song {
     box-shadow: 0px 0px 5px 0px;
     border-radius: 10px;
 }

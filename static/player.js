@@ -155,7 +155,14 @@ function songUpdate() {
 }
 
 // Add event listeners
+var m_firstLoad = true;
 document.addEventListener("DOMContentLoaded", (event) => {
+
+    // The player never gets rebuilt, so we only need to set it up the first time
+    if (!m_firstLoad) {
+        return;
+    }
+    m_firstLoad = false;
 
     // Audio playback position while playing
     var audio = document.getElementById("player-audio");
