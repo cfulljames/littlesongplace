@@ -1090,8 +1090,18 @@ class Song:
 
     @classmethod
     def get_random(cls, count):
-        songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songid in (select songid from songs order by random() limit ?)", [count])
+        # Get random songs + 10 extras so I can filter out my own (I uploaded too many :/)
+        songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songid in (select songid from songs order by random() limit ?)", [count + 10])
         random.shuffle(songs)
+
+        # Prevent my songs from showing up in the first 10 results
+        for i in reversed(range(min(10, len(songs)))):
+            if songs[i].username == "cfulljames":
+                del songs[i]
+
+        # Drop any extra songs (since we asked for 10 extras)
+        songs = songs[:count]
+
         return songs
 
     @classmethod
