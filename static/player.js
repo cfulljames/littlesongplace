@@ -113,6 +113,9 @@ function songPlayPause() {
 function songNext() {
     m_songIndex = (m_songIndex + 1) % m_allSongs.length;
     playCurrentSong();
+    if (m_songIndex == 0) {
+        document.getElementById("player-audio").pause();
+    }
 }
 
 // Play the previous song in the queue
