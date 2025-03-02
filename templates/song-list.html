@@ -1,9 +1,11 @@
 {% from "song-macros.html" import song_info, song_details %}
 
 <div class="song-list">
+    {% if songs|length > 1 %}
     <div class="song-list-controls">
         <label><input type="checkbox" name="shuffle" onchange="shuffleSongList(event)">Shuffle</label>
     </div>
+    {% endif %}
 
     <div class="song-list-songs">
         {% for song in songs %}

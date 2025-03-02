@@ -1,5 +1,4 @@
 NOW
-- Hide shuffle button for song lists with 1 song or fewer
 - Pinned profile playlists
 - Player minimize button
 
