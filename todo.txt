@@ -1,22 +1,24 @@
-NOW
 - Scroll to top of new page
 - Add to playlist in background
 - Pinned profile playlists
-- Player minimize button
 
 SOON
+- Comments on profile(?), playlists
+- Player minimize button
 - Break up main.py, test_offline.py
-- Image support in comments, descriptions, bios, etc.
+- Image support in comments, descriptions, bios, etc. (rich text?)
 - Profile background/banner image
+- Profile blocks(?)
 - Song sorter for song lists
 - Song/User Search
-
-LATER
+- Jam(s)(??)
 - Forum/chat
 - Events page (MMiaH, etc.)
+
+MAYBE
 - Play Queue (Now Playing)
-- Song downloads
-- Autoplay toggle
 - Admin accounts
 - Account deletion
 - Change password (require email?)
+- Autoplay toggle
+- Song downloads
