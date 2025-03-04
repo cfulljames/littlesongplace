@@ -72,9 +72,8 @@ async function handleAjaxResponse(response) {
         // Got an error; redirect to the error page
         window.location.href = response.url;
     }
-    // Update URL in browser window, minus request-type field
+    // Update URL in browser window
     var url = new URL(response.url);
-    url.searchParams.delete("request-type");
 
     // Get page content from response
     var text = await response.text();
@@ -124,6 +123,9 @@ function updatePageState(data) {
     // Trigger event to signal new page has loaded
     var event = new Event("DOMContentLoaded");
     document.dispatchEvent(event);
+
+    // Scroll to top of page
+    window.scrollTo(0, 0);
 }
 
 async function checkForNewActivity() {

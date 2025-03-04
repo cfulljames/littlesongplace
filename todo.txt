@@ -1,4 +1,3 @@
-- Scroll to top of new page
 - Add to playlist in background
 - Pinned profile playlists
 
