@@ -1,7 +1,6 @@
+SOON
 - Add to playlist in background
 - Pinned profile playlists
-
-SOON
 - Comments on profile(?), playlists
 - Player minimize button
 - Break up main.py, test_offline.py
