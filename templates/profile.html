@@ -34,6 +34,12 @@
     <h2> Profile Picture </h2>
     <input type="file" name="pfp" accept="image/png, image/jpeg, image/gif, image/svg" />
 
+    <h2> Profile Background Image </h2>
+    <label><input type="radio" name="pfbgmode" value="none" {% if pfbgmode == 'none' %}checked{% endif %}>None (Solid Color)</label>
+    <label><input type="radio" name="pfbgmode" value="fill" {% if pfbgmode == 'fill' %}checked{% endif %}>Fill</label>
+    <label><input type="radio" name="pfbgmode" value="tile" {% if pfbgmode == 'tile' %}checked{% endif %}>Tile</label>
+    <input type="file" name="pfbg" accept="image/png, image/jpeg, image/gif, image/svg" />
+
     <h2> Profile Colors </h2>
     <table>
         <tr>

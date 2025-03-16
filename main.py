@@ -27,7 +27,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
-DB_VERSION = 3
+DB_VERSION = 4
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 SCRIPT_DIR = Path(__file__).parent
 
@@ -181,6 +181,9 @@ def users_profile(profile_username):
     else:
         plist_data = query_db("select * from playlists where userid = ? and private = 0 order by updated desc", [profile_userid])
 
+    # Get background mode
+    pfbgmode = profile_data["pfbgmode"] or "none"
+
     # Get songs for current profile
     songs = Song.get_all_for_userid(profile_userid)
 
@@ -194,6 +197,7 @@ def users_profile(profile_username):
             name=profile_username,
             userid=profile_userid,
             bio=profile_bio,
+            pfbgmode=pfbgmode,
             **get_user_colors(profile_data),
             playlists=plist_data,
             songs=songs,
@@ -206,12 +210,14 @@ def edit_profile():
         abort(401)
 
     query_db(
-            "update users set bio = ?, bgcolor = ?, fgcolor = ?, accolor = ? where userid = ?",
-            [request.form["bio"], request.form["bgcolor"], request.form["fgcolor"], request.form["accolor"], session["userid"]])
+            "update users set bio = ?, bgcolor = ?, fgcolor = ?, accolor = ?, pfbgmode = ? where userid = ?",
+            [request.form["bio"], request.form["bgcolor"], request.form["fgcolor"], request.form["accolor"], request.form["pfbgmode"], session["userid"]])
     get_db().commit()
 
+    img_path = get_user_images_path(session["userid"])
+
     if request.files["pfp"]:
-        pfp_path = get_user_images_path(session["userid"]) / "pfp.jpg"
+        pfp_path = img_path / "pfp.jpg"
 
         try:
             with Image.open(request.files["pfp"]) as im:
@@ -242,6 +248,20 @@ def edit_profile():
         except UnidentifiedImageError:
             abort(400)  # Invalid image
 
+    if request.files["pfbg"]:
+        # Save background image as-is
+        filename = request.files["pfbg"].filename
+        extension = filename.rsplit(".")[1]
+
+        if "." in filename and extension in ("png", "jpg", "jpeg", "gif", "svg"):
+            # Delete any old pfbg
+            for child in img_path.iterdir():
+                if child.stem == "pfbg":
+                    child.unlink()
+
+            pfbg_path = img_path / ("pfbg." + extension)
+            request.files["pfbg"].save(pfbg_path)
+
     flash("Profile updated successfully")
 
     app.logger.info(f"{session['username']} updated bio")
@@ -251,6 +271,15 @@ def edit_profile():
 @app.get("/pfp/<int:userid>")
 def pfp(userid):
     return send_from_directory(DATA_DIR / "images" / str(userid), "pfp.jpg")
+
+@app.get("/pfbg/<int:userid>")
+def pfbg(userid):
+    img_dir = get_user_images_path(userid)
+    for child in img_dir.iterdir():
+        if child.stem == "pfbg":
+            return send_from_directory(img_dir, child.name)
+
+    abort(404)
 
 @app.get("/edit-song")
 def edit_song():

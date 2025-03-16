@@ -168,6 +168,8 @@ def test_update_bio(client):
     response = client.post("/edit-profile", data={
         "bio": "this is the bio",
         "pfp": (b"", "", "aplication/octet-stream"),
+        "pfbg": (b"", "", "aplication/octet-stream"),
+        "pfbgmode": "none",
         "fgcolor": "#000000",
         "bgcolor": "#FFFF00",
         "accolor": "#FF00FF",
@@ -189,6 +191,8 @@ def test_upload_pfp(client):
     response = client.post("/edit-profile", data={
         "bio": "",
         "pfp": open("lsp_notes.png", "rb"),
+        "pfbg": (b"", "", "aplication/octet-stream"),
+        "pfbgmode": "none",
         "fgcolor": "#000000",
         "bgcolor": "#000000",
         "accolor": "#000000",
@@ -199,6 +203,8 @@ def test_edit_profile_not_logged_in(client):
     response = client.post("/edit-profile", data={
         "bio": "",
         "pfp": open("lsp_notes.png", "rb"),
+        "pfbg": (b"", "", "aplication/octet-stream"),
+        "pfbgmode": "none",
         "fgcolor": "#000000",
         "bgcolor": "#000000",
         "accolor": "#000000",
@@ -210,6 +216,8 @@ def test_get_pfp(client):
     client.post("/edit-profile", data={
         "bio": "",
         "pfp": open("lsp_notes.png", "rb"),
+        "pfbg": (b"", "", "aplication/octet-stream"),
+        "pfbgmode": "none",
         "fgcolor": "#000000",
         "bgcolor": "#000000",
         "accolor": "#000000",
@@ -228,6 +236,64 @@ def test_get_pfp_no_file(client):
 
 def test_get_pfp_invalid_user(client):
     response = client.get("/pfp/1")
+    # User doesn't exist
+    assert response.status_code == 404
+
+def test_upload_bg_image(client):
+    _create_user(client, "user", "password", login=True)
+    client.post("/edit-profile", data={
+        "bio": "",
+        "pfp": (b"", "", "aplication/octet-stream"),
+        "pfbg": open("lsp_notes.png", "rb"),
+        "pfbgmode": "none",
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
+
+    response = client.get("/pfbg/1")
+    assert response.status_code == 200
+    assert response.mimetype == "image/png"
+    with open("lsp_notes.png", "rb") as expected:
+        assert response.data == expected.read()
+
+def test_replace_bg_image(client):
+    # BG can be different formats, so doesn't always get overwritten
+    _create_user(client, "user", "password", login=True)
+    client.post("/edit-profile", data={
+        "bio": "",
+        "pfp": (b"", "", "aplication/octet-stream"),
+        "pfbg": open("lsp_notes.png", "rb"),
+        "pfbgmode": "none",
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
+
+    client.post("/edit-profile", data={
+        "bio": "",
+        "pfp": (b"", "", "aplication/octet-stream"),
+        "pfbg": open("lsp_notes.jpg", "rb"),
+        "pfbgmode": "none",
+        "fgcolor": "#000000",
+        "bgcolor": "#000000",
+        "accolor": "#000000",
+    })
+
+    response = client.get("/pfbg/1")
+    assert response.status_code == 200
+    assert response.mimetype == "image/jpeg"
+    with open("lsp_notes.jpg", "rb") as expected:
+        assert response.data == expected.read()
+
+def test_get_pfbg_no_file(client):
+    _create_user(client, "user", "password", login=True)
+    # User exists but doesn't have a pfp
+    response = client.get("/pfbg/1")
+    assert response.status_code == 404
+
+def test_get_pfbg_invalid_user(client):
+    response = client.get("/pfbg/1")
     # User doesn't exist
     assert response.status_code == 404
 
