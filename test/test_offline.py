@@ -1041,9 +1041,10 @@ def _create_user_song_and_playlist(client, playlist_type="private"):
 
 def test_append_to_playlist(client):
     _create_user_song_and_playlist(client)
-    client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
-    response = client.get("/")
-    assert b"Added &#39;song title&#39; to my playlist" in response.data
+    response = client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
+    data = response.json
+    assert data["status"] == "success"
+    assert "Added 'song title' to my playlist" in data["messages"]
 
 def test_append_to_playlist_not_logged_in(client):
     _create_user_song_and_playlist(client)

@@ -67,19 +67,49 @@ function urlIsOnSameSite(targetUrl) {
     return targetUrl.origin === currentUrl.origin;
 }
 
+var m_messageBoxTimeout;
+
 async function handleAjaxResponse(response) {
     if (response.status != 200) {
         // Got an error; redirect to the error page
         window.location.href = response.url;
     }
-    // Update URL in browser window
-    var url = new URL(response.url);
 
-    // Get page content from response
-    var text = await response.text();
-    window.history.pushState(text, "", url);
+    if (response.headers.get("content-type") === "application/json")
+    {
+        // JSON response - show message popup
 
-    updatePageState(text);
+        var data = await response.json();
+        var messageBox = document.getElementById("message-box");
+        messageBox.textContent = data.messages[0];
+
+        if (data.status === "success")
+        {
+            messageBox.style["border-color"] = "var(--blue)";
+        }
+        else
+        {
+            messageBox.style["border-color"] = "red";
+        }
+
+        // Unhide message box for 5 seconds
+        clearTimeout(m_messageBoxTimeout);
+        messageBox.hidden = false;
+        m_messageBoxTimeout = setTimeout(() => {messageBox.hidden = true;}, 5000);
+    }
+    else
+    {
+        // HTML response
+
+        // Update URL in browser window
+        var url = new URL(response.url);
+
+        // Get page content from response
+        var text = await response.text();
+        window.history.pushState(text, "", url);
+
+        updatePageState(text);
+    }
 }
 
 // Populate page state from history stack when user navigates back

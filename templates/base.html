@@ -5,7 +5,7 @@
         <link rel="stylesheet" href="/static/styles.css?v=2"/>
         <link rel="icon" type="image/x-icon" href="/static/lsp_notes.png?v=1"/>
         <script src="/static/player.js?v=1"></script>
-        <script src="/static/nav.js?v=1"></script>
+        <script src="/static/nav.js?v=2"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <!-- Include coloris library for color picker -->
@@ -62,8 +62,11 @@
         <!-- Padding to prevent player from obscuring content -->
         <div id="scroll-padding"></div>
 
-        <!-- Song Player -->
         <div class="player-container" id="player-container">
+            <!-- Message Box -->
+            <div id="message-box" hidden></div>
+
+            <!-- Song Player -->
             <div class="player" id="player" hidden>
                 <div class="player-info">
                     <img id="player-pfp" class="small-pfp" src="" onerror="this.style.display = 'none'">

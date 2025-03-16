@@ -94,6 +94,16 @@ div.page-header {
     margin: 20px;
 }
 
+#message-box {
+    box-sizing: border-box;
+    margin: 10px;
+    border-width: 3px;
+    border-radius: 10px;
+    border-style: solid;
+    padding: 10px;
+    background-color: var(--yellow);
+}
+
 .title-image {
     image-rendering: pixelated;
     width: 512px;

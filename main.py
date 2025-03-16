@@ -817,7 +817,7 @@ def append_to_playlist():
 
     flash_and_log(f"Added '{song_data['title']}' to {plist_data['name']}", "success")
 
-    return redirect(request.referrer)
+    return {"status": "success", "messages": get_flashed_messages()}
 
 @app.post("/edit-playlist/<int:playlistid>")
 def edit_playlist_post(playlistid):
