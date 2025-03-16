@@ -1,5 +1,5 @@
 SOON
-- Comments on profile(?), playlists
+- Comments on profile(?), playlists (schema is hard :( )
 - Player minimize button
 - Break up main.py, test_offline.py
 - Image support in comments, descriptions, bios, etc. (rich text?)
@@ -17,8 +17,7 @@ MAYBE
 - Change password (require email?)
 - Autoplay toggle
 - Song downloads
-
-CANCEL?
 - Profile background/banner image (tile? scale? text backgrounds?)
 - Pinned profile playlists (where to put?  multiple playlists?)
 - Profile blocks(?)
+
