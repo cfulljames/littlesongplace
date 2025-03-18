@@ -1,25 +1,40 @@
-CREATE TABLE playlists (
-    playlistid INTEGER PRIMARY KEY,
-    created TEXT NOT NULL,
-    updated TEXT NOT NULL,
-    userid INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    private INTEGER NOT NULL,
+-- Create new comment tables
+CREATE TABLE comment_threads (
+    threadid INTEGER PRIMARY KEY,
+    threadtype INTEGER DEFAULT 0,
+);
 
+CREATE TABLE comments (
+    commentid INTEGER PRIMARY KEY,
+    threadid INTEGER NOT NULL,
+    userid INTEGER NOT NULL,
+    replytoid INTEGER,
+    created TEXT NOT NULL,
+    content TEXT NOT NULL,
+    FOREIGN KEY(threadid) REFERENCES comment_threads(threadid) ON DELETE CASCADE,
     FOREIGN KEY(userid) REFERENCES users(userid) ON DELETE CASCADE
 );
-CREATE INDEX playlists_by_userid ON playlists(userid);
+CREATE INDEX idx_comments_user ON comments(userid);
+CREATE INDEX idx_comments_replyto ON comments(replytoid);
+CREATE INDEX idx_comments_time ON comments(created);
 
-CREATE TABLE playlist_songs (
-    playlistid INTEGER NOT NULL,
-    position INTEGER NOT NULL,
-    songid INTEGER NOT NULL,
-
-    PRIMARY KEY(playlistid, position),
-    FOREIGN KEY(playlistid) REFERENCES playlists(playlistid) ON DELETE CASCADE,
-    FOREIGN KEY(songid) REFERENCES songs(songid) ON DELETE CASCADE
+CREATE TABLE comment_notifications (
+    notificationid INTEGER PRIMARY KEY,
+    commentid INTEGER NOT NULL,
+    targetuserid INTEGER NOT NULL,
+    FOREIGN KEY(commentid) REFERENCES comments(commentid) ON DELETE CASCADE,
+    FOREIGN KEY(targetuserid) REFERENCES users(userid) ON DELETE CASCADE
 );
-CREATE INDEX playlist_songs_by_playlist ON playlist_songs(playlistid);
+CREATE INDEX idx_comment_notifications_by_target ON comment_notifications(targetuserid);
 
-PRAGMA user_version = 3;
+-- Add comment thread to songs table
+ALTER TABLE songs ADD COLUMN threadid INTEGER;
+
+-- Add profile comment thread to users table
+ALTER TABLE users ADD COLUMN threadid INTEGER;
+
+-- Add playlist comment thread to playlists table
+ALTER TABLE playlists ADD COLUMN threadid INTEGER;
+
+PRAGMA user_version = 4;
 
