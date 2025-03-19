@@ -1,7 +1,7 @@
 -- Create new comment tables
 CREATE TABLE comment_threads (
     threadid INTEGER PRIMARY KEY,
-    threadtype INTEGER DEFAULT 0,
+    threadtype INTEGER NOT NULL
 );
 
 CREATE TABLE comments (
@@ -35,6 +35,4 @@ ALTER TABLE users ADD COLUMN threadid INTEGER;
 
 -- Add playlist comment thread to playlists table
 ALTER TABLE playlists ADD COLUMN threadid INTEGER;
-
-PRAGMA user_version = 4;
 

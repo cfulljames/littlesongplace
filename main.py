@@ -1,4 +1,5 @@
 import base64
+import enum
 import json
 import logging
 import os
@@ -27,7 +28,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
-DB_VERSION = 3
+DB_VERSION = 4
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
 SCRIPT_DIR = Path(__file__).parent
 
@@ -984,6 +985,7 @@ def get_db():
     if db is None:
         db = g._database = sqlite3.connect(DATA_DIR / "database.db")
         db.cursor().execute("PRAGMA foreign_keys = ON")
+        db.row_factory = sqlite3.Row
 
         # Get current version
         user_version = query_db("pragma user_version", one=True)[0]
@@ -994,8 +996,54 @@ def get_db():
             with app.open_resource(schema_update_script, mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
-        db.row_factory = sqlite3.Row
+
+            if DB_VERSION == 4:
+                # TODO: Remove after deploying
+                assign_thread_ids(db, "songs", "songid", threadtype=ThreadType.SONG)
+                assign_thread_ids(db, "users", "userid", threadtype=ThreadType.PROFILE)
+                assign_thread_ids(db, "playlists", "playlistid", threadtype=ThreadType.PLAYLIST)
+
+                # Copy song comments to new comments table
+                cur = db.execute(
+                    """\
+                    select commentid, threadid, sc.userid, replytoid, sc.created, content
+                    from song_comments as sc
+                    inner join songs on sc.songid = songs.songid
+                    """)
+                for row in cur:
+                    comment_cur = db.execute(
+                        """\
+                        insert into comments (commentid, threadid, userid, replytoid, created, content)
+                        values (?, ?, ?, ?, ?, ?)
+                        """,
+                        [row["commentid"], row["threadid"], row["userid"], row["replytoid"], row["created"], row["content"]])
+                    comment_cur.close()
+                cur.close()
+
+                # Copy song comment notifications to new comment notifications table
+                cur = db.execute(
+                    """\
+                    insert into comment_notifications
+                    select * from song_comment_notifications
+                    """)
+
+                db.execute("PRAGMA user_version = 4").close()
+
+                db.commit()
+
     return db
+
+# TODO: Remove after deploying
+def assign_thread_ids(db, table, id_col, threadtype):
+    cur = db.execute(f"select * from {table}")
+    for row in cur:
+        thread_cur = db.execute("insert into comment_threads (threadtype) values (?) returning threadid", [threadtype])
+        threadid = thread_cur.fetchone()[0]
+        thread_cur.close()
+
+        song_cur = db.execute(f"update {table} set threadid = ? where {id_col} = ?", [threadid, row[id_col]])
+        song_cur.close()
+    cur.close()
 
 @app.teardown_appcontext
 def close_db(exception):
@@ -1029,6 +1077,11 @@ def gen_key():
     """Generate a secret key for session cookie encryption"""
     import secrets
     print(secrets.token_hex())
+
+class ThreadType(enum.IntEnum):
+    SONG = 0
+    PROFILE = 1
+    PLAYLIST = 2
 
 @dataclass
 class Song:
@@ -1136,4 +1189,5 @@ class Song:
             tags[songid] = query_db("select (tag) from song_tags where songid = ?", [songid])
             collabs[songid] = query_db("select (name) from song_collaborators where songid = ?", [songid])
         return tags, collabs
+
 
