@@ -581,6 +581,7 @@ def comment():
         abort(400) # Must have songid
 
     try:
+        # TODO: Handle other comment types
         song = Song.by_id(request.args["songid"])
     except ValueError:
         abort(404) # Invald songid
@@ -589,7 +590,7 @@ def comment():
     replyto = None
     if "replytoid" in request.args:
         replytoid = request.args["replytoid"]
-        replyto = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [replytoid], one=True)
+        replyto = query_db("select * from comments inner join users on comments.userid == users.userid where commentid = ?", [replytoid], one=True)
         if not replyto:
             abort(404) # Invalid comment
 
@@ -597,7 +598,7 @@ def comment():
     comment = None
     if "commentid" in request.args:
         commentid = request.args["commentid"]
-        comment = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where commentid = ?", [commentid], one=True)
+        comment = query_db("select * from comments inner join users on comments.userid == users.userid where commentid = ?", [commentid], one=True)
         if not comment:
             abort(404) # Invalid comment
         if comment["userid"] != session["userid"]:
@@ -606,6 +607,7 @@ def comment():
     if request.method == "GET":
         # Show the comment editor
         session["previous_page"] = request.referrer
+        # TODO: update page to handle other comment types
         return render_template("comment.html", song=song, replyto=replyto, comment=comment)
 
     elif request.method == "POST":
@@ -613,7 +615,7 @@ def comment():
         content = request.form["content"]
         if comment:
             # Update existing comment
-            query_db("update song_comments set content = ? where commentid = ?", args=[content, comment["commentid"]])
+            query_db("update comments set content = ? where commentid = ?", args=[content, comment["commentid"]])
         else:
             # Add new comment
             timestamp = datetime.now(timezone.utc).isoformat()
@@ -622,10 +624,11 @@ def comment():
             replytoid = request.args.get("replytoid", None)
 
             comment = query_db(
-                    "insert into song_comments (songid, userid, replytoid, created, content) values (?, ?, ?, ?, ?) returning (commentid)",
-                    args=[songid, userid, replytoid, timestamp, content], one=True)
+                    "insert into comments (threadid, userid, replytoid, created, content) values (?, ?, ?, ?, ?) returning (commentid)",
+                    args=[threadid, userid, replytoid, timestamp, content], one=True)
             commentid = comment["commentid"]
 
+            # TODO: Notify content owner
             # Notify song owner
             notification_targets = {song.userid}
             if replyto:
@@ -633,7 +636,7 @@ def comment():
                 notification_targets.add(replyto["userid"])
 
                 # Notify previous repliers in thread
-                previous_replies = query_db("select * from song_comments where replytoid = ?", [replytoid])
+                previous_replies = query_db("select * from comments where replytoid = ?", [replytoid])
                 for reply in previous_replies:
                     notification_targets.add(reply["userid"])
 
@@ -643,7 +646,7 @@ def comment():
 
             # Create notifications
             for target in notification_targets:
-                query_db("insert into song_comment_notifications (commentid, targetuserid) values (?, ?)", [commentid, target])
+                query_db("insert into comment_notifications (commentid, targetuserid) values (?, ?)", [commentid, target])
 
         get_db().commit()
 
@@ -661,7 +664,8 @@ def comment_delete(commentid):
     if "userid" not in session:
         return redirect("/login")
 
-    comment = query_db("select c.userid as comment_user, s.userid as song_user from song_comments as c inner join songs as s on c.songid == s.songid where commentid = ?", [commentid], one=True)
+    # TODO: Handle non-song comments
+    comment = query_db("select c.userid as comment_user, s.userid as song_user from comments as c inner join songs as s on c.songid == s.songid where commentid = ?", [commentid], one=True)
     if not comment:
         abort(404) # Invalid comment
 
@@ -670,7 +674,7 @@ def comment_delete(commentid):
             or (comment["song_user"] == session["userid"])):
         abort(403)
 
-    query_db("delete from song_comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])
+    query_db("delete from comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])
     get_db().commit()
 
     return redirect(request.referrer)
@@ -680,17 +684,18 @@ def activity():
     if not "userid" in session:
         return redirect("/login")
 
+    # TODO: Handle other comment types
     # Get comment notifications
     comments = query_db(
         """\
         select c.content, c.commentid, c.replytoid, cu.username as comment_username, s.songid, s.title, s.userid as song_userid, su.username as song_username, rc.content as replyto_content
-        from song_comment_notifications as scn
-        inner join song_comments as c on scn.commentid == c.commentid
-        left join song_comments as rc on c.replytoid == rc.commentid
+        from comment_notifications as cn
+        inner join comments as c on cn.commentid == c.commentid
+        left join comments as rc on c.replytoid == rc.commentid
         inner join songs as s on c.songid == s.songid
         inner join users as su on su.userid == s.userid
         inner join users as cu on cu.userid == c.userid
-        where scn.targetuserid = ?
+        where cn.targetuserid = ?
         order by c.created desc
         """,
         [session["userid"]])
@@ -708,10 +713,10 @@ def new_activity():
         user_data = query_db("select activitytime from users where userid = ?", [session["userid"]], one=True)
         comment_data = query_db(
             """\
-            select sc.created from song_comment_notifications as scn
-            inner join song_comments as sc on scn.commentid = sc.commentid
-            where scn.targetuserid = ?
-            order by sc.created desc
+            select sc.created from comment_notifications as cn
+            inner join comments as c on cn.commentid = c.commentid
+            where cn.targetuserid = ?
+            order by c.created desc
             limit 1""",
             [session["userid"]],
             one=True)
@@ -1087,6 +1092,7 @@ class ThreadType(enum.IntEnum):
 class Song:
     songid: int
     userid: int
+    threadid: int
     username: str
     title: str
     description: str
@@ -1099,7 +1105,7 @@ class Song:
         return json.dumps(vars(self))
 
     def get_comments(self):
-        comments = query_db("select * from song_comments inner join users on song_comments.userid == users.userid where songid = ?", [self.songid])
+        comments = query_db("select * from comments inner join users on comments.userid == users.userid where threadid = ?", [self.threadid])
         comments = [dict(c) for c in comments]
         for c in comments:
             c["content"] = sanitize_user_text(c["content"])

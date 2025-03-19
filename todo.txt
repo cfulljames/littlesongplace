@@ -1,5 +1,7 @@
 SOON
 - Comments on profile(?), playlists (schema is hard :( )
+- Generalize nofications
+- Userid in thread for owner? (to allow comment deletion)
 - Player minimize button
 - Break up main.py, test_offline.py
 - Image support in comments, descriptions, bios, etc. (rich text?)
