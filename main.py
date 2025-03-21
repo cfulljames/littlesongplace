@@ -577,14 +577,12 @@ def comment():
     if not "userid" in session:
         return redirect("/login")
 
-    if not "songid" in request.args:
-        abort(400) # Must have songid
+    if not "threadid" in request.args:
+        abort(400) # Must have threadid
 
-    try:
-        # TODO: Handle other comment types
-        song = Song.by_id(request.args["songid"])
-    except ValueError:
-        abort(404) # Invald songid
+    thread = query_db("select * from comment_threads where threadid = ?", [threadid], one=True)
+    if not thread:
+        abort(400) # Invalid threadid
 
     # Check for comment being replied to
     replyto = None
@@ -607,8 +605,24 @@ def comment():
     if request.method == "GET":
         # Show the comment editor
         session["previous_page"] = request.referrer
-        # TODO: update page to handle other comment types
-        return render_template("comment.html", song=song, replyto=replyto, comment=comment)
+        threadtype = thread["threadtype"]
+        song = None
+        profile = None
+        playlist = None
+        if threadtype == ThreadType.SONG:
+            song = Song.by_threadid(request.args["threadid"])
+        elif threadtype == ThreadType.PROFILE:
+            profile = query_db("select * from users where threadid = ?", [request.args["threadid"]], one=True)
+        elif threadtype == ThreadType.PLAYLIST:
+            profile = query_db("select * from playlists inner join users on playlists.userid = users.userid where playlists.threadid = ?", [request.args["threadid"]], one=True)
+        return render_template(
+            "comment.html",
+            song=song,
+            profile=profile,
+            playlist=playlist,
+            replyto=replyto,
+            comment=comment,
+        )
 
     elif request.method == "POST":
         # Add/update comment (user clicked the Post Comment button)
@@ -628,9 +642,8 @@ def comment():
                     args=[threadid, userid, replytoid, timestamp, content], one=True)
             commentid = comment["commentid"]
 
-            # TODO: Notify content owner
-            # Notify song owner
-            notification_targets = {song.userid}
+            # Notify content owner
+            notification_targets = {thread["userid"]}
             if replyto:
                 # Notify parent commenter
                 notification_targets.add(replyto["userid"])
@@ -664,8 +677,7 @@ def comment_delete(commentid):
     if "userid" not in session:
         return redirect("/login")
 
-    # TODO: Handle non-song comments
-    comment = query_db("select c.userid as comment_user, s.userid as song_user from comments as c inner join songs as s on c.songid == s.songid where commentid = ?", [commentid], one=True)
+    comment = query_db("select c.userid as comment_user, t.userid as thread_user from comments as c inner join comment_threads as t on c.threadid == t.threadid where commentid = ?", [commentid], one=True)
     if not comment:
         abort(404) # Invalid comment
 
@@ -684,21 +696,49 @@ def activity():
     if not "userid" in session:
         return redirect("/login")
 
-    # TODO: Handle other comment types
+    # TODO: Update activity page to handle other comment types
     # Get comment notifications
     comments = query_db(
         """\
-        select c.content, c.commentid, c.replytoid, cu.username as comment_username, s.songid, s.title, s.userid as song_userid, su.username as song_username, rc.content as replyto_content
+        select c.content, c.commentid, c.replytoid, cu.username as comment_username, rc.content as replyto_content, c.threadid, t.threadtype
         from comment_notifications as cn
         inner join comments as c on cn.commentid == c.commentid
+        inner join comment_threads as t on c.threadid = t.threadid
         left join comments as rc on c.replytoid == rc.commentid
-        inner join songs as s on c.songid == s.songid
-        inner join users as su on su.userid == s.userid
         inner join users as cu on cu.userid == c.userid
         where cn.targetuserid = ?
         order by c.created desc
         """,
         [session["userid"]])
+
+    comments = [dict(c) for c in comments]
+    for comment in comments:
+        threadtype = comment["threadtype"]
+        if threadtype == ThreadType.SONG:
+            song = Song.by_threadid(comment["threadid"])
+            comment["songid"] = song.songid
+            comment["title"] = song.title
+            comment["content_userid"] = song.userid
+            comment["content_username"] = song.username
+        elif threadtype == ThreadType.PROFILE:
+            profile = query_db("select * from users where threadid = ?", [comment["threadid"]], one=True)
+            comment["content_userid"] = profile["userid"]
+            comment["content_username"] = profile["username"]
+        elif threadtype == ThreadType.PLAYLIST:
+            playlist = query_db(
+                """\
+                select * from playlists
+                inner join users on playlists.userid == users.userid
+                where playlists.threadid = ?
+                """,
+                [comment["threadid"]],
+                one=True,
+            )
+            comment["playlistid"] = playlist["playlistid"]
+            comment["title"] = playlist["title"]
+            comment["content_userid"] = playlist["userid"]
+            comment["content_username"] = playlist["username"]
+
 
     timestamp = datetime.now(timezone.utc).isoformat()
     query_db("update users set activitytime = ? where userid = ?", [timestamp, session["userid"]])
@@ -1124,6 +1164,14 @@ class Song:
         songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songid = ?", [songid])
         if not songs:
             raise ValueError(f"No song for ID {songid:d}")
+
+        return songs[0]
+
+    @classmethod
+    def by_threadid(cls, threadid):
+        songs = cls._from_db("select * from songs inner join users on songs.userid = users.userid where songs.threadid = ?", [threadid])
+        if not songs:
+            raise ValueError(f"No song for Thread ID {songid:d}")
 
         return songs[0]
 

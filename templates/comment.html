@@ -7,7 +7,13 @@
 <h1>Write a Comment</h1>
 
 <p>
+{% if song -%}
 Commenting on {{ song.title }} by <a href="/users/{{ song.username }}" class="profile-link">{{ song.username }}</a>
+{% elif profile -%}
+Commenting on <a href="/users/{{ profile['username'] }}" class="profile-link">{{ profile['username'] }}</a>'s profile
+{% elif playlist -%}
+Commenting on {{ playlist['title'] }} by <a href="/users/{{ playlist['username'] }}" class="profile-link">{{ playlist['username'] }}</a>
+{%- endif %}
 </p>
 
 {% if replyto %}
