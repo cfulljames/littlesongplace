@@ -1,7 +1,5 @@
 SOON
-- Comments on profile(?), playlists (schema is hard :( )
 - Generalize nofications
-- Userid in thread for owner? (to allow comment deletion)
 - Fix: refresh -> navigate -> back shows pre-refresh page
 - Fix: http errors not shown for form submissions
 - Player minimize button
