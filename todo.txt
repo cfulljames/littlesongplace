@@ -1,7 +1,5 @@
 SOON
-- Generalize nofications
 - Fix: refresh -> navigate -> back shows pre-refresh page
-- Fix: http errors not shown for form submissions
 - Player minimize button
 - Break up main.py, test_offline.py
 - Image support in comments, descriptions, bios, etc. (rich text?)

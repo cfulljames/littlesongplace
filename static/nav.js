@@ -71,8 +71,13 @@ var m_messageBoxTimeout;
 
 async function handleAjaxResponse(response) {
     if (response.status != 200) {
-        // Got an error; redirect to the error page
-        window.location.href = response.url;
+        // Error occurred - Get page content from response
+        var url = new URL(response.url);
+        var text = await response.text();
+        document.open("text/html", "replace");
+        document.write(text);
+        document.close();
+        return;
     }
 
     if (response.headers.get("content-type") === "application/json")
