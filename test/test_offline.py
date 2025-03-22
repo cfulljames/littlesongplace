@@ -709,6 +709,20 @@ def test_reply_to_comment(client):
     assert b"parent comment" in response.data
     assert b"child comment" in response.data
 
+def test_comment_on_profile(client):
+    _create_user(client, "user1", login=True)
+    response = client.get("/comment?threadid=1", headers={"Referer": "/users/user1"})
+    response = client.post("/comment?threadid=1", data={"content": "comment on profile"}, follow_redirects=True)
+    assert response.request.path == "/users/user1"
+    assert b"comment on profile" in response.data
+
+def test_comment_on_playlist(client):
+    _create_user_song_and_playlist(client)
+    response = client.get("/comment?threadid=3", headers={"Referer": "/playlists/1"})
+    response = client.post("/comment?threadid=3", data={"content": "comment on playlist"}, follow_redirects=True)
+    assert response.request.path == "/playlists/1"
+    assert b"comment on playlist" in response.data
+
 ################################################################################
 # Comments - Auth Status and Errors
 ################################################################################
