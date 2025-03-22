@@ -1,3 +1,4 @@
+{% from "comment-thread.html" import comment_thread %}
 {% extends "base.html" %}
 
 {% block title %}{{ name }}{% endblock %}
@@ -150,5 +151,8 @@ function hidePlaylistEditor() {
 {% if not songs -%}
 <p>This playlist doesn't have any songs yet.  To add songs to the playlist, expand song details and use the "Add to Playlist..." dropdown.</p>
 {%- endif %}
+
+<h2>Comments</h2>
+{{ comment_thread(threadid, session['userid'], userid, comments) }}
 
 {%- endblock %}

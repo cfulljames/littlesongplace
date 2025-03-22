@@ -1,7 +1,7 @@
 -- Create new comment tables
 CREATE TABLE comment_threads (
     threadid INTEGER PRIMARY KEY,
-    threadtype INTEGER NOT NULL
+    threadtype INTEGER NOT NULL,
     userid INTEGER NOT NULL,
     FOREIGN KEY(userid) REFERENCES users(userid) ON DELETE CASCADE
 );

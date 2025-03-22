@@ -122,7 +122,12 @@ def signup_post():
 
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     timestamp = datetime.now(timezone.utc).isoformat()
-    query_db("insert into users (username, password, created) values (?, ?, ?)", [username, password, timestamp])
+
+    user_data = query_db("insert into users (username, password, created, threadid) values (?, ?, ?, ?) returning userid", [username, password, timestamp, threadid], one=True)
+
+    # Create profile comment thread
+    threadid = create_comment_thread(ThreadType.PROFILE, user_data["userid"])
+    query_db("update users set threadid = ? where userid = ?", [threadid, user_data["userid"]])
     get_db().commit()
 
     flash("User created.  Please sign in to continue.", "success")
@@ -185,6 +190,9 @@ def users_profile(profile_username):
     # Get songs for current profile
     songs = Song.get_all_for_userid(profile_userid)
 
+    # Get comments for current profile
+    comments = get_comments(profile_data["threadid"])
+
     # Sanitize bio
     profile_bio = ""
     if profile_data["bio"] is not None:
@@ -198,8 +206,9 @@ def users_profile(profile_username):
             **get_user_colors(profile_data),
             playlists=plist_data,
             songs=songs,
-            user_has_pfp=user_has_pfp(profile_userid),
-            is_profile_song_list=True)
+            comments=comments,
+            threadid=profile_data["threadid"],
+            user_has_pfp=user_has_pfp(profile_userid))
 
 @app.post("/edit-profile")
 def edit_profile():
@@ -430,11 +439,13 @@ def create_song():
         if not passed:
             return True
         else:
+            # Create comment thread
+            threadid = create_comment_thread(ThreadType.SONG, session["userid"])
             # Create song
             timestamp = datetime.now(timezone.utc).isoformat()
             song_data = query_db(
-                    "insert into songs (userid, title, description, created) values (?, ?, ?, ?) returning (songid)",
-                    [session["userid"], title, description, timestamp], one=True)
+                    "insert into songs (userid, title, description, created, threadid) values (?, ?, ?, ?, ?) returning (songid)",
+                    [session["userid"], title, description, timestamp, threadid], one=True)
             songid = song_data["songid"]
             filepath = get_user_songs_path(session["userid"]) / (str(song_data["songid"]) + ".mp3")
 
@@ -580,7 +591,7 @@ def comment():
     if not "threadid" in request.args:
         abort(400) # Must have threadid
 
-    thread = query_db("select * from comment_threads where threadid = ?", [threadid], one=True)
+    thread = query_db("select * from comment_threads where threadid = ?", [request.args["threadid"]], one=True)
     if not thread:
         abort(400) # Invalid threadid
 
@@ -634,9 +645,9 @@ def comment():
             # Add new comment
             timestamp = datetime.now(timezone.utc).isoformat()
             userid = session["userid"]
-            songid = request.args["songid"]
             replytoid = request.args.get("replytoid", None)
 
+            threadid = request.args["threadid"]
             comment = query_db(
                     "insert into comments (threadid, userid, replytoid, created, content) values (?, ?, ?, ?, ?) returning (commentid)",
                     args=[threadid, userid, replytoid, timestamp, content], one=True)
@@ -753,7 +764,7 @@ def new_activity():
         user_data = query_db("select activitytime from users where userid = ?", [session["userid"]], one=True)
         comment_data = query_db(
             """\
-            select sc.created from comment_notifications as cn
+            select c.created from comment_notifications as cn
             inner join comments as c on cn.commentid = c.commentid
             where cn.targetuserid = ?
             order by c.created desc
@@ -788,14 +799,17 @@ def create_playlist():
 
     private = request.form["type"] == "private"
 
+    threadid = create_comment_thread(ThreadType.PLAYLIST, session["userid"])
+
     query_db(
-        "insert into playlists (created, updated, userid, name, private) values (?, ?, ?, ?, ?)",
+        "insert into playlists (created, updated, userid, name, private, threadid) values (?, ?, ?, ?, ?, ?)",
         args=[
             timestamp,
             timestamp,
             session["userid"],
             name,
             private,
+            threadid
         ]
     )
     get_db().commit()
@@ -932,6 +946,9 @@ def playlists(playlistid):
     # Get songs
     songs = Song.get_for_playlist(playlistid)
 
+    # Get comments
+    comments = get_comments(plist_data["threadid"])
+
     # Show page
     return render_template(
             "playlist.html",
@@ -940,8 +957,10 @@ def playlists(playlistid):
             private=plist_data["private"],
             userid=plist_data["userid"],
             username=plist_data["username"],
+            threadid=plist_data["threadid"],
             **get_user_colors(plist_data),
-            songs=songs)
+            songs=songs,
+            comments=comments)
 
 def flash_and_log(msg, category=None):
     flash(msg, category)
@@ -974,6 +993,26 @@ def sanitize_user_text(text):
                 tags=allowed_tags,
                 attributes=allowed_attributes,
                 css_sanitizer=css_sanitizer)
+
+def create_comment_thread(threadtype, userid):
+    thread = query_db("insert into comment_threads (threadtype, userid) values (?, ?) returning threadid", [threadtype, userid], one=True)
+    get_db().commit()
+    return thread["threadid"]
+
+def get_comments(threadid):
+    comments = query_db("select * from comments inner join users on comments.userid == users.userid where comments.threadid = ?", [threadid])
+    comments = [dict(c) for c in comments]
+    for c in comments:
+        c["content"] = sanitize_user_text(c["content"])
+
+    # Top-level comments
+    song_comments = sorted([dict(c) for c in comments if c["replytoid"] is None], key=lambda c: c["created"])
+    song_comments = list(reversed(song_comments))
+    # Replies (can only reply to top-level)
+    for comment in song_comments:
+        comment["replies"] = sorted([c for c in comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
+
+    return song_comments
 
 def get_gif_data():
     gifs = []
@@ -1082,7 +1121,7 @@ def get_db():
 def assign_thread_ids(db, table, id_col, threadtype):
     cur = db.execute(f"select * from {table}")
     for row in cur:
-        thread_cur = db.execute("insert into comment_threads (threadtype) values (?) returning threadid", [threadtype])
+        thread_cur = db.execute("insert into comment_threads (threadtype, userid) values (?, ?) returning threadid", [threadtype, row["userid"]])
         threadid = thread_cur.fetchone()[0]
         thread_cur.close()
 
@@ -1145,19 +1184,7 @@ class Song:
         return json.dumps(vars(self))
 
     def get_comments(self):
-        comments = query_db("select * from comments inner join users on comments.userid == users.userid where threadid = ?", [self.threadid])
-        comments = [dict(c) for c in comments]
-        for c in comments:
-            c["content"] = sanitize_user_text(c["content"])
-
-        # Top-level comments
-        song_comments = sorted([dict(c) for c in comments if c["replytoid"] is None], key=lambda c: c["created"])
-        song_comments = list(reversed(song_comments))
-        # Replies (can only reply to top-level)
-        for comment in song_comments:
-            comment["replies"] = sorted([c for c in comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
-
-        return song_comments
+        return get_comments(self.threadid)
 
     @classmethod
     def by_id(cls, songid):
@@ -1231,7 +1258,7 @@ class Song:
             song_collabs = [c["name"] for c in collabs[sd["songid"]] if c["name"]]
             created = datetime.fromisoformat(sd["created"]).astimezone().strftime("%Y-%m-%d")
             has_pfp = user_has_pfp(sd["userid"])
-            songs.append(cls(sd["songid"], sd["userid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs, has_pfp))
+            songs.append(cls(sd["songid"], sd["userid"], sd["threadid"], sd["username"], sd["title"], sanitize_user_text(sd["description"]), created, song_tags, song_collabs, has_pfp))
         return songs
 
     @classmethod

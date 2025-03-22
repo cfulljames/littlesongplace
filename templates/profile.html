@@ -1,3 +1,4 @@
+{% from "comment-thread.html" import comment_thread %}
 {% extends "base.html" %}
 
 {% block title %}{{ name }}'s profile{% endblock %}
@@ -183,6 +184,9 @@
 </div>
 
 {% endif %}
+
+<h2>Comments</h2>
+{{ comment_thread(threadid, session['userid'], userid, comments) }}
 
 {% endblock %}
 

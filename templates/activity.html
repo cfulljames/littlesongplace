@@ -16,8 +16,12 @@
             commented
             {% endif %}
             on
-            <a href="/song/{{ comment['content_userid'] }}/{{ comment['songid'] }}?action=view">{{ comment['title'] }}</a>
-            -
+            {% if 'songid' in comment %}
+            <a href="/song/{{ comment['content_userid'] }}/{{ comment['songid'] }}?action=view">{{ comment['title'] }}</a> -
+            {# Nothing to do for user profile #}
+            {% elif 'playlistid' in comment %}
+            <a href="/playlists/{{ comment['playlistid'] }}?action=view">{{ comment['title'] }}</a> -
+            {% endif %}
             <a href="/users/{{ comment['content_username'] }}" class="profile-link">{{ comment['content_username'] }}</a>
             <div class="top-level-comment">
                 <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>:
@@ -26,10 +30,10 @@
                 <div class="comment-button-container">
                     {% if comment['replytoid'] %}
                         <!-- Comment is already part of a thread; reply to the same thread -->
-                        <a href="/comment?songid={{ comment['songid'] }}&replytoid={{ comment['replytoid'] }}">Reply</a>
+                        <a href="/comment?threadid={{ comment['threadid'] }}&replytoid={{ comment['replytoid'] }}">Reply</a>
                     {% else %}
                         <!-- Comment is a top-level, reply to the comment -->
-                        <a href="/comment?songid={{ comment['songid'] }}&replytoid={{ comment['commentid'] }}">Reply</a>
+                        <a href="/comment?threadid={{ comment['threadid'] }}&replytoid={{ comment['commentid'] }}">Reply</a>
                     {% endif %}
                 </div>
             </div>
