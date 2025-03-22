@@ -20,7 +20,7 @@
             <a href="/song/{{ comment['content_userid'] }}/{{ comment['songid'] }}?action=view">{{ comment['title'] }}</a> -
             {# Nothing to do for user profile #}
             {% elif 'playlistid' in comment %}
-            <a href="/playlists/{{ comment['playlistid'] }}?action=view">{{ comment['title'] }}</a> -
+            <a href="/playlists/{{ comment['playlistid'] }}?action=view">{{ comment['name'] }}</a> -
             {% endif %}
             <a href="/users/{{ comment['content_username'] }}" class="profile-link">{{ comment['content_username'] }}</a>
             <div class="top-level-comment">

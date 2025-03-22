@@ -123,7 +123,7 @@ def signup_post():
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     timestamp = datetime.now(timezone.utc).isoformat()
 
-    user_data = query_db("insert into users (username, password, created, threadid) values (?, ?, ?, ?) returning userid", [username, password, timestamp, threadid], one=True)
+    user_data = query_db("insert into users (username, password, created) values (?, ?, ?) returning userid", [username, password, timestamp], one=True)
 
     # Create profile comment thread
     threadid = create_comment_thread(ThreadType.PROFILE, user_data["userid"])
@@ -746,7 +746,7 @@ def activity():
                 one=True,
             )
             comment["playlistid"] = playlist["playlistid"]
-            comment["title"] = playlist["title"]
+            comment["name"] = playlist["name"]
             comment["content_userid"] = playlist["userid"]
             comment["content_username"] = playlist["username"]
 
