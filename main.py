@@ -593,7 +593,7 @@ def comment():
 
     thread = query_db("select * from comment_threads where threadid = ?", [request.args["threadid"]], one=True)
     if not thread:
-        abort(400) # Invalid threadid
+        abort(404) # Invalid threadid
 
     # Check for comment being replied to
     replyto = None
@@ -694,7 +694,7 @@ def comment_delete(commentid):
 
     # Only commenter and song owner can delete comments
     if not ((comment["comment_user"] == session["userid"])
-            or (comment["song_user"] == session["userid"])):
+            or (comment["thread_user"] == session["userid"])):
         abort(403)
 
     query_db("delete from comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])

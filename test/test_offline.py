@@ -650,19 +650,19 @@ def test_site_news(client):
 
 def _create_user_song_and_comment(client, content):
     _create_user_and_song(client)
-    response = client.post("/comment?songid=1", data={"content": content})
+    response = client.post("/comment?threadid=2", data={"content": content})
     assert response.status_code == 302
     assert response.headers["Location"] == "/" # No previous page, use homepage
 
 def test_comment_page_no_reply_or_edit(client):
     _create_user_and_song(client)
-    response = client.get("/comment?songid=1")
+    response = client.get("/comment?threadid=2")
     assert response.status_code == 200
     assert not b"reply" in response.data
 
 def test_post_comment(client):
     _create_user_and_song(client)
-    response = client.post("/comment?songid=1", data={"content": "comment text here"})
+    response = client.post("/comment?threadid=2", data={"content": "comment text here"})
     assert response.status_code == 302
     assert response.headers["Location"] == "/" # No previous page, use homepage
 
@@ -672,7 +672,7 @@ def test_post_comment(client):
 def test_edit_comment(client):
     _create_user_song_and_comment(client, "comment text here")
 
-    response = client.post("/comment?songid=1&commentid=1", data={"content": "new comment content"})
+    response = client.post("/comment?threadid=2&commentid=1", data={"content": "new comment content"})
     assert response.status_code == 302
     assert response.headers["Location"] == "/" # No previous page, use homepage
 
@@ -701,7 +701,7 @@ def test_delete_song_with_comments(client):
 def test_reply_to_comment(client):
     _create_user_song_and_comment(client, "parent comment")
 
-    response = client.post("/comment?songid=1&replytoid=1", data={"content": "child comment"})
+    response = client.post("/comment?threadid=2&replytoid=1", data={"content": "child comment"})
     assert response.status_code == 302
     assert response.headers["Location"] == "/" # No previous page, use homepage
 
@@ -717,7 +717,7 @@ def test_comment_page_redirects_when_not_logged_in(client):
     _create_user_and_song(client)
     client.get("/logout")
 
-    response = client.get("/comment?songid=1")
+    response = client.get("/comment?threadid=2")
     assert response.status_code == 302
     assert response.headers["Location"] == "/login"
 
@@ -725,7 +725,7 @@ def test_post_comment_redirects_when_not_logged_in(client):
     _create_user_and_song(client)
     client.get("/logout")
 
-    response = client.post("/comment?songid=1", data={"content": "should fail"})
+    response = client.post("/comment?threadid=2", data={"content": "should fail"})
     assert response.status_code == 302
     assert response.headers["Location"] == "/login"
 
@@ -756,7 +756,7 @@ def test_song_owner_can_delete_other_users_comment(client):
 
     # user1 comments on user2's song
     client.post("/login", data={"username": "user1", "password": "password"})
-    client.post("/comment?songid=1", data={"content": "mean comment"})
+    client.post("/comment?threadid=3", data={"content": "mean comment"})
     response = client.get("/song/2/1?action=view")
     assert b"mean comment" in response.data
 
@@ -774,7 +774,7 @@ def test_rando_cannot_delete_other_users_comment(client):
 
     # user1 comments on user3's song
     client.post("/login", data={"username": "user1", "password": "password"})
-    client.post("/comment?songid=1", data={"content": "nice comment"})
+    client.post("/comment?threadid=4", data={"content": "nice comment"})
     response = client.get("/song/3/1?action=view")
     assert b"nice comment" in response.data
 
@@ -791,39 +791,39 @@ def test_cannot_edit_other_users_comment(client):
 
     # user1 comments on user2's song
     client.post("/login", data={"username": "user1", "password": "password"})
-    client.post("/comment?songid=1", data={"content": "mean comment"})
+    client.post("/comment?threadid=3", data={"content": "mean comment"})
     response = client.get("/song/2/1?action=view")
     assert b"mean comment" in response.data
 
     # user2 cannot edit user1's rude comment
     client.post("/login", data={"username": "user2", "password": "password"})
-    response = client.post("/comment?songid=1&commentid=1", data={"content": "im a meanie"})
+    response = client.post("/comment?threadid=2&commentid=1", data={"content": "im a meanie"})
     assert response.status_code == 403
     response = client.get("/song/2/1?action=view")
     assert b"mean comment" in response.data
 
-def test_comment_invalid_songid(client):
+def test_comment_invalid_threadid(client):
     _create_user_and_song(client)
-    response = client.post("/comment?songid=2", data={"content": "broken comment"})
+    response = client.post("/comment?threadid=3", data={"content": "broken comment"})
     assert response.status_code == 404
 
-    response = client.get("/comment?songid=2")
+    response = client.get("/comment?threadid=3")
     assert response.status_code == 404
 
 def test_comment_invalid_replytoid(client):
     _create_user_and_song(client)
-    response = client.post("/comment?songid=1&replytoid=1", data={"content": "broken comment"})
+    response = client.post("/comment?threadid=2&replytoid=1", data={"content": "broken comment"})
     assert response.status_code == 404
 
-    response = client.get("/comment?songid=1&replytoid=1")
+    response = client.get("/comment?threadid=2&replytoid=1")
     assert response.status_code == 404
 
 def test_comment_invalid_commentid(client):
     _create_user_and_song(client)
-    response = client.post("/comment?songid=1&commentid=1", data={"content": "broken comment"})
+    response = client.post("/comment?threadid=2&commentid=1", data={"content": "broken comment"})
     assert response.status_code == 404
 
-    response = client.get("/comment?songid=1&commentid=1")
+    response = client.get("/comment?threadid=2&commentid=1")
     assert response.status_code == 404
 
 def test_comment_no_songid(client):
@@ -856,7 +856,7 @@ def test_activity_empty_when_user_has_no_notifications(client):
 def test_activity_for_comment_on_song(client):
     _create_user_and_song(client)
     _create_user(client, "user2", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
     response = client.get("/activity")
     assert b"Nothing to show" in response.data
 
@@ -867,10 +867,10 @@ def test_activity_for_comment_on_song(client):
 def test_activity_for_reply_to_comment(client):
     _create_user_and_song(client)
     _create_user(client, "user2", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
 
     client.post("/login", data={"username": "user", "password": "password"})
-    client.post("/comment?songid=1&replytoid=1", data={"content": "thank you"})
+    client.post("/comment?threadid=2&replytoid=1", data={"content": "thank you"})
 
     client.post("/login", data={"username": "user2", "password": "password"})
     response = client.get("/activity")
@@ -880,13 +880,13 @@ def test_activity_for_reply_to_reply(client):
     _create_user_and_song(client)
     _create_user(client, "user2")
     _create_user(client, "user3", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
 
     client.post("/login", data={"username": "user2", "password": "password"})
-    client.post("/comment?songid=1&replytoid=1", data={"content": "it really is cool"})
+    client.post("/comment?threadid=2&replytoid=1", data={"content": "it really is cool"})
 
     client.post("/login", data={"username": "user3", "password": "password"})
-    client.post("/comment?songid=1&replytoid=1", data={"content": "thanks for agreeing"})
+    client.post("/comment?threadid=2&replytoid=1", data={"content": "thanks for agreeing"})
 
     # Song owner gets all three notifications
     client.post("/login", data={"username": "user", "password": "password"})
@@ -908,7 +908,7 @@ def test_activity_for_reply_to_reply(client):
 def test_activity_deleted_when_song_deleted(client):
     _create_user_and_song(client)
     _create_user(client, "user2", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
 
     client.post("/login", data={"username": "user", "password": "password"})
     response = client.get("/activity")
@@ -921,7 +921,7 @@ def test_activity_deleted_when_song_deleted(client):
 def test_activity_deleted_when_comment_deleted(client):
     _create_user_and_song(client)
     _create_user(client, "user2", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
 
     client.post("/login", data={"username": "user", "password": "password"})
     response = client.get("/activity")
@@ -949,7 +949,7 @@ def test_no_new_activity_when_no_activity(client):
 def test_new_activity_after_comment(client):
     _create_user_and_song(client)
     _create_user(client, "user2", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
 
     client.post("/login", data={"username": "user", "password": "password"})
     response = client.get("/new-activity")
@@ -959,7 +959,7 @@ def test_new_activity_after_comment(client):
 def test_no_new_activity_after_checking(client):
     _create_user_and_song(client)
     _create_user(client, "user2", login=True)
-    client.post("/comment?songid=1", data={"content": "hey cool song"})
+    client.post("/comment?threadid=2", data={"content": "hey cool song"})
 
     client.post("/login", data={"username": "user", "password": "password"})
     client.get("/activity")  # Check activity page
