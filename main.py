@@ -670,7 +670,7 @@ def comment():
 
             # Create notifications
             for target in notification_targets:
-                query_db("insert into comment_notifications (commentid, targetuserid) values (?, ?)", [commentid, target])
+                query_db("insert into notifications (objectid, objecttype, targetuserid, created) values (?, ?, ?, ?)", [commentid, ObjectType.COMMENT, target, timestamp])
 
         get_db().commit()
 
@@ -707,20 +707,19 @@ def activity():
     if not "userid" in session:
         return redirect("/login")
 
-    # TODO: Update activity page to handle other comment types
     # Get comment notifications
     comments = query_db(
         """\
         select c.content, c.commentid, c.replytoid, cu.username as comment_username, rc.content as replyto_content, c.threadid, t.threadtype
-        from comment_notifications as cn
-        inner join comments as c on cn.commentid == c.commentid
+        from notifications as n
+        inner join comments as c on n.objectid == c.commentid
         inner join comment_threads as t on c.threadid = t.threadid
         left join comments as rc on c.replytoid == rc.commentid
         inner join users as cu on cu.userid == c.userid
-        where cn.targetuserid = ?
+        where (n.targetuserid = ?) and (n.objecttype = ?)
         order by c.created desc
         """,
-        [session["userid"]])
+        [session["userid"], ObjectType.COMMENT])
 
     comments = [dict(c) for c in comments]
     for comment in comments:
@@ -750,7 +749,6 @@ def activity():
             comment["content_userid"] = playlist["userid"]
             comment["content_username"] = playlist["username"]
 
-
     timestamp = datetime.now(timezone.utc).isoformat()
     query_db("update users set activitytime = ? where userid = ?", [timestamp, session["userid"]])
     get_db().commit()
@@ -764,10 +762,9 @@ def new_activity():
         user_data = query_db("select activitytime from users where userid = ?", [session["userid"]], one=True)
         comment_data = query_db(
             """\
-            select c.created from comment_notifications as cn
-            inner join comments as c on cn.commentid = c.commentid
-            where cn.targetuserid = ?
-            order by c.created desc
+            select created from notifications
+            where targetuserid = ?
+            order by created desc
             limit 1""",
             [session["userid"]],
             one=True)
@@ -1104,12 +1101,19 @@ def get_db():
                     comment_cur.close()
                 cur.close()
 
-                # Copy song comment notifications to new comment notifications table
-                cur = db.execute(
-                    """\
-                    insert into comment_notifications
-                    select * from song_comment_notifications
+                # Copy song comment notifications to new notifications table
+                cur = db.execute("""\
+                    select * from song_comment_notifications as scn
+                    inner join song_comments as sc on
+                    scn.commentid = sc.commentid
                     """)
+                for row in cur:
+                    db.execute(
+                        """\
+                        insert into notifications (notificationid, objectid, objecttype, targetuserid, created)
+                        values (?, ?, ?, ?, ?)
+                        """,
+                        [row["notificationid"], row["commentid"], ObjectType.COMMENT, row["targetuserid"], row["created"]])
 
                 db.execute("PRAGMA user_version = 4").close()
 
@@ -1161,6 +1165,9 @@ def gen_key():
     """Generate a secret key for session cookie encryption"""
     import secrets
     print(secrets.token_hex())
+
+class ObjectType(enum.IntEnum):
+    COMMENT = 0
 
 class ThreadType(enum.IntEnum):
     SONG = 0

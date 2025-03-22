@@ -1,0 +1,10 @@
+DROP TRIGGER trg_delete_song_comments;
+DROP TRIGGER trg_delete_profile_comments;
+DROP TRIGGER trg_delete_playlist_comments;
+ALTER TABLE songs DROP COLUMN threadid;
+ALTER TABLE users DROP COLUMN threadid;
+ALTER TABLE playlists DROP COLUMN threadid;
+DROP TABLE notifications;
+DROP TABLE comments;
+DROP TABLE comment_threads;
+PRAGMA user_version = 3;
