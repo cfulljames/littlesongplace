@@ -65,18 +65,19 @@ def test_comments_and_activity(s):
     songs = _get_song_list_from_page(response.text)
     song = songs[0]
     songid = song["songid"]
+    threadid = song["threadid"]
 
     try:
         _login(s, "user1", "1234asdf!@#$")
 
         # Comment on song as new user
         response = s.get(
-                url(f"/comment?songid={songid}"),
+                url(f"/comment?threadid={threadid}"),
                 headers={"referer": "/users/user"})
         response.raise_for_status()
         response = s.post(
-                url(f"/comment?songid={songid}"),
-                headers={"referer": f"/comment?songid={songid}"},
+                url(f"/comment?threadid={threadid}"),
+                headers={"referer": f"/comment?threadid={threadid}"},
                 data={"content": "hey cool song"})
         response.raise_for_status()
         assert "hey cool song" in response.text
