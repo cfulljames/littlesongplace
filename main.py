@@ -476,7 +476,8 @@ def convert_song(tmp_file, request_file, yt_url):
         os.unlink(tmp_file.name)  # Delete file so yt-dlp doesn't complain
         try:
             yt_import(tmp_file, yt_url)
-        except DownloadError:
+        except DownloadError as ex:
+            app.logger.warning(str(ex))
             flash_and_log(f"Failed to import from YouTube URL: {yt_url}")
             return False
 
