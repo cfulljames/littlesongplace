@@ -1040,7 +1040,7 @@ def get_user_colors(user_data):
 
     colors = dict(bgcolor=BGCOLOR, fgcolor=FGCOLOR, accolor=ACCOLOR)
     for key in colors:
-        if user_data[key]:
+        if user_data and user_data[key]:
             colors[key] = user_data[key]
 
     return colors
