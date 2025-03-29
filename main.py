@@ -510,6 +510,7 @@ def yt_import(tmp_file, yt_url):
     ydl_opts = {
         'format': 'm4a/bestaudio/best',
         'outtmpl': tmp_file.name,
+        'logger': app.logger,
     }
     with YoutubeDL(ydl_opts) as ydl:
         ydl.download([yt_url])
