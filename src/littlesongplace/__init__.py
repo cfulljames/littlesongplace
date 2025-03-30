@@ -29,8 +29,8 @@ from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
 DB_VERSION = 4
-DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".data")
 SCRIPT_DIR = Path(__file__).parent
+DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".data").absolute()
 
 # Make sure DATA_DIR exists
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -263,7 +263,10 @@ def edit_profile():
 
 @app.get("/pfp/<int:userid>")
 def pfp(userid):
-    return send_from_directory(DATA_DIR / "images" / str(userid), "pfp.jpg")
+    print(userid)
+    print(get_user_images_path(userid).exists())
+    print((get_user_images_path(userid)/"pfp.jpg").exists())
+    return send_from_directory(get_user_images_path(userid), "pfp.jpg")
 
 @app.get("/edit-song")
 def edit_song():
