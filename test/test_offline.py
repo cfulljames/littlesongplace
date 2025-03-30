@@ -16,23 +16,23 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 TEST_DATA = Path(__file__).parent / "data"
 
-import main
+import littlesongplace as lsp
 
 @pytest.fixture
 def app():
     # Use temporary data directory
     with tempfile.TemporaryDirectory() as data_dir:
-        main.DATA_DIR = Path(data_dir)
+        lsp.DATA_DIR = Path(data_dir)
 
         # Initialize Database
-        with main.app.app_context():
-            db = sqlite3.connect(main.DATA_DIR / "database.db")
-            with main.app.open_resource('sql/schema.sql', mode='r') as f:
+        with lsp.app.app_context():
+            db = sqlite3.connect(lsp.DATA_DIR / "database.db")
+            with lsp.app.open_resource('sql/schema.sql', mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
             db.close()
 
-        yield main.app
+        yield lsp.app
 
 @pytest.fixture
 def client(app):
