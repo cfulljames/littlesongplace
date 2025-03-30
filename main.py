@@ -32,6 +32,9 @@ DB_VERSION = 4
 DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".data")
 SCRIPT_DIR = Path(__file__).parent
 
+# Make sure DATA_DIR exists
+os.makedirs(DATA_DIR, exist_ok=True)
+
 BGCOLOR = "#e8e6b5"
 FGCOLOR = "#695c73"
 ACCOLOR = "#9373a9"
