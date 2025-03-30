@@ -2,9 +2,9 @@
 <html>
     <head>
         <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" href="/static/styles.css?v=3"/>
+        <link rel="stylesheet" href="/static/styles.css?v=4"/>
         <link rel="icon" type="image/x-icon" href="/static/lsp_notes.png?v=1"/>
-        <script src="/static/player.js?v=1"></script>
+        <script src="/static/player.js?v=2"></script>
         <script src="/static/nav.js?v=2"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -96,6 +96,29 @@
                 <div class="player-volume desktop-only">
                     <label class="player-label" for="volume">Volume</label>
                     <input id="volume-slider" name="volume" type="range" min="0" max="1" step="any" value="1"/>
+                </div>
+            </div>
+            <div class="mini-player" id="mini-player" hidden>
+                <div class="song-info">
+                    <!-- Song Title -->
+                    <div class="song-title mini-player-label"><a id="mini-player-title">Not Playing</a></div>
+
+                    <!-- Separator -->
+                    <div class="song-info-sep"> - </div>
+
+                    <!-- Song Artist(s) -->
+                    <div class="mini-player-label">
+                        <a class="profile-link" id="mini-player-artist"></a>
+                        <span class="profile-link" id="mini-player-collabs"></span>
+                    </div>
+                </div>
+                <div class="mini-player-controls">
+                    <button onclick="showBigPlayer()" title="Show Big Player" class="player-button">
+                        <img class="lsp_btn_show02">
+                    </button>
+                    <button onclick="songPlayPause()" title="Play" class="player-button">
+                        <img class="lsp_btn_pause02" id="mini-play-pause-button">
+                    </button>
                 </div>
             </div>
         </div>

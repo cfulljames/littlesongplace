@@ -12,15 +12,13 @@ function play(event) {
     }
 
     m_songIndex = m_allSongs.indexOf(songElement);
+    showBigPlayer();
     playCurrentSong();
 }
 
 function playCurrentSong() {
     var song = m_allSongs[m_songIndex];
     var songData = JSON.parse(song.dataset.song);
-
-    var player = document.getElementById("player")
-    player.hidden = false;
 
     var audio = document.getElementById("player-audio");
     audio.pause();
@@ -72,6 +70,13 @@ function playCurrentSong() {
         }
     }
 
+    // Copy song info to mini player
+    document.getElementById("mini-player-title").textContent = songData.title;
+    document.getElementById("mini-player-title").href = title.href;
+    document.getElementById("mini-player-artist").textContent = songData.username;
+    document.getElementById("mini-player-artist").href = artist.href;
+    document.getElementById("mini-player-collabs").innerHTML = collabs.innerHTML;
+
     if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
             title: songData.title,
@@ -95,6 +100,20 @@ function playCurrentSong() {
         navigator.mediaSession.setActionHandler('pause', () => {
             songPlayPause();
         });
+    }
+}
+
+function showBigPlayer() {
+    document.getElementById("mini-player").hidden = true;
+    document.getElementById("player").hidden = false;
+}
+
+function showMiniPlayer(event) {
+    // Only show mini player if big player is already shown
+    var bigPlayer = document.getElementById("player");
+    if (!bigPlayer.hidden) {
+        bigPlayer.hidden = true;
+        document.getElementById("mini-player").hidden = false;
     }
 }
 
@@ -176,15 +195,20 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     // Show pause button when audio is playing
     var button = document.getElementById("play-pause-button");
+    var miniButton = document.getElementById("mini-play-pause-button");
     audio.addEventListener("play", (event) => {
         button.className = "lsp_btn_pause02";
         button.src = customImage(document.getElementById("lsp_btn_pause02"));
+        miniButton.className = "lsp_btn_pause02";
+        miniButton.src = customImage(document.getElementById("lsp_btn_pause02"));
     })
 
     // Show play button when audio is paused
     audio.addEventListener("pause", (event) => {
         button.className = "lsp_btn_play02";
         button.src = customImage(document.getElementById("lsp_btn_play02"));
+        miniButton.className = "lsp_btn_play02";
+        miniButton.src = customImage(document.getElementById("lsp_btn_play02"));
     })
 
     // Audio position scrubbing
@@ -219,5 +243,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
     document.getElementById("volume-slider").oninput = function(event) {
         audio.volume = event.target.value;
     }
+
+    // Show mini player on scroll
+    document.addEventListener("scroll", showMiniPlayer);
 });
 
