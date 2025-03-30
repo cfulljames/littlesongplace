@@ -1,7 +1,8 @@
 venv
+.venv
+.data
 __pycache__
 database.db
 songs
 images
 app.log*
-

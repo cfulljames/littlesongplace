@@ -29,7 +29,7 @@ from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
 DB_VERSION = 4
-DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".")
+DATA_DIR = Path(os.environ["DATA_DIR"]) if "DATA_DIR" in os.environ else Path(".data")
 SCRIPT_DIR = Path(__file__).parent
 
 BGCOLOR = "#e8e6b5"
