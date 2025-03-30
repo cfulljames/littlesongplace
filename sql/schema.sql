@@ -9,7 +9,7 @@ CREATE TABLE users (
     bgcolor TEXT,
     fgcolor TEXT,
     accolor TEXT,
-    threadid INTEGER,
+    threadid INTEGER
 );
 CREATE INDEX users_by_name ON users(username);
 

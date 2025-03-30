@@ -25,7 +25,7 @@ def app():
         # Initialize Database
         with main.app.app_context():
             db = sqlite3.connect(main.DATA_DIR / "database.db")
-            with main.app.open_resource('schema.sql', mode='r') as f:
+            with main.app.open_resource('sql/schema.sql', mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
             db.close()

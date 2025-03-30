@@ -1074,7 +1074,7 @@ def get_db():
         user_version = query_db("pragma user_version", one=True)[0]
 
         # Run update script if DB is out of date
-        schema_update_script = SCRIPT_DIR / 'schema_update.sql'
+        schema_update_script = SCRIPT_DIR / 'sql' / 'schema_update.sql'
         if user_version < DB_VERSION and schema_update_script.exists():
             with app.open_resource(schema_update_script, mode='r') as f:
                 db.cursor().executescript(f.read())
