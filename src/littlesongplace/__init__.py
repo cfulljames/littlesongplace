@@ -263,9 +263,6 @@ def edit_profile():
 
 @app.get("/pfp/<int:userid>")
 def pfp(userid):
-    print(userid)
-    print(get_user_images_path(userid).exists())
-    print((get_user_images_path(userid)/"pfp.jpg").exists())
     return send_from_directory(get_user_images_path(userid), "pfp.jpg")
 
 @app.get("/edit-song")
