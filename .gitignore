@@ -7,3 +7,4 @@ database.db
 songs
 images
 app.log*
+dist
