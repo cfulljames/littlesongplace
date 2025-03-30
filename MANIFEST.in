@@ -1,3 +1,4 @@
 include src/littlesongplace/static/*
+include src/littlesongplace/sql/*
 include src/littlesongplace/templates/*
 
