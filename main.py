@@ -1079,48 +1079,6 @@ def get_db():
             with app.open_resource(schema_update_script, mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
-
-            if DB_VERSION == 4:
-                # TODO: Remove after deploying
-                assign_thread_ids(db, "songs", "songid", threadtype=ThreadType.SONG)
-                assign_thread_ids(db, "users", "userid", threadtype=ThreadType.PROFILE)
-                assign_thread_ids(db, "playlists", "playlistid", threadtype=ThreadType.PLAYLIST)
-
-                # Copy song comments to new comments table
-                cur = db.execute(
-                    """\
-                    select commentid, threadid, sc.userid, replytoid, sc.created, content
-                    from song_comments as sc
-                    inner join songs on sc.songid = songs.songid
-                    """)
-                for row in cur:
-                    comment_cur = db.execute(
-                        """\
-                        insert into comments (commentid, threadid, userid, replytoid, created, content)
-                        values (?, ?, ?, ?, ?, ?)
-                        """,
-                        [row["commentid"], row["threadid"], row["userid"], row["replytoid"], row["created"], row["content"]])
-                    comment_cur.close()
-                cur.close()
-
-                # Copy song comment notifications to new notifications table
-                cur = db.execute("""\
-                    select * from song_comment_notifications as scn
-                    inner join song_comments as sc on
-                    scn.commentid = sc.commentid
-                    """)
-                for row in cur:
-                    db.execute(
-                        """\
-                        insert into notifications (notificationid, objectid, objecttype, targetuserid, created)
-                        values (?, ?, ?, ?, ?)
-                        """,
-                        [row["notificationid"], row["commentid"], ObjectType.COMMENT, row["targetuserid"], row["created"]])
-
-                db.execute("PRAGMA user_version = 4").close()
-
-                db.commit()
-
     return db
 
 # TODO: Remove after deploying
