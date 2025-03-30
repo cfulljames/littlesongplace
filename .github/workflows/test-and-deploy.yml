@@ -3,13 +3,40 @@ on:
   push:
     branches:
       - master
+      - dev
   workflow_dispatch: {}
 
 jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+
+    - name: Build package
+      run: |
+        pip install --upgrade build
+        python -m build .
+
+    - name: Upload package wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: pkg-wheel
+        path: dist/littlesongplace-*.whl
+
   run-offline-tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+
+    - name: Download package wheel
+      uses: actions/download-artifact@v4
+      with:
+        name: pkg-wheel
 
     - name: Set up Python
       uses: actions/setup-python@v3
@@ -29,6 +56,7 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install ./littlesongplace-*.whl
         pip install -r pip/dev-requirements.txt
 
     - name: Run pytest
@@ -41,14 +69,31 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Copy repo contents to server via SCP
+    - name: Download package wheel
+      uses: actions/download-artifact@v4
+      with:
+        name: pkg-wheel
+
+    - name: Delete old wheel/script
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+        script: |
+          cd /var/www/littlesongplace-test
+          rm *.whl
+          rm service/*
+
+    - name: Copy new wheel/script
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         key: ${{ secrets.SSHKEY }}
-        source: "."
+        source: "*.whl,service"
         target: "/var/www/littlesongplace-test"
 
     - name: Run test server
@@ -63,7 +108,9 @@ jobs:
           cd /var/www/littlesongplace-test
           python3 -m venv venv
           . venv/bin/activate
-          pip install -r pip/requirements.txt
+
+          # Install package, remove wheel
+          pip install ./*.whl
 
           # Restart service
           sudo systemctl restart littlesongplace-test.service
@@ -90,21 +137,39 @@ jobs:
         pytest test_online.py
 
   deploy-prod-instance:
-    needs: 
+    needs:
       - run-offline-tests
       - run-online-tests
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@v1
 
-    - name: Copy repo contents to server via SCP
+    - name: Download package wheel
+      uses: actions/download-artifact@v4
+      with:
+        name: pkg-wheel
+
+    - name: Delete old wheel/script
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+        script: |
+          cd /var/www/littlesongplace
+          rm *.whl
+          rm service/*
+
+    - name: Copy new wheel/script
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         key: ${{ secrets.SSHKEY }}
-        source: "."
+        source: "*.whl,service"
         target: "/var/www/littlesongplace"
 
     - name: Run production server
@@ -119,7 +184,8 @@ jobs:
           cd /var/www/littlesongplace
           python3 -m venv venv
           . venv/bin/activate
-          pip install -r pip/requirements.txt
+          pip install *.whl
 
           # Restart service
           sudo systemctl restart littlesongplace.service
+
