@@ -1,11 +1,13 @@
 import html
 import json
 import re
+from pathlib import Path
 
 import requests
 import pytest
 
 HOST = "http://littlesong.place:8000"
+TEST_DATA = Path(__file__).parent / "data"
 
 def url(path):
     return HOST + path
@@ -29,7 +31,7 @@ def _get_song_list_from_page(page_contents):
 def test_upload_and_delete_song(s):
     response = s.post(
         url("/upload-song"),
-        files={"song-file": open("sample-3s.mp3", "rb")},
+        files={"song-file": open(TEST_DATA/"sample-3s.mp3", "rb")},
         data={
             "title": "song title",
             "description": "song description",
@@ -58,7 +60,7 @@ def test_comments_and_activity(s):
     # Upload song
     response = s.post(
         url("/upload-song"),
-        files={"song-file": open("sample-3s.mp3", "rb")},
+        files={"song-file": open(TEST_DATA/"sample-3s.mp3", "rb")},
         data={"title": "song title", "description": "", "tags": "", "collabs": ""},
     )
     response.raise_for_status()
