@@ -14,6 +14,8 @@ from flask import session
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+TEST_DATA = Path(__file__).parent / "data"
+
 import main
 
 @pytest.fixture
@@ -188,7 +190,7 @@ def test_upload_pfp(client):
     _create_user(client, "user", "password", login=True)
     response = client.post("/edit-profile", data={
         "bio": "",
-        "pfp": open("lsp_notes.png", "rb"),
+        "pfp": open(TEST_DATA/"lsp_notes.png", "rb"),
         "fgcolor": "#000000",
         "bgcolor": "#000000",
         "accolor": "#000000",
@@ -198,7 +200,7 @@ def test_upload_pfp(client):
 def test_edit_profile_not_logged_in(client):
     response = client.post("/edit-profile", data={
         "bio": "",
-        "pfp": open("lsp_notes.png", "rb"),
+        "pfp": open(TEST_DATA/"lsp_notes.png", "rb"),
         "fgcolor": "#000000",
         "bgcolor": "#000000",
         "accolor": "#000000",
@@ -209,7 +211,7 @@ def test_get_pfp(client):
     _create_user(client, "user", "password", login=True)
     client.post("/edit-profile", data={
         "bio": "",
-        "pfp": open("lsp_notes.png", "rb"),
+        "pfp": open(TEST_DATA/"lsp_notes.png", "rb"),
         "fgcolor": "#000000",
         "bgcolor": "#000000",
         "accolor": "#000000",
@@ -235,7 +237,7 @@ def test_get_pfp_invalid_user(client):
 # Upload Song
 ################################################################################
 
-def _test_upload_song(client, msg, error=False, songid=None, user="user", userid=1, filename="sample-3s.mp3", **kwargs):
+def _test_upload_song(client, msg, error=False, songid=None, user="user", userid=1, filename=TEST_DATA/"sample-3s.mp3", **kwargs):
     song_file = open(filename, "rb")
 
     data = {
@@ -303,7 +305,7 @@ def test_upload_song_invalid_audio(client):
 
 def test_upload_song_from_mp4(client):
     _create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename="sample-4s.mp4")
+    _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename=TEST_DATA/"sample-4s.mp4")
 
 @pytest.mark.skip
 def test_upload_song_from_youtube(client):
@@ -350,10 +352,10 @@ def _create_user_and_song(client, username="user"):
 
 def test_update_song_success(client):
     _create_user_and_song(client)
-    _test_upload_song(client, b"Successfully updated &#39;song title&#39;", filename="sample-6s.mp3", songid=1)
+    _test_upload_song(client, b"Successfully updated &#39;song title&#39;", filename=TEST_DATA/"sample-6s.mp3", songid=1)
     response = client.get("/song/1/1")
     assert response.status_code == 200
-    with open("sample-6s.mp3", "rb") as expected_file:
+    with open(TEST_DATA/"sample-6s.mp3", "rb") as expected_file:
         assert response.data == expected_file.read()
 
 @pytest.mark.skip
@@ -409,7 +411,7 @@ def test_update_song_invalid_song(client):
     _create_user_and_song(client)
 
     data = {
-        "song-file": open("sample-3s.mp3", "rb"),
+        "song-file": open(TEST_DATA/"sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -423,7 +425,7 @@ def test_update_song_invalid_id(client):
     _create_user_and_song(client)
 
     data = {
-        "song-file": open("sample-3s.mp3", "rb"),
+        "song-file": open(TEST_DATA/"sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -438,7 +440,7 @@ def test_update_song_other_users_song(client):
     _create_user(client, "user2", login=True)
 
     data = {
-        "song-file": open("sample-3s.mp3", "rb"),
+        "song-file": open(TEST_DATA/"sample-3s.mp3", "rb"),
         "title": "song title",
         "description": "song description",
         "tags": "tag",
@@ -508,7 +510,7 @@ def test_delete_song_other_users_song(client):
 def test_get_song(client):
     _create_user_and_song(client)
     response = client.get("/song/1/1")
-    with open("sample-3s.mp3", "rb") as mp3file:
+    with open(TEST_DATA/"sample-3s.mp3", "rb") as mp3file:
         assert response.data == mp3file.read()
 
 def test_get_song_invalid_song(client):
