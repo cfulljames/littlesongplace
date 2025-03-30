@@ -37,7 +37,6 @@ jobs:
         pytest test_offline.py
 
   deploy-test-instance:
-    needs: run-offline-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -91,7 +90,9 @@ jobs:
         pytest test_online.py
 
   deploy-prod-instance:
-    needs: run-online-tests
+    needs: 
+      - run-offline-tests
+      - run-online-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
