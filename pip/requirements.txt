@@ -1,7 +1,0 @@
-bcrypt
-bleach[css]
-flask
-gunicorn
-pillow
-yt-dlp
-
