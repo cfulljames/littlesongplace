@@ -1,45 +1,14 @@
 import html
 import json
-import os
 import re
-import sqlite3
-import sys
-import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
-import bcrypt
 import pytest
 from flask import session
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-TEST_DATA = Path(__file__).parent / "data"
-
 import littlesongplace as lsp
 
-@pytest.fixture
-def app():
-    # Use temporary data directory
-    with tempfile.TemporaryDirectory() as data_dir:
-        lsp.DATA_DIR = Path(data_dir)
-
-        # Initialize Database
-        with lsp.app.app_context():
-            db = sqlite3.connect(lsp.DATA_DIR / "database.db")
-            with lsp.app.open_resource('sql/schema.sql', mode='r') as f:
-                db.cursor().executescript(f.read())
-            db.commit()
-            db.close()
-
-        yield lsp.app
-
-@pytest.fixture
-def client(app):
-    # Mock bcrypt to speed up tests
-    with patch.object(bcrypt, "hashpw", lambda passwd, salt: passwd), \
-        patch.object(bcrypt, "checkpw", lambda passwd, saved: passwd == saved):
-        yield app.test_client()
+TEST_DATA = Path(__file__).parent / "data"
 
 ################################################################################
 # Signup
