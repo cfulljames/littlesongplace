@@ -5,379 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from .utils import create_user
+from .utils import create_user, create_user_and_song, upload_song
 
 TEST_DATA = Path(__file__).parent / "data"
-
-
-################################################################################
-# Profile/Bio
-################################################################################
-
-def test_default_bio_empty(client):
-    create_user(client, "user", "password")
-
-    response = client.get("/users/user")
-    assert b'<div class="profile-bio" id="profile-bio"></div>' in response.data
-
-def test_update_bio(client):
-    create_user(client, "user", "password", login=True)
-
-    response = client.post("/edit-profile", data={
-        "bio": "this is the bio",
-        "pfp": (b"", "", "aplication/octet-stream"),
-        "fgcolor": "#000000",
-        "bgcolor": "#FFFF00",
-        "accolor": "#FF00FF",
-    })
-    assert response.status_code == 302
-    assert response.headers["Location"] == "/users/user"
-
-    # Check bio updated
-    response = client.get("/users/user")
-    assert b'<div class="profile-bio" id="profile-bio">this is the bio</div>' in response.data
-
-    # Check user colors applied
-    assert b'bgcolor="#FFFF00"' in response.data
-    assert b'fgcolor="#000000"' in response.data
-    assert b'accolor="#FF00FF"' in response.data
-
-def test_upload_pfp(client):
-    create_user(client, "user", "password", login=True)
-    response = client.post("/edit-profile", data={
-        "bio": "",
-        "pfp": open(TEST_DATA/"lsp_notes.png", "rb"),
-        "fgcolor": "#000000",
-        "bgcolor": "#000000",
-        "accolor": "#000000",
-    })
-    assert response.status_code == 302
-
-def test_edit_profile_not_logged_in(client):
-    response = client.post("/edit-profile", data={
-        "bio": "",
-        "pfp": open(TEST_DATA/"lsp_notes.png", "rb"),
-        "fgcolor": "#000000",
-        "bgcolor": "#000000",
-        "accolor": "#000000",
-    })
-    assert response.status_code == 401
-
-def test_get_pfp(client):
-    create_user(client, "user", "password", login=True)
-    client.post("/edit-profile", data={
-        "bio": "",
-        "pfp": open(TEST_DATA/"lsp_notes.png", "rb"),
-        "fgcolor": "#000000",
-        "bgcolor": "#000000",
-        "accolor": "#000000",
-    })
-
-    response = client.get("/pfp/1")
-    assert response.status_code == 200
-    assert response.mimetype == "image/jpeg"
-    # Can't check image file, since site has modified it
-
-def test_get_pfp_no_file(client):
-    create_user(client, "user", "password", login=True)
-    # User exists but doesn't have a pfp
-    response = client.get("/pfp/1")
-    assert response.status_code == 404
-
-def test_get_pfp_invalid_user(client):
-    response = client.get("/pfp/1")
-    # User doesn't exist
-    assert response.status_code == 404
-
-################################################################################
-# Upload Song
-################################################################################
-
-def _test_upload_song(client, msg, error=False, songid=None, user="user", userid=1, filename=TEST_DATA/"sample-3s.mp3", **kwargs):
-    song_file = open(filename, "rb")
-
-    data = {
-        "song-file": song_file,
-        "title": "song title",
-        "description": "song description",
-        "tags": "tag",
-        "collabs": "collab",
-    }
-    for k, v in kwargs.items():
-        data[k] = v
-
-    if songid:
-        response = client.post(f"/upload-song?songid={songid}", data=data)
-    else:
-        response = client.post("/upload-song", data=data)
-
-    assert response.status_code == 302
-    if error:
-        assert response.headers["Location"] == "None"
-    elif songid:
-        assert response.headers["Location"] == f"/song/{userid}/{songid}?action=view"
-    else:
-        assert response.headers["Location"] == f"/users/{user}"
-
-    response = client.get(f"/users/{user}")
-    assert msg in response.data
-
-def test_upload_song_success(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;")
-
-def test_upload_song_bad_title(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"not a valid song title", error=True, title="\r\n")
-
-def test_upload_song_title_too_long(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"cannot be more than 80 characters", error=True, title="a"*81)
-
-def test_upload_song_description_too_long(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"cannot be more than 10k characters", error=True, description="a"*10_001)
-
-def test_upload_song_invalid_tag(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"not a valid tag name", error=True, tags="a\r\na")
-
-def test_upload_song_tag_too_long(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"not a valid tag name", error=True, tags="a"*31)
-
-def test_upload_song_invalid_collab(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"not a valid collaborator name", error=True, collabs="a\r\na")
-
-def test_upload_song_collab_too_long(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"not a valid collaborator name", error=True, collabs="a"*32)
-
-def test_upload_song_invalid_audio(client):
-    create_user(client, "user", "password", login=True)
-    # Use this script file as the "audio" file
-    _test_upload_song(client, b"Invalid audio file", error=True, filename=__file__)
-
-def test_upload_song_from_mp4(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename=TEST_DATA/"sample-4s.mp4")
-
-@pytest.mark.skip
-def test_upload_song_from_youtube(client):
-    create_user(client, "user", "password", login=True)
-    data = {
-        "song-url": "https://youtu.be/5e5Z6gZWiEs",
-        "title": "song title",
-        "description": "song description",
-        "tags": "tag",
-        "collabs": "collab",
-    }
-    response = client.post("/upload-song", data=data)
-    assert response.status_code == 302
-
-    response = client.get(f"/users/user")
-    assert response.status_code == 200
-    assert b"Successfully uploaded &#39;song title&#39;" in response.data
-
-################################################################################
-# Edit Song
-################################################################################
-
-def test_edit_invalid_song(client):
-    create_user(client, "user", "password", login=True)
-    response = client.get("/edit-song?songid=1")
-    assert response.status_code == 404
-
-def test_edit_invalid_id(client):
-    create_user(client, "user", "password", login=True)
-    response = client.get("/edit-song?songid=abc")
-    assert response.status_code == 404
-
-def test_edit_other_users_song(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"Success")
-
-    create_user(client, "user2", "password", login=True)
-    response = client.get("/edit-song?songid=1")
-    assert response.status_code == 401
-
-def create_user_and_song(client, username="user"):
-    create_user(client, username, "password", login=True)
-    _test_upload_song(client, b"Success", user=username)
-
-def test_update_song_success(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"Successfully updated &#39;song title&#39;", filename=TEST_DATA/"sample-6s.mp3", songid=1)
-    response = client.get("/song/1/1")
-    assert response.status_code == 200
-    with open(TEST_DATA/"sample-6s.mp3", "rb") as expected_file:
-        assert response.data == expected_file.read()
-
-@pytest.mark.skip
-def test_update_song_from_youtube(client):
-    create_user_and_song(client)
-    data = {
-        "song-url": "https://youtu.be/5e5Z6gZWiEs",
-        "title": "song title",
-        "description": "song description",
-        "tags": "tag",
-        "collabs": "collab",
-    }
-    response = client.post("/upload-song?songid=1", data=data)
-    assert response.status_code == 302
-
-    response = client.get(f"/users/user")
-    assert response.status_code == 200
-    assert b"Successfully updated &#39;song title&#39;" in response.data
-
-def test_update_song_bad_title(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"not a valid song title", error=True, songid=1, title="\r\n")
-
-def test_update_song_title_too_long(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"cannot be more than 80 characters", error=True, songid=1, title="a"*81)
-
-def test_update_song_description_too_long(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"cannot be more than 10k characters", error=True, songid=1, description="a"*10_001)
-
-def test_update_song_invalid_tag(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"not a valid tag name", error=True, songid=1, tags="a\r\na")
-
-def test_update_song_tag_too_long(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"not a valid tag name", error=True, songid=1, tags="a"*31)
-
-def test_update_song_invalid_collab(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"not a valid collaborator name", error=True, songid=1, collabs="a\r\na")
-
-def test_update_song_collab_too_long(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"not a valid collaborator name", error=True, songid=1, collabs="a"*32)
-
-def test_update_song_invalid_mp3(client):
-    create_user_and_song(client)
-    _test_upload_song(client, b"Invalid audio file", error=True, songid=1, filename=__file__)
-
-def test_update_song_invalid_song(client):
-    create_user_and_song(client)
-
-    data = {
-        "song-file": open(TEST_DATA/"sample-3s.mp3", "rb"),
-        "title": "song title",
-        "description": "song description",
-        "tags": "tag",
-        "collabs": "collab",
-    }
-
-    response = client.post(f"/upload-song?songid=2", data=data)
-    assert response.status_code == 400
-
-def test_update_song_invalid_id(client):
-    create_user_and_song(client)
-
-    data = {
-        "song-file": open(TEST_DATA/"sample-3s.mp3", "rb"),
-        "title": "song title",
-        "description": "song description",
-        "tags": "tag",
-        "collabs": "collab",
-    }
-
-    response = client.post(f"/upload-song?songid=abc", data=data)
-    assert response.status_code == 400
-
-def test_update_song_other_users_song(client):
-    create_user_and_song(client)
-    create_user(client, "user2", login=True)
-
-    data = {
-        "song-file": open(TEST_DATA/"sample-3s.mp3", "rb"),
-        "title": "song title",
-        "description": "song description",
-        "tags": "tag",
-        "collabs": "collab",
-    }
-
-    response = client.post(f"/upload-song?songid=1", data=data)
-    assert response.status_code == 401
-
-def test_uppercase_tags(client):
-    create_user(client, "user", "password", login=True)
-    _test_upload_song(client, b"Success", tags="TAG1, tag2")
-    response = client.get("/users/user")
-
-    # Both tag versions present
-    assert b"TAG1" in response.data
-    assert b"tag2" in response.data
-
-    # Edit song
-    _test_upload_song(client, b"Success", tags="T1, t2", songid=1)
-
-    # Uppercase tags still work
-    response = client.get("/users/user")
-    assert b"TAG1" not in response.data
-    assert b"T1" in response.data
-
-    assert b"tag2" not in response.data
-    assert b"t2" in response.data
-
-################################################################################
-# Delete Song
-################################################################################
-
-def test_delete_song_success(client):
-    create_user_and_song(client)
-    response = client.get("/delete-song/1")
-    assert response.status_code == 302
-    assert response.headers["Location"] == "/users/user"
-
-    response = client.get("/")
-    assert b"Deleted &#39;song title&#39;" in response.data
-
-    # mp3 file deleted
-    response = client.get("/song/1/1")
-    assert response.status_code == 404
-
-def test_delete_song_invalid_song(client):
-    create_user_and_song(client)
-    response = client.get("/delete-song/2")
-    assert response.status_code == 404
-
-def test_delete_song_invalid_id(client):
-    create_user_and_song(client)
-    response = client.get("/delete-song/abc")
-    assert response.status_code == 404
-
-def test_delete_song_other_users_song(client):
-    create_user_and_song(client)
-    create_user(client, "user2", login=True)
-    response = client.get("/delete-song/1")
-    assert response.status_code == 401
-
-################################################################################
-# Song mp3 file
-################################################################################
-
-def test_get_song(client):
-    create_user_and_song(client)
-    response = client.get("/song/1/1")
-    with open(TEST_DATA/"sample-3s.mp3", "rb") as mp3file:
-        assert response.data == mp3file.read()
-
-def test_get_song_invalid_song(client):
-    create_user_and_song(client)
-    response = client.get("/song/1/2")
-    assert response.status_code == 404
-
-def test_get_song_invalid_user(client):
-    create_user_and_song(client)
-    response = client.get("/song/2/1")
-    assert response.status_code == 404
 
 ################################################################################
 # Song Lists (Profile/Homepage/Songs)
@@ -399,7 +29,7 @@ def test_profile_songs_one_song(client):
 
 def test_profile_songs_two_songs(client):
     create_user_and_song(client)
-    _test_upload_song(client, b"Success", title="title2")
+    upload_song(client, b"Success", title="title2")
     songs = _get_song_list_from_page(client, "/users/user")
 
     # Newest first
@@ -411,10 +41,10 @@ def test_profile_songs_two_songs(client):
 
 def test_homepage_songs_two_songs(client):
     create_user(client, "user1", "password", login=True)
-    _test_upload_song(client, b"Success", user="user1", title="song1")
+    upload_song(client, b"Success", user="user1", title="song1")
 
     create_user(client, "user2", "password", login=True)
-    _test_upload_song(client, b"Success", user="user2", title="song2")
+    upload_song(client, b"Success", user="user2", title="song2")
 
     songs = _get_song_list_from_page(client, "/")
 
@@ -430,11 +60,11 @@ def test_homepage_songs_two_songs(client):
 
 def test_songs_by_tag_no_user(client):
     create_user(client, "user1", "password", login=True)
-    _test_upload_song(client, b"Success", user="user1", title="song1", tags="tag")
+    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
 
     create_user(client, "user2", "password", login=True)
-    _test_upload_song(client, b"Success", user="user2", title="song2", tags="")
-    _test_upload_song(client, b"Success", user="user2", title="song3", tags="tag")
+    upload_song(client, b"Success", user="user2", title="song2", tags="")
+    upload_song(client, b"Success", user="user2", title="song3", tags="tag")
 
     songs = _get_song_list_from_page(client, "/songs?tag=tag")
 
@@ -450,11 +80,11 @@ def test_songs_by_tag_no_user(client):
 
 def test_songs_by_tag_with_user(client):
     create_user(client, "user1", "password", login=True)
-    _test_upload_song(client, b"Success", user="user1", title="song1", tags="tag")
-    _test_upload_song(client, b"Success", user="user1", title="song2", tags="")
+    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
+    upload_song(client, b"Success", user="user1", title="song2", tags="")
 
     create_user(client, "user2", "password", login=True)
-    _test_upload_song(client, b"Success", user="user2", title="song3", tags="tag")
+    upload_song(client, b"Success", user="user2", title="song3", tags="tag")
 
     songs = _get_song_list_from_page(client, "/songs?tag=tag&user=user1")
 
@@ -465,11 +95,11 @@ def test_songs_by_tag_with_user(client):
 
 def test_songs_by_user(client):
     create_user(client, "user1", "password", login=True)
-    _test_upload_song(client, b"Success", user="user1", title="song1", tags="tag")
-    _test_upload_song(client, b"Success", user="user1", title="song2", tags="")
+    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
+    upload_song(client, b"Success", user="user1", title="song2", tags="")
 
     create_user(client, "user2", "password", login=True)
-    _test_upload_song(client, b"Success", user="user2", title="song3", tags="tag")
+    upload_song(client, b"Success", user="user2", title="song3", tags="tag")
 
     songs = _get_song_list_from_page(client, "/songs?user=user1")
 
@@ -485,7 +115,7 @@ def test_songs_by_user(client):
 
 def test_single_song(client):
     create_user(client, "user1", "password", login=True)
-    _test_upload_song(client, b"Success", user="user1", title="song1", tags="tag")
+    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
 
     songs = _get_song_list_from_page(client, "/song/1/1?action=view")
 
@@ -1024,7 +654,7 @@ def test_edit_playlist_change_name_invalid(client):
 
 def test_edit_playlist_change_song_order(client):
     create_user_song_and_playlist(client)
-    _test_upload_song(client, b"Successfully uploaded")
+    upload_song(client, b"Successfully uploaded")
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
     songs = _get_song_list_from_page(client, "/playlists/1")
@@ -1038,7 +668,7 @@ def test_edit_playlist_change_song_order(client):
 
 def test_edit_playlist_remove_song(client):
     create_user_song_and_playlist(client)
-    _test_upload_song(client, b"Successfully uploaded")
+    upload_song(client, b"Successfully uploaded")
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
     songs = _get_song_list_from_page(client, "/playlists/1")
