@@ -1,3 +1,6 @@
+import html
+import json
+import re
 from pathlib import Path
 
 HOST = "http://littlesong.place:8000"
@@ -60,4 +63,9 @@ def upload_song(client, msg, error=False, songid=None, user="user", userid=1, fi
 
     response = client.get(f"/users/{user}")
     assert msg in response.data
+
+def get_song_list_from_page(client, url):
+    response = client.get(url)
+    matches = re.findall('data-song="(.*)">', response.data.decode())
+    return [json.loads(html.unescape(m)) for m in matches]
 

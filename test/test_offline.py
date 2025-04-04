@@ -1,127 +1,10 @@
-import html
-import json
-import re
 from pathlib import Path
 
 import pytest
 
-from .utils import create_user, create_user_and_song, upload_song
+from .utils import create_user, create_user_and_song, upload_song, get_song_list_from_page
 
 TEST_DATA = Path(__file__).parent / "data"
-
-################################################################################
-# Song Lists (Profile/Homepage/Songs)
-################################################################################
-
-# Profile
-
-def _get_song_list_from_page(client, url):
-    response = client.get(url)
-    matches = re.findall('data-song="(.*)">', response.data.decode())
-    return [json.loads(html.unescape(m)) for m in matches]
-
-def test_profile_songs_one_song(client):
-    create_user_and_song(client)
-    songs = _get_song_list_from_page(client, "/users/user")
-
-    assert len(songs) == 1
-    assert songs[0]["title"] == "song title"
-
-def test_profile_songs_two_songs(client):
-    create_user_and_song(client)
-    upload_song(client, b"Success", title="title2")
-    songs = _get_song_list_from_page(client, "/users/user")
-
-    # Newest first
-    assert len(songs) == 2
-    assert songs[0]["title"] == "title2"
-    assert songs[1]["title"] == "song title"
-
-# Homepage
-
-def test_homepage_songs_two_songs(client):
-    create_user(client, "user1", "password", login=True)
-    upload_song(client, b"Success", user="user1", title="song1")
-
-    create_user(client, "user2", "password", login=True)
-    upload_song(client, b"Success", user="user2", title="song2")
-
-    songs = _get_song_list_from_page(client, "/")
-
-    # Newest first (all songs)
-    assert len(songs) == 2
-    assert songs[0]["title"] == "song2"
-    assert songs[0]["username"] == "user2"
-
-    assert songs[1]["title"] == "song1"
-    assert songs[1]["username"] == "user1"
-
-# Songs by tag
-
-def test_songs_by_tag_no_user(client):
-    create_user(client, "user1", "password", login=True)
-    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
-
-    create_user(client, "user2", "password", login=True)
-    upload_song(client, b"Success", user="user2", title="song2", tags="")
-    upload_song(client, b"Success", user="user2", title="song3", tags="tag")
-
-    songs = _get_song_list_from_page(client, "/songs?tag=tag")
-
-    # Newest first
-    assert len(songs) == 2
-    assert songs[0]["title"] == "song3"
-    assert songs[0]["username"] == "user2"
-
-    # Song 2 not shown, no tag
-
-    assert songs[1]["title"] == "song1"
-    assert songs[1]["username"] == "user1"
-
-def test_songs_by_tag_with_user(client):
-    create_user(client, "user1", "password", login=True)
-    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
-    upload_song(client, b"Success", user="user1", title="song2", tags="")
-
-    create_user(client, "user2", "password", login=True)
-    upload_song(client, b"Success", user="user2", title="song3", tags="tag")
-
-    songs = _get_song_list_from_page(client, "/songs?tag=tag&user=user1")
-
-    assert len(songs) == 1
-    assert songs[0]["title"] == "song1"
-    assert songs[0]["username"] == "user1"
-    # Song 2 not shown, no tag; song 3 not shown, by different user
-
-def test_songs_by_user(client):
-    create_user(client, "user1", "password", login=True)
-    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
-    upload_song(client, b"Success", user="user1", title="song2", tags="")
-
-    create_user(client, "user2", "password", login=True)
-    upload_song(client, b"Success", user="user2", title="song3", tags="tag")
-
-    songs = _get_song_list_from_page(client, "/songs?user=user1")
-
-    # Newest first
-    assert len(songs) == 2
-    assert songs[0]["title"] == "song2"
-    assert songs[0]["username"] == "user1"
-
-    assert songs[1]["title"] == "song1"
-    assert songs[1]["username"] == "user1"
-
-    # Song 3 not shown, by different user
-
-def test_single_song(client):
-    create_user(client, "user1", "password", login=True)
-    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
-
-    songs = _get_song_list_from_page(client, "/song/1/1?action=view")
-
-    assert len(songs) == 1
-    assert songs[0]["title"] == "song1"
-    assert songs[0]["username"] == "user1"
 
 ################################################################################
 # Site News
@@ -657,12 +540,12 @@ def test_edit_playlist_change_song_order(client):
     upload_song(client, b"Successfully uploaded")
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
-    songs = _get_song_list_from_page(client, "/playlists/1")
+    songs = get_song_list_from_page(client, "/playlists/1")
     assert songs[0]["songid"] == 1
     assert songs[1]["songid"] == 2
 
     client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": "2,1"})
-    songs = _get_song_list_from_page(client, "/playlists/1")
+    songs = get_song_list_from_page(client, "/playlists/1")
     assert songs[0]["songid"] == 2
     assert songs[1]["songid"] == 1
 
@@ -671,11 +554,11 @@ def test_edit_playlist_remove_song(client):
     upload_song(client, b"Successfully uploaded")
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "1"})
     client.post("/append-to-playlist", data={"playlistid": "1", "songid": "2"})
-    songs = _get_song_list_from_page(client, "/playlists/1")
+    songs = get_song_list_from_page(client, "/playlists/1")
     assert len(songs) == 2
 
     client.post("/edit-playlist/1", data={"name": "my playlist", "type": "private", "songids": "2"})
-    songs = _get_song_list_from_page(client, "/playlists/1")
+    songs = get_song_list_from_page(client, "/playlists/1")
     assert len(songs) == 1
     assert songs[0]["songid"] == 2
 
