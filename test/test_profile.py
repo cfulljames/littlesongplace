@@ -3,10 +3,6 @@ from .utils import create_user
 
 TEST_DATA = Path(__file__).parent / "data"
 
-################################################################################
-# Profile/Bio
-################################################################################
-
 def test_default_bio_empty(client):
     create_user(client, "user", "password")
 

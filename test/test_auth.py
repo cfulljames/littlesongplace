@@ -1,9 +1,7 @@
 from flask import session
 from .utils import create_user, post_signup_form
 
-################################################################################
-# Signup
-################################################################################
+# Signup #######################################################################
 
 def test_signup_get(client):
     response = client.get("/signup")
@@ -52,9 +50,7 @@ def test_signup_user_exists(client):
     # Error the second time
     _test_signup_error(client, "user", "password", "password", b"already taken")
 
-################################################################################
-# Login/Logout
-################################################################################
+# Login/Logout #################################################################
 
 def test_login_get(client):
     response = client.get("/login")

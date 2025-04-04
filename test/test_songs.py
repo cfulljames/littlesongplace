@@ -6,9 +6,7 @@ from .utils import create_user, create_user_and_song, upload_song
 
 TEST_DATA = Path(__file__).parent / "data"
 
-################################################################################
-# Upload Song
-################################################################################
+# Upload Song ##################################################################
 
 def test_upload_song_success(client):
     create_user(client, "user", "password", login=True)
@@ -68,9 +66,7 @@ def test_upload_song_from_youtube(client):
     assert response.status_code == 200
     assert b"Successfully uploaded &#39;song title&#39;" in response.data
 
-################################################################################
-# Edit Song
-################################################################################
+# Edit Song ####################################################################
 
 def test_edit_invalid_song(client):
     create_user(client, "user", "password", login=True)
@@ -210,9 +206,7 @@ def test_uppercase_tags(client):
     assert b"tag2" not in response.data
     assert b"t2" in response.data
 
-################################################################################
-# Delete Song
-################################################################################
+# Delete Song ##################################################################
 
 def test_delete_song_success(client):
     create_user_and_song(client)
@@ -243,9 +237,7 @@ def test_delete_song_other_users_song(client):
     response = client.get("/delete-song/1")
     assert response.status_code == 401
 
-################################################################################
-# Song mp3 file
-################################################################################
+# Song mp3 file ################################################################
 
 def test_get_song(client):
     create_user_and_song(client)

@@ -1,10 +1,6 @@
 from .utils import create_user_and_song, create_user, upload_song, get_song_list_from_page
 
-################################################################################
-# Song Lists (Profile/Homepage/Songs)
-################################################################################
-
-# Profile
+# Profile ######################################################################
 
 def test_profile_songs_one_song(client):
     create_user_and_song(client)
@@ -23,7 +19,7 @@ def test_profile_songs_two_songs(client):
     assert songs[0]["title"] == "title2"
     assert songs[1]["title"] == "song title"
 
-# Homepage
+# Homepage #####################################################################
 
 def test_homepage_songs_two_songs(client):
     create_user(client, "user1", "password", login=True)
@@ -42,7 +38,7 @@ def test_homepage_songs_two_songs(client):
     assert songs[1]["title"] == "song1"
     assert songs[1]["username"] == "user1"
 
-# Songs by tag
+# Songs by tag #################################################################
 
 def test_songs_by_tag_no_user(client):
     create_user(client, "user1", "password", login=True)
