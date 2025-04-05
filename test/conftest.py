@@ -10,19 +10,32 @@ import pytest
 
 from .utils import login
 
+fresh_db = None
+
 @pytest.fixture
 def app():
+    global fresh_db
     # Use temporary data directory
     with tempfile.TemporaryDirectory() as data_dir:
         lsp.datadir.set_data_dir(data_dir)
 
         # Initialize Database
         with lsp.app.app_context():
-            db = sqlite3.connect(lsp.datadir.get_db_path())
-            with lsp.app.open_resource('sql/schema.sql', mode='r') as f:
-                db.cursor().executescript(f.read())
-            db.commit()
-            db.close()
+            if fresh_db:
+                # Already cached a fresh database file, just reuse it
+                with open(lsp.datadir.get_db_path(), "wb") as dbfile:
+                    dbfile.write(fresh_db)
+            else:
+                # No fresh db cached, create a new one (first test)
+                db = sqlite3.connect(lsp.datadir.get_db_path())
+                with lsp.app.open_resource('sql/schema.sql', mode='r') as f:
+                    db.cursor().executescript(f.read())
+                db.commit()
+                db.close()
+
+                # Cache database file
+                with open(lsp.datadir.get_db_path(), "rb") as dbfile:
+                    fresh_db = dbfile.read()
 
         yield lsp.app
 
