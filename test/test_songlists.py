@@ -105,3 +105,13 @@ def test_single_song(client):
     assert songs[0]["title"] == "song1"
     assert songs[0]["username"] == "user1"
 
+def test_random_songs(client):
+    create_user(client, "user1", "password", login=True)
+    upload_song(client, b"Success", user="user1", title="song1", tags="tag")
+    upload_song(client, b"Success", user="user1", title="song2", tags="")
+
+    songs = get_song_list_from_page(client, "/songs")
+
+    assert len(songs) == 2
+    assert songs[0]["title"] in ["song1", "song2"]
+    assert songs[1]["title"] in ["song1", "song2"]
