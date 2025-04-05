@@ -8,6 +8,19 @@ from .utils import create_user, create_user_and_song, upload_song
 
 TEST_DATA = Path(__file__).parent / "data"
 
+def _create_fake_mp3_and_return(returncode):
+    def _create_fake_mp3(*args, **kwargs):
+        subprocess_args = args[0]
+        if subprocess_args[0] == "ffmpeg":
+            # Create "fake" mp3 file by just copying input file
+            output_filename = subprocess_args[-1]
+            input_filename = subprocess_args[-2]
+            with open(input_filename, "rb") as infile, open(output_filename, "wb") as outfile:
+                outfile.write(infile.read())
+
+        return subprocess.CompletedProcess([], returncode=returncode, stdout=b"")
+    return _create_fake_mp3
+
 # Upload Song ##################################################################
 
 def test_upload_song_success(client):
@@ -42,25 +55,16 @@ def test_upload_song_collab_too_long(client):
     create_user(client, "user", "password", login=True)
     upload_song(client, b"not a valid collaborator name", error=True, collabs="a"*32)
 
-def test_upload_song_invalid_audio(client):
+@mock.patch("subprocess.run")
+def test_upload_song_invalid_audio(mock_run, client):
+    mock_run.side_effect = _create_fake_mp3_and_return(1)
     create_user(client, "user", "password", login=True)
     # Use this script file as the "audio" file
     upload_song(client, b"Invalid audio file", error=True, filename=__file__)
 
-def _create_fake_mp3(*args, **kwargs):
-    subprocess_args = args[0]
-    if subprocess_args[0] == "ffmpeg":
-        # Create "fake" mp3 file by just copying input file
-        output_filename = subprocess_args[-1]
-        input_filename = subprocess_args[-2]
-        with open(input_filename, "rb") as infile, open(output_filename, "wb") as outfile:
-            outfile.write(infile.read())
-
-    return subprocess.CompletedProcess([], returncode=0, stdout=b"")
-
 @mock.patch("subprocess.run")
-def test_upload_song_from_mp4(fake_run, client):
-    fake_run.side_effect = _create_fake_mp3
+def test_upload_song_from_mp4(mock_run, client):
+    mock_run.side_effect = _create_fake_mp3_and_return(0)
     create_user(client, "user", "password", login=True)
     upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename=TEST_DATA/"sample-4s.mp4")
 
@@ -154,8 +158,11 @@ def test_update_song_collab_too_long(client):
     create_user_and_song(client)
     upload_song(client, b"not a valid collaborator name", error=True, songid=1, collabs="a"*32)
 
-def test_update_song_invalid_mp3(client):
+@mock.patch("subprocess.run")
+def test_update_song_invalid_audio(mock_run, client):
+    mock_run.side_effect = _create_fake_mp3_and_return(0)
     create_user_and_song(client)
+    mock_run.side_effect = _create_fake_mp3_and_return(1)
     upload_song(client, b"Invalid audio file", error=True, songid=1, filename=__file__)
 
 def test_update_song_invalid_song(client):
