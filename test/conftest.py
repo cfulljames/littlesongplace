@@ -8,6 +8,8 @@ import bcrypt
 import requests
 import pytest
 
+pytest.register_assert_rewrite("test.utils")
+
 from .utils import login
 
 fresh_db = None

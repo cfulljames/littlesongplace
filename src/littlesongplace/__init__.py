@@ -396,7 +396,9 @@ def convert_song(tmp_file, request_file, yt_url):
         out_file.close()
         os.remove(out_file.name)
         result = subprocess.run(["ffmpeg", "-i", tmp_file.name, out_file.name], stdout=subprocess.PIPE)
+        print(result)
         if result.returncode == 0:
+            print('okie')
             # Successfully converted file, overwrite original file
             os.replace(out_file.name, tmp_file.name)
             return True

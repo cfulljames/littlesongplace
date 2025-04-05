@@ -1,4 +1,6 @@
+import subprocess
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -45,7 +47,20 @@ def test_upload_song_invalid_audio(client):
     # Use this script file as the "audio" file
     upload_song(client, b"Invalid audio file", error=True, filename=__file__)
 
-def test_upload_song_from_mp4(client):
+def _create_fake_mp3(*args, **kwargs):
+    subprocess_args = args[0]
+    if subprocess_args[0] == "ffmpeg":
+        # Create "fake" mp3 file by just copying input file
+        output_filename = subprocess_args[-1]
+        input_filename = subprocess_args[-2]
+        with open(input_filename, "rb") as infile, open(output_filename, "wb") as outfile:
+            outfile.write(infile.read())
+
+    return subprocess.CompletedProcess([], returncode=0, stdout=b"")
+
+@mock.patch("subprocess.run")
+def test_upload_song_from_mp4(fake_run, client):
+    fake_run.side_effect = _create_fake_mp3
     create_user(client, "user", "password", login=True)
     upload_song(client, b"Successfully uploaded &#39;song title&#39;", filename=TEST_DATA/"sample-4s.mp4")
 
