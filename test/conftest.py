@@ -14,11 +14,11 @@ from .utils import login
 def app():
     # Use temporary data directory
     with tempfile.TemporaryDirectory() as data_dir:
-        lsp.DATA_DIR = Path(data_dir)
+        lsp.datadir.set_data_dir(data_dir)
 
         # Initialize Database
         with lsp.app.app_context():
-            db = sqlite3.connect(lsp.DATA_DIR / "database.db")
+            db = sqlite3.connect(lsp.datadir.get_db_path())
             with lsp.app.open_resource('sql/schema.sql', mode='r') as f:
                 db.cursor().executescript(f.read())
             db.commit()
