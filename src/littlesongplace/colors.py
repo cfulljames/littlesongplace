@@ -1,0 +1,5 @@
+BGCOLOR = "#e8e6b5"
+FGCOLOR = "#695c73"
+ACCOLOR = "#9373a9"
+DEFAULT_COLORS = dict(bgcolor=BGCOLOR, fgcolor=FGCOLOR, accolor=ACCOLOR)
+
