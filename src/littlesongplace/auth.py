@@ -47,7 +47,14 @@ def signup_post():
     password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     timestamp = datetime.now(timezone.utc).isoformat()
 
-    user_data = db.query("insert into users (username, password, created) values (?, ?, ?) returning userid", [username, password, timestamp], one=True)
+    user_data = db.query(
+            """
+            insert into users (username, password, created)
+            values (?, ?, ?)
+            returning userid
+            """,
+            [username, password, timestamp],
+            one=True)
 
     # Create profile comment thread
     threadid = comments.create_thread(comments.ThreadType.PROFILE, user_data["userid"])

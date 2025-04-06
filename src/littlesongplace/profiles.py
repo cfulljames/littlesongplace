@@ -1,4 +1,5 @@
-from flask import abort, Blueprint, current_app, flash, send_from_directory, redirect, render_template, request, session
+from flask import abort, Blueprint, current_app, flash, send_from_directory, \
+        redirect, render_template, request, session
 from PIL import Image, UnidentifiedImageError
 
 from . import comments, datadir, db, songs, users
@@ -10,7 +11,10 @@ bp = Blueprint("profiles", __name__)
 def users_profile(profile_username):
 
     # Look up user data for current profile
-    profile_data = db.query("select * from users where username = ?", [profile_username], one=True)
+    profile_data = db.query(
+            "select * from users where username = ?",
+            [profile_username],
+            one=True)
     if profile_data is None:
         abort(404)
     profile_userid = profile_data["userid"]
@@ -19,9 +23,17 @@ def users_profile(profile_username):
     userid = session.get("userid", None)
     show_private = userid == profile_userid
     if show_private:
-        plist_data = db.query("select * from playlists where userid = ? order by updated desc", [profile_userid])
+        plist_data = db.query(
+                "select * from playlists where userid = ? order by updated desc",
+                [profile_userid])
     else:
-        plist_data = db.query("select * from playlists where userid = ? and private = 0 order by updated desc", [profile_userid])
+        plist_data = db.query(
+                """
+                select * from playlists
+                where userid = ? and private = 0
+                order by updated desc
+                """,
+                [profile_userid])
 
     # Get songs for current profile
     profile_songs = songs.get_all_for_userid(profile_userid)
@@ -52,8 +64,21 @@ def edit_profile():
         abort(401)
 
     db.query(
-            "update users set bio = ?, bgcolor = ?, fgcolor = ?, accolor = ? where userid = ?",
-            [request.form["bio"], request.form["bgcolor"], request.form["fgcolor"], request.form["accolor"], session["userid"]])
+            """
+            update users set
+                bio = ?,
+                bgcolor = ?,
+                fgcolor = ?,
+                accolor = ?
+            where userid = ?
+            """,
+            [
+                request.form["bio"],
+                request.form["bgcolor"],
+                request.form["fgcolor"],
+                request.form["accolor"],
+                session["userid"],
+            ])
     db.commit()
 
     if request.files["pfp"]:
