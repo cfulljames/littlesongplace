@@ -6,14 +6,12 @@ Have feedback or bug reports?  Open an new issue on the
 This is a pretty simple [Flask](https://flask.palletsproject.com) app.  If
 you've used Flask before, hopefully it feels pretty familiar.
 
-The main python code is in [/src/littlesongplace](/src/littlesongplace).  The
-main Flask() app instance is in [__init__.py](/src/littlesongplace/__init__.py).
-
-HTML templates can be found in [/src/littlesongplace/templates](/src/littlesongplace/templates).
-
-Static files, including images, CSS, and Javascript are stored in [/src/littlesongplace/static](/src/littlesongplace/static).
-
-The tests in [/tests](/tests) can be run with pytest.
+Important Places:
+- [`/src/littlesongplace`](/src/littlesongplace) - the main python code
+- [`__init__.py`](/src/littlesongplace/__init__.py) - entry point; the main Flask() app instance
+- [`/src/littlesongplace/templates`](/src/littlesongplace/templates) - HTML templates
+- [`/src/littlesongplace/static`](/src/littlesongplace/static) - static files, including images, CSS, and Javascript
+- [`/tests`](/tests) - tests, run with pytest
 
 ## Dependencies
 This project has some dependencies that need to be installed manually to your system PATH:
