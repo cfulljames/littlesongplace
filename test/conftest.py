@@ -55,3 +55,13 @@ def session():
     login(session, "user", "1234asdf!@#$")
     yield session
 
+def pytest_addoption(parser):
+    parser.addoption("--yt", action="store_true", help="run youtube importer tests")
+
+def pytest_collection_modifyitems(config, items):
+    if not config.option.yt:
+        removed_items = [i for i in items if "yt" in i.keywords]
+        for ri in removed_items:
+            items.remove(ri)
+        config.hook.pytest_deselected(items=removed_items)
+

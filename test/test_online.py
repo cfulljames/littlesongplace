@@ -85,7 +85,7 @@ def test_comments_and_activity(session):
         songs = _get_song_list_from_page(response.text)
         assert not any(song["songid"] == songid for song in songs)
 
-@pytest.mark.skip
+@pytest.mark.yt
 def test_upload_song_from_youtube(session):
     login(session, "user", "1234asdf!@#$")
 

@@ -15,3 +15,7 @@ requires-python = ">=3.11"
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
+[tool.pytest.ini_options]
+markers = [
+    "yt: mark youtube importer tests",
+]
