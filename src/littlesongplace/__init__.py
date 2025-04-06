@@ -71,7 +71,7 @@ def index():
     titles, weights = zip(*titles)
     title = random.choices(titles, weights)[0]
 
-    page_songs = songs.Song.get_latest(50)
+    page_songs = songs.get_latest(50)
     return render_template("index.html", users=all_users, songs=page_songs, page_title=title)
 
 @app.get("/activity")
@@ -97,7 +97,7 @@ def activity():
     for comment in notifications:
         threadtype = comment["threadtype"]
         if threadtype == comments.ThreadType.SONG:
-            song = songs.Song.by_threadid(comment["threadid"])
+            song = songs.by_threadid(comment["threadid"])
             comment["songid"] = song.songid
             comment["title"] = song.title
             comment["content_userid"] = song.userid
@@ -313,7 +313,7 @@ def playlists(playlistid):
             abort(404)  # Cannot view other user's private playlist - pretend it doesn't even exist
 
     # Get songs
-    plist_songs = songs.Song.get_for_playlist(playlistid)
+    plist_songs = songs.get_for_playlist(playlistid)
 
     # Get comments
     plist_comments = comments.for_thread(plist_data["threadid"])

@@ -24,7 +24,7 @@ def users_profile(profile_username):
         plist_data = db.query("select * from playlists where userid = ? and private = 0 order by updated desc", [profile_userid])
 
     # Get songs for current profile
-    profile_songs = songs.Song.get_all_for_userid(profile_userid)
+    profile_songs = songs.get_all_for_userid(profile_userid)
 
     # Get comments for current profile
     profile_comments = comments.for_thread(profile_data["threadid"])

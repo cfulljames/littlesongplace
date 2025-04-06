@@ -74,7 +74,7 @@ def comment():
         profile = None
         playlist = None
         if threadtype == ThreadType.SONG:
-            song = songs.Song.by_threadid(request.args["threadid"])
+            song = songs.by_threadid(request.args["threadid"])
         elif threadtype == ThreadType.PROFILE:
             profile = db.query("select * from users where threadid = ?", [request.args["threadid"]], one=True)
         elif threadtype == ThreadType.PLAYLIST:
