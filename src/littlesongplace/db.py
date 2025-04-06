@@ -44,8 +44,8 @@ def commit():
 def init_cmd():
     """Clear the existing data and create new tables"""
     with current_app.app_context():
-        db = sqlite3.connect(DATA_DIR / "database.db")
-        with app.open_resource(SCRIPT_DIR / 'schema.sql', mode='r') as f:
+        db = sqlite3.connect(datadir.get_db_path())
+        with current_app.open_resource('sql/schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
 
