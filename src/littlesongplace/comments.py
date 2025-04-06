@@ -17,22 +17,39 @@ class ObjectType(enum.IntEnum):
     COMMENT = 0
 
 def create_thread(threadtype, userid):
-    thread = db.query("insert into comment_threads (threadtype, userid) values (?, ?) returning threadid", [threadtype, userid], one=True)
+    thread = db.query(
+            """
+            insert into comment_threads (threadtype, userid)
+            values (?, ?)
+            returning threadid
+            """,
+            [threadtype, userid],
+            one=True)
     db.commit()
     return thread["threadid"]
 
 def for_thread(threadid):
-    thread_comments = db.query("select * from comments inner join users on comments.userid == users.userid where comments.threadid = ?", [threadid])
+    thread_comments = db.query(
+            """
+            select * from comments
+            inner join users on comments.userid == users.userid
+            where comments.threadid = ?
+            """,
+            [threadid])
     thread_comments = [dict(c) for c in thread_comments]
     for c in thread_comments:
         c["content"] = sanitize_user_text(c["content"])
 
     # Top-level comments
-    song_comments = sorted([dict(c) for c in thread_comments if c["replytoid"] is None], key=lambda c: c["created"])
+    song_comments = sorted(
+            [dict(c) for c in thread_comments if c["replytoid"] is None],
+            key=lambda c: c["created"])
     song_comments = list(reversed(song_comments))
     # Replies (can only reply to top-level)
     for comment in song_comments:
-        comment["replies"] = sorted([c for c in thread_comments if c["replytoid"] == comment["commentid"]], key=lambda c: c["created"])
+        comment["replies"] = sorted(
+                [c for c in thread_comments if c["replytoid"] == comment["commentid"]],
+                key=lambda c: c["created"])
 
     return song_comments
 
@@ -44,7 +61,13 @@ def comment():
     if not "threadid" in request.args:
         abort(400) # Must have threadid
 
-    thread = db.query("select * from comment_threads where threadid = ?", [request.args["threadid"]], one=True)
+    thread = db.query(
+            """
+            select * from comment_threads
+            where threadid = ?
+            """,
+            [request.args["threadid"]],
+            one=True)
     if not thread:
         abort(404) # Invalid threadid
 
@@ -52,7 +75,14 @@ def comment():
     replyto = None
     if "replytoid" in request.args:
         replytoid = request.args["replytoid"]
-        replyto = db.query("select * from comments inner join users on comments.userid == users.userid where commentid = ?", [replytoid], one=True)
+        replyto = db.query(
+                """
+                select * from comments
+                inner join users on comments.userid == users.userid
+                where commentid = ?
+                """,
+                [replytoid],
+                one=True)
         if not replyto:
             abort(404) # Invalid comment
 
@@ -60,7 +90,14 @@ def comment():
     comment = None
     if "commentid" in request.args:
         commentid = request.args["commentid"]
-        comment = db.query("select * from comments inner join users on comments.userid == users.userid where commentid = ?", [commentid], one=True)
+        comment = db.query(
+                """
+                select * from comments
+                inner join users on comments.userid == users.userid
+                where commentid = ?
+                """,
+                [commentid],
+                one=True)
         if not comment:
             abort(404) # Invalid comment
         if comment["userid"] != session["userid"]:
@@ -76,9 +113,19 @@ def comment():
         if threadtype == ThreadType.SONG:
             song = songs.by_threadid(request.args["threadid"])
         elif threadtype == ThreadType.PROFILE:
-            profile = db.query("select * from users where threadid = ?", [request.args["threadid"]], one=True)
+            profile = db.query(
+                    "select * from users where threadid = ?",
+                    [request.args["threadid"]],
+                    one=True)
         elif threadtype == ThreadType.PLAYLIST:
-            profile = db.query("select * from playlists inner join users on playlists.userid = users.userid where playlists.threadid = ?", [request.args["threadid"]], one=True)
+            profile = db.query(
+                    """
+                    select * from playlists
+                    inner join users on playlists.userid = users.userid
+                    where playlists.threadid = ?
+                    """,
+                    [request.args["threadid"]],
+                    one=True)
         return render_template(
             "comment.html",
             song=song,
@@ -93,7 +140,9 @@ def comment():
         content = request.form["content"]
         if comment:
             # Update existing comment
-            db.query("update comments set content = ? where commentid = ?", args=[content, comment["commentid"]])
+            db.query(
+                    "update comments set content = ? where commentid = ?",
+                    args=[content, comment["commentid"]])
         else:
             # Add new comment
             timestamp = datetime.now(timezone.utc).isoformat()
@@ -102,8 +151,14 @@ def comment():
 
             threadid = request.args["threadid"]
             comment = db.query(
-                    "insert into comments (threadid, userid, replytoid, created, content) values (?, ?, ?, ?, ?) returning (commentid)",
-                    args=[threadid, userid, replytoid, timestamp, content], one=True)
+                    """
+                    insert into comments
+                        (threadid, userid, replytoid, created, content)
+                    values (?, ?, ?, ?, ?)
+                    returning (commentid)
+                    """,
+                    args=[threadid, userid, replytoid, timestamp, content],
+                    one=True)
             commentid = comment["commentid"]
 
             # Notify content owner
@@ -113,7 +168,8 @@ def comment():
                 notification_targets.add(replyto["userid"])
 
                 # Notify previous repliers in thread
-                previous_replies = db.query("select * from comments where replytoid = ?", [replytoid])
+                previous_replies = db.query(
+                        "select * from comments where replytoid = ?", [replytoid])
                 for reply in previous_replies:
                     notification_targets.add(reply["userid"])
 
@@ -123,7 +179,13 @@ def comment():
 
             # Create notifications
             for target in notification_targets:
-                db.query("insert into notifications (objectid, objecttype, targetuserid, created) values (?, ?, ?, ?)", [commentid, ObjectType.COMMENT, target, timestamp])
+                db.query(
+                        """
+                        insert into notifications
+                            (objectid, objecttype, targetuserid, created)
+                        values (?, ?, ?, ?)
+                        """,
+                        [commentid, ObjectType.COMMENT, target, timestamp])
 
         db.commit()
 
@@ -141,7 +203,16 @@ def comment_delete(commentid):
     if "userid" not in session:
         return redirect("/login")
 
-    comment = db.query("select c.userid as comment_user, t.userid as thread_user from comments as c inner join comment_threads as t on c.threadid == t.threadid where commentid = ?", [commentid], one=True)
+    comment = db.query(
+            """
+            select c.userid as comment_user, t.userid as thread_user
+            from comments as c
+            inner join comment_threads as t
+            on c.threadid == t.threadid
+            where commentid = ?
+            """,
+            [commentid],
+            one=True)
     if not comment:
         abort(404) # Invalid comment
 
@@ -150,7 +221,10 @@ def comment_delete(commentid):
             or (comment["thread_user"] == session["userid"])):
         abort(403)
 
-    db.query("delete from comments where (commentid = ?) or (replytoid = ?)", [commentid, commentid])
+    db.query(
+            "delete from comments where (commentid = ?) or (replytoid = ?)",
+            [commentid, commentid])
     db.commit()
 
     return redirect(request.referrer)
+
