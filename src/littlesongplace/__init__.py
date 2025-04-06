@@ -69,6 +69,10 @@ def index():
 def site_news():
     return render_template("news.html")
 
+@app.get("/about")
+def about():
+    return render_template("about.html")
+
 def get_gif_data():
     # Convert all .gifs to base64 strings and embed them as dataset entries
     # in <div>s.  This is used by nav.js:customImage() - it replaces specific

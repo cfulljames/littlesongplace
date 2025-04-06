@@ -6,18 +6,14 @@
 
 <h2>Hello!</h2>
 <p>
-Welcome to the little song place!
+🎶 Welcome to a little song place.  Make music, and share it with friends! 🎵
 </p>
 
+<h2>Humans</h2>
 <p>
-If you encounter a bug or have ideas for things that would make the site
-better, I'm open to any thoughts or feedback you have!  Just leave a comment on
-my <a href="/users/cfulljames">profile</a>, send me a message on Discord, or email
-<a href="mailto:littlesongplace@gmail.com">littlesongplace@gmail.com</a>. :)
+Check out the music and profiles of the fine folks below!
+{% if not session["userid"] %}If you create an account, you'll show up here too.{% endif %}
 </p>
-
-<h2>Profiles</h2>
-<p>Check out the music of the fine folks below!{% if not session["userid"] %}  If you create an account, you'll show up here too.{% endif %}</p>
 
 <div class="user-list">
     {% for user in users %}
@@ -32,8 +28,8 @@ my <a href="/users/cfulljames">profile</a>, send me a message on Discord, or ema
     {% endfor %}
 </div>
 
-<h2>Recently Uploaded Songs</h2>
-<p>Listen to all the newest tunes!</p>
+<h2>Hot New Tunes</h2>
+<p>Listen to the 50 latest tracks!</p>
 {% include "song-list.html" %}
 
 {% endblock %}
