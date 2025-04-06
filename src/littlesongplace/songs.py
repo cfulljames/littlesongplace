@@ -9,6 +9,8 @@ from dataclasses import dataclass
 
 from flask import Blueprint, current_app, render_template, request, redirect, \
         session, abort, send_from_directory
+from yt_dlp import YoutubeDL
+from yt_dlp.utils import DownloadError
 
 from . import comments, colors, datadir, db, users
 from .sanitize import sanitize_user_text
