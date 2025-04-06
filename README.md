@@ -11,7 +11,7 @@ Important Places:
 - [`__init__.py`](/src/littlesongplace/__init__.py) - entry point; the main Flask() app instance
 - [`/src/littlesongplace/templates`](/src/littlesongplace/templates) - HTML templates
 - [`/src/littlesongplace/static`](/src/littlesongplace/static) - static files, including images, CSS, and Javascript
-- [`/tests`](/tests) - tests, run with pytest
+- [`/test`](/test) - tests, run with pytest
 
 ## Dependencies
 This project has some dependencies that need to be installed manually to your system PATH:
