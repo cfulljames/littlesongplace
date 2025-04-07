@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, redirect, g, session, abort, 
         send_from_directory, flash, get_flashed_messages
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from . import activity, auth, colors, comments, datadir, db, playlists, \
+from . import activity, auth, colors, comments, datadir, db, jams, playlists, \
         profiles, songs, users
 from .logutils import flash_and_log
 
@@ -32,6 +32,7 @@ app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024 * 1024
 app.register_blueprint(activity.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(comments.bp)
+app.register_blueprint(jams.bp)
 app.register_blueprint(playlists.bp)
 app.register_blueprint(profiles.bp)
 app.register_blueprint(songs.bp)
