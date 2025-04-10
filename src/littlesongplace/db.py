@@ -6,7 +6,7 @@ from flask import g, current_app
 
 from . import datadir
 
-DB_VERSION = 4
+DB_VERSION = 5
 
 def get():
     db = getattr(g, '_database', None)
@@ -46,6 +46,15 @@ def init_cmd():
     with current_app.app_context():
         db = sqlite3.connect(datadir.get_db_path())
         with current_app.open_resource('sql/schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
+
+@click.command("revert-db")
+def init_cmd():
+    """Revert the database to the previous schema"""
+    with current_app.app_context():
+        db = sqlite3.connect(datadir.get_db_path())
+        with current_app.open_resource('sql/schema_revert.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
 

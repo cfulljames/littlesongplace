@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
+from functools import wraps
 
 import bcrypt
-from flask import Blueprint, render_template, redirect, flash, request, current_app, session
+from flask import Blueprint, render_template, redirect, flash, g, request, current_app, session
 
 from . import comments, db
 from .logutils import flash_and_log
@@ -100,4 +101,17 @@ def logout():
         session.pop("userid")
 
     return redirect("/")
+
+def requires_login(f):
+    @functools.wraps(f)
+    def _wrapper(*args, **kwargs):
+        if not "userid" in session:
+            return redirect("/login")
+
+        g.userid = session["userid"]
+        g.username = session["username"]
+
+        return f(*args, **kwargs)
+
+    return _wrapper
 
