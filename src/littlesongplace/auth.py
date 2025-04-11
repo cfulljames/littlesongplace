@@ -1,5 +1,5 @@
+import functools
 from datetime import datetime, timezone
-from functools import wraps
 
 import bcrypt
 from flask import Blueprint, render_template, redirect, flash, g, request, current_app, session

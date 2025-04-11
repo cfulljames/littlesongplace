@@ -1,30 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Jam{% endblock %}
+{% block title %}{{ jam.title }}{% endblock %}
 
 {% block body %}
 
-<h1>Jam Title: Event Title</h1>
+<h1>{{ jam.title }}</h1>
+
 
 <div>
-    <span><strong>Deadline:</strong></span> 2000-00-00
+    <span><strong>Posted By:</strong></span> {{ jam.userid }}
+</div>
+<div>
+    <span><strong>Deadline:</strong></span> {{ jam.enddate }}
 </div>
 
 <h2>Description</h2>
 
 <div>
-Event Description.
-
-Lorem ipsum dolor sit amet...
+{{ jam.description }}
 </div>
-
-<div>
-<button class="button">Submit a Song</button>
-</div>
-
-
-<h2>Submitted Songs</h2>
-<p>
-(Shown only after jam deadline)
 
 {% endblock %}
