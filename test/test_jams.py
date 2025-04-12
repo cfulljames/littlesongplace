@@ -23,7 +23,7 @@ def test_create_jam(client, user):
     assert b"New Jam" in response.data
 
 def test_jams_list(client, user, jam):
-    response = client.get("/jams/")
+    response = client.get("/jams")
     assert response.status_code == 200
     assert b"New Jam" in response.data
 
@@ -44,9 +44,16 @@ def test_update_invalid_jam(client, user):
             data={"title": "Coolest Jam", "description": "pb and jam"})
     assert response.status_code == 404
 
+def test_update_other_users_jam(client, user, jam):
+    create_user(client, "otheruser", login=True)
+    response = client.post(
+            f"/jams/{jam}/update",
+            data={"title": "Coolest Jam", "description": "pb and jam"})
+    assert response.status_code == 403
+
 def test_delete_jam(client, user, jam):
     response = client.get(f"/jams/{jam}/delete", follow_redirects=True)
-    assert response.request.path == "/jams/"
+    assert response.request.path == "/jams"
     assert b"New Jam" not in response.data
 
     response = client.get(f"/jams/{jam}")
@@ -55,3 +62,8 @@ def test_delete_jam(client, user, jam):
 def test_delete_invalid_jam(client, user):
     response = client.get("/jams/1/delete")
     assert response.status_code == 404
+
+def test_delete_other_users_jam(client, user, jam):
+    create_user(client, "otheruser", login=True)
+    response = client.get(f"/jams/{jam}/delete")
+    assert response.status_code == 403

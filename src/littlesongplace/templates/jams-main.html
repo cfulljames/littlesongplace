@@ -6,9 +6,12 @@
 
 <h1>Jams</h1>
 
-{% macro jam_list(list_title, jams) %}
-{% if jams %}
-<h2>{{ list_title }}</h2>
+{% from "jam-event-list.html" import jam_event_list %}
+{{ jam_event_list("Ongoing Events", ongoing) }}
+{{ jam_event_list("Upcoming Events", upcoming) }}
+{{ jam_event_list("Recent Events", recent) }}
+
+<h2>All Jams</h2>
 <div class="jam-list">
     {% for jam in jams %}
     <div class="jam-list-entry">
@@ -21,11 +24,5 @@
     </div>
     {% endfor %}
 </div>
-{% endif %}
-{% endmacro %}
-
-{{ jam_list("Ongoing Jams", ongoing) }}
-{{ jam_list("Upcoming Jams", upcoming) }}
-{{ jam_list("Past Jams", past) }}
 
 {% endblock %}

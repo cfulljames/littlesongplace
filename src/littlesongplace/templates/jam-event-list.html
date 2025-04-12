@@ -1,0 +1,21 @@
+{% macro jam_event_list(list_title, events) %}
+{% if events %}
+<h2>{{ list_title }}</h2>
+<div class="jam-event-list">
+    {% for event in events %}
+    <div class="jam-event-list-entry">
+        <span class="jam-event-list-title">
+            <a href="/jams/{{ event.jamid }}/events/{{ event.eventid }}">{{ event.title }}</a>
+        </span>
+        -
+        <span class="jam-event-list-jam-title">
+            <a href="/jams/{{ event.jamid }}">{{ event.jam_title }}</a>
+        </span>
+        <span class="jam-event-list-owner">
+            Hosted by <a href="/users/{{ event.jam_ownername }}" class="profile-link">{{ event.jam_ownername }}</a>
+        </span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}

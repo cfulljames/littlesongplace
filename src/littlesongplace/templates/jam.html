@@ -7,12 +7,18 @@
 <h1>{{ jam.title }}</h1>
 
 <div>
-    <span><strong>Jam Master:</strong></span> {{ jam.username }}
+    <strong>Host:</strong>
+    <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
 </div>
 
-<div>
 <h2>Description</h2>
+<div>
 {{ jam.description }}
 </div>
+
+{% from "jam-event-list.html" import jam_event_list %}
+{{ jam_event_list("Ongoing Events", ongoing) }}
+{{ jam_event_list("Upcoming Events", upcoming) }}
+{{ jam_event_list("Past Events", past) }}
 
 {% endblock %}

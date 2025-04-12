@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -9,7 +10,20 @@ from .sanitize import sanitize_user_text
 bp = Blueprint("jams", __name__, url_prefix="/jams")
 
 
-@bp.get("/")
+def jam_owner_only(f):
+    @functools.wraps(f)
+    def _wrapper(jamid, *args, **kwargs):
+        row = db.query(
+                "SELECT * FROM jams WHERE jamid = ?", [jamid], expect_one=True)
+
+        if row["ownerid"] != g.userid:
+            abort(403)  # Forbidden; cannot modify other user's jam
+
+        return f(jamid, *args, **kwargs)
+    return _wrapper
+
+
+@bp.get("")
 def jams():
     # Show a list of all jams: ongoing, upcoming, previous
     rows = db.query(
@@ -55,6 +69,7 @@ def jam(jamid):
 
 @bp.post("/<int:jamid>/update")
 @auth.requires_login
+@jam_owner_only
 def update(jamid):
     # Update a jam with the new form data, redirect to view page
     title = request.form["title"]
@@ -73,6 +88,7 @@ def update(jamid):
 
 @bp.get("/<int:jamid>/delete")
 @auth.requires_login
+@jam_owner_only
 def delete(jamid):
     # Delete a jam, redirect to the jams list
     row = db.query(
@@ -83,35 +99,32 @@ def delete(jamid):
     return redirect(url_for("jams.jams"))
 
 
-@bp.get("/<int:jamid>/events")
-def events(jamid):
-    # Show a list of all events for the jam (current, upcoming, previous)
-    ...
-
-
 @bp.get("/<int:jamid>/events/create")
 @auth.requires_login
-def events_create():
+@jam_owner_only
+def events_create(jamid):
     # Create a new event and redirect to the edit form
     ...
 
 
 @bp.get("/<int:jamid>/events/<int:eventid>")
-def events_view(eventid):
+def events_view(jamid, eventid):
     # Show the event page
     ...
 
 
 @bp.post("/<int:jamid>/events/<int:eventid>/update")
 @auth.requires_login
-def events_update(jamid):
+@jam_owner_only
+def events_update(jamid, eventid):
     # Update an event with the new form data
     ...
 
 
 @bp.get("/<int:jamid>/events/<int:eventid>/delete")
 @auth.requires_login
-def events_delete(jamid):
+@jam_owner_only
+def events_delete(jamid, eventid):
     # Delete an event, redirect to list of all events
     ...
 
@@ -130,7 +143,24 @@ class Jam:
 
     @classmethod
     def from_row(cls, row):
-        event_rows = db.query("SELECT * FROM jam_events WHERE jamid = ?", [row["jamid"]])
+        event_rows = db.query(
+                """
+                SELECT
+                    e.eventid,
+                    e.jamid,
+                    e.title,
+                    e.threadid,
+                    e.created,
+                    e.startdate,
+                    e.enddate,
+                    e.description,
+                    j.title as jam_title,
+                    u.username as jam_ownername
+                FROM jam_events as e
+                INNER JOIN jams as j on e.jamid = j.jamid
+                INNER JOIN users as u on j.ownerid = u.userid
+                WHERE e.jamid = ?
+                """, [row["jamid"]])
         events = [JamEvent.from_row(r) for r in event_rows]
         return cls(
                 jamid=row["jamid"],
@@ -153,6 +183,8 @@ class JamEvent:
     startdate: datetime
     enddate: datetime
     description: str
+    jam_title: str
+    jam_ownername: str
     # TODO: Comment object?
     comments: list
 
@@ -168,6 +200,8 @@ class JamEvent:
                 startdate=datetime.fromisoformat(row["startdate"]),
                 enddate=datetime.fromisoformat(row["enddate"]),
                 description=sanitize_user_text(row["description"] or ""),
+                jam_title=row["jam_title"],
+                jam_ownername=row["jam_ownername"],
                 # TODO: Comment object?
                 comments=comments,
         )

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - {{ jam.title }}{% endblock %}
+
+{% block body %}
+
+<h1>{{ event.title }} - {{ jam.title }}</h1>
+
+<div>
+    <strong>Host:</strong>
+        <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
+        <br/>
+    <strong>Start Date:</strong>
+        {{ event.startdate.aslocaltime().strftime("%Y-%m-%d @ %H:%M") }}
+        <br/>
+    <strong>End Date:</strong>
+        {{ event.enddate.aslocaltime().strftime("%Y-%m-%d @ %H:%M") }}
+</div>
+
+<div class="jam-description">
+{{ event.description }}
+</div>
+
+<h2>About the Jam</h2>
+<div class="jam-description">
+{{ jam.description }}
+</div>
+
+<h2>Submissions</h2>
+<button class="button">Submit a Song</button>
+{% include "song-list.html" %}
+
+<h2>Comments</h2>
+{{ comment_thread(event.threadid, session['userid'], jam.ownerid, event.comments) }}
+
+{% endblock %}
