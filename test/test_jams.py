@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -201,4 +201,73 @@ def test_delete_event_other_users_jam(client, user, jam, event):
     create_user(client, "otheruser", login=True)
     response = client.get(f"/jams/{jam}/events/{event}/delete", follow_redirects=True)
     assert response.status_code == 403
+
+def _create_event(client, jam, title, startdate, enddate):
+    response = client.get(f"/jams/{jam}/events/create", follow_redirects=True)
+    eventid = int(response.request.path[-1])
+    client.post(
+            f"/jams/{jam}/events/{eventid}/update",
+            data=_get_event_data(title=title, startdate=startdate, enddate=enddate))
+
+def _assert_appear_in_order(page, values):
+    last_index = 0
+    for v in values:
+        assert v in page
+        index = page.index(v, last_index+1)
+        assert index > last_index
+        last_index = index
+
+def _create_past_present_future_events(client, jam):
+    today = datetime.now(timezone.utc)
+    yesterday = (today - timedelta(days=1)).isoformat()
+    tomorrow = (today + timedelta(days=1)).isoformat()
+    
+    _create_event(client, jam, "PastJam", yesterday, yesterday)
+    _create_event(client, jam, "OngoingJam", yesterday, tomorrow)
+    _create_event(client, jam, "UpcomingJam", tomorrow, tomorrow)
+
+    response = client.get("/jams/create", follow_redirects=True)
+    otherjam = int(response.request.path[-1])
+    _create_event(client, otherjam, "OtherJam", tomorrow, tomorrow)
+
+def test_jam_events_sorted_on_jams_page(client, user, jam):
+    _create_past_present_future_events(client, jam)
+    
+    response = client.get("/jams")
+    _assert_appear_in_order(
+            response.data,
+            [
+                b"Ongoing Events",
+                b"OngoingJam",
+
+                b"Upcoming Events",
+                b"UpcomingJam",
+                b"OtherJam",
+
+                b"Recent Events",
+                b"PastJam",
+
+                b"All Jams",
+                b"New Jam",
+                b"New Jam",
+            ])
+
+def test_jam_events_sorted_on_jam_info_page(client, user, jam):
+    _create_past_present_future_events(client, jam)
+    
+    response = client.get(f"/jams/{jam}")
+    assert b"OtherJam" not in response.data  # Only events for this jam
+
+    _assert_appear_in_order(
+            response.data,
+            [
+                b"Ongoing Events",
+                b"OngoingJam",
+
+                b"Upcoming Events",
+                b"UpcomingJam",
+
+                b"Past Events",
+                b"PastJam",
+            ])
 
