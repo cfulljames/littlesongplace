@@ -152,6 +152,15 @@ def get_for_playlist(playlistid):
         """,
         [playlistid])
 
+def get_for_event(eventid):
+    return _from_db(
+        """
+        SELECT * FROM songs
+        INNER JOIN users ON songs.userid = users.userid
+        WHERE songs.eventid = ?
+        """,
+        [eventid])
+
 def _from_db(query, args=()):
     songs_data = db.query(query, args)
     tags, collabs = _get_info_for_songs(songs_data)
@@ -373,6 +382,10 @@ def create_song():
     description = request.form["description"]
     tags = [t.strip() for t in request.form["tags"].split(",") if t]
     collaborators = [c.strip() for c in request.form["collabs"].split(",") if c]
+    try:
+        eventid = int(request.args["eventid"]) if "eventid" in request.args else None
+    except ValueError:
+        abort(400)
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
         passed = convert_song(tmp_file, file, yt_url)
@@ -388,11 +401,11 @@ def create_song():
             timestamp = datetime.now(timezone.utc).isoformat()
             song_data = db.query(
                 """
-                insert into songs (userid, title, description, created, threadid)
-                values (?, ?, ?, ?, ?)
+                insert into songs (userid, title, description, created, threadid, eventid)
+                values (?, ?, ?, ?, ?, ?)
                 returning (songid)
                 """,
-                [session["userid"], title, description, timestamp, threadid],
+                [session["userid"], title, description, timestamp, threadid, eventid],
                 one=True)
 
             # Move file to permanent location

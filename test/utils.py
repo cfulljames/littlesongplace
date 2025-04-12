@@ -45,7 +45,10 @@ def create_user_song_and_playlist(client, playlist_type="private"):
     create_user_and_song(client)
     client.post("/create-playlist", data={"name": "my playlist", "type": playlist_type})
 
-def upload_song(client, msg, error=False, songid=None, user="user", userid=1, filename=TEST_DATA/"sample-3s.mp3", **kwargs):
+def upload_song(
+        client, msg, error=False, songid=None, eventid=None,
+        user="user", userid=1, filename=TEST_DATA/"sample-3s.mp3", **kwargs):
+
     song_file = open(filename, "rb")
 
     data = {
@@ -58,10 +61,14 @@ def upload_song(client, msg, error=False, songid=None, user="user", userid=1, fi
     for k, v in kwargs.items():
         data[k] = v
 
+    upload_url = "/upload-song"
+
     if songid:
-        response = client.post(f"/upload-song?songid={songid}", data=data)
-    else:
-        response = client.post("/upload-song", data=data)
+        upload_url += f"?songid={songid}"
+    elif eventid:
+        upload_url += f"?eventid={eventid}"
+
+    response = client.post(upload_url, data=data)
 
     assert response.status_code == 302
     if error:

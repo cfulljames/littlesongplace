@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from .utils import create_user
+from .utils import create_user, upload_song
 
 @pytest.fixture
 def user(client):
@@ -221,7 +221,7 @@ def _create_past_present_future_events(client, jam):
     today = datetime.now(timezone.utc)
     yesterday = (today - timedelta(days=1)).isoformat()
     tomorrow = (today + timedelta(days=1)).isoformat()
-    
+
     _create_event(client, jam, "PastJam", yesterday, yesterday)
     _create_event(client, jam, "OngoingJam", yesterday, tomorrow)
     _create_event(client, jam, "UpcomingJam", tomorrow, tomorrow)
@@ -232,7 +232,7 @@ def _create_past_present_future_events(client, jam):
 
 def test_jam_events_sorted_on_jams_page(client, user, jam):
     _create_past_present_future_events(client, jam)
-    
+
     response = client.get("/jams")
     _assert_appear_in_order(
             response.data,
@@ -254,7 +254,7 @@ def test_jam_events_sorted_on_jams_page(client, user, jam):
 
 def test_jam_events_sorted_on_jam_info_page(client, user, jam):
     _create_past_present_future_events(client, jam)
-    
+
     response = client.get(f"/jams/{jam}")
     assert b"OtherJam" not in response.data  # Only events for this jam
 
@@ -270,4 +270,11 @@ def test_jam_events_sorted_on_jam_info_page(client, user, jam):
                 b"Past Events",
                 b"PastJam",
             ])
+
+# Song Submissions #############################################################
+
+def test_submit_song_to_event(client, user, jam, event):
+    upload_song(client, b"Success", eventid=event)
+    response = client.get(f"/jams/{jam}/events/{event}")
+    assert b"song title" in response.data
 

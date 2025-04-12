@@ -22,5 +22,8 @@ CREATE TABLE jam_events(
     FOREIGN KEY(threadid) REFERENCES comment_threads(threadid)
 );
 
+ALTER TABLE songs ADD COLUMN eventid INTEGER REFERENCES jam_events(eventid);
+CREATE INDEX idx_songs_by_eventid ON songs(eventid);
+
 PRAGMA user_version = 5;
 

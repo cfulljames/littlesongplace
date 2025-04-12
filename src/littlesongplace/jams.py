@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from flask import abort, Blueprint, g, redirect, render_template, request, url_for
 
-from . import auth, comments, db
+from . import auth, comments, db, songs
 from .sanitize import sanitize_user_text
 
 bp = Blueprint("jams", __name__, url_prefix="/jams")
@@ -149,7 +149,9 @@ def events_view(jamid, eventid):
     except StopIteration:
         abort(404)  # No event with this ID
 
-    return render_template("jam-event.html", jam=jam, event=event)
+    event_songs = songs.get_for_event(event.eventid)
+
+    return render_template("jam-event.html", jam=jam, event=event, songs=event_songs)
 
 
 @bp.post("/<int:jamid>/events/<int:eventid>/update")
