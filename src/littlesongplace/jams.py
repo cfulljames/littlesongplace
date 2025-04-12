@@ -55,7 +55,7 @@ def create():
 
 @bp.get("/<int:jamid>")
 def jam(jamid):
-    jam = get_jam_by_id(jamid)
+    jam = _get_jam_by_id(jamid)
     # Show the main jam page
     return render_template("jam.html", jam=jam)
 
@@ -114,7 +114,7 @@ def events_create(jamid):
 @bp.get("/<int:jamid>/events/<int:eventid>")
 def events_view(jamid, eventid):
     # Show the event page
-    jam = get_jam_by_id(jamid)
+    jam = _get_jam_by_id(jamid)
     try:
         event = next(e for e in jam.events if e.eventid == eventid)
     except StopIteration:
@@ -128,7 +128,23 @@ def events_view(jamid, eventid):
 @jam_owner_only
 def events_update(jamid, eventid):
     # Update an event with the new form data
-    ...
+    title = request.form["title"]
+    description = request.form["description"]
+    startdate = request.form["startdate"]
+    enddate = request.form["enddate"]
+    _validate_timestamp(startdate)
+    _validate_timestamp(enddate)
+    db.query(
+            """
+            UPDATE jam_events
+            SET title = ?, description = ?, startdate = ?, enddate = ?
+            WHERE eventid = ? AND jamid = ?
+            RETURNING *
+            """,
+            [title, description, startdate, enddate, eventid, jamid],
+            expect_one=True)
+    db.commit()
+    return redirect(url_for("jams.events_view", jamid=jamid, eventid=eventid))
 
 
 @bp.get("/<int:jamid>/events/<int:eventid>/delete")
@@ -136,9 +152,16 @@ def events_update(jamid, eventid):
 @jam_owner_only
 def events_delete(jamid, eventid):
     # Delete an event, redirect to list of all events
-    ...
+    db.query(
+            """
+            DELETE FROM jam_events
+            WHERE eventid = ? AND jamid = ?
+            RETURNING *
+            """, [eventid, jamid], expect_one=True)
+    return redirect(url_for("jams.jam", jamid=jamid))
 
-def get_jam_by_id(jamid):
+
+def _get_jam_by_id(jamid):
     row = db.query(
             """
             SELECT * FROM jams
@@ -146,6 +169,13 @@ def get_jam_by_id(jamid):
             WHERE jamid = ?
             """, [jamid], expect_one=True)
     return Jam.from_row(row)
+
+
+def _validate_timestamp(timestamp):
+    try:
+        datetime.fromisoformat(timestamp)
+    except ValueError:
+        abort(400)
 
 @dataclass
 class Jam:
@@ -215,8 +245,8 @@ class JamEvent:
                 threadid=row["threadid"],
                 created=datetime.fromisoformat(row["created"]),
                 title=row["title"],
-                startdate=datetime.fromisoformat(row["startdate"]) if "startdate" in row else None,
-                enddate=datetime.fromisoformat(row["enddate"]) if "enddate" in row else None,
+                startdate=datetime.fromisoformat(row["startdate"]) if row["startdate"] else None,
+                enddate=datetime.fromisoformat(row["enddate"]) if row["enddate"] else None,
                 description=sanitize_user_text(row["description"] or ""),
                 jam_title=row["jam_title"],
                 jam_ownername=row["jam_ownername"],

@@ -12,12 +12,12 @@
         <br/>
     {% if event.startdate %}
     <strong>Start Date:</strong>
-        {{ event.startdate.aslocaltime().strftime("%Y-%m-%d @ %H:%M") }}
+        {{ event.startdate.astimezone().strftime("%Y-%m-%d @ %I:%M%p") }}
         <br/>
     {% endif %}
     {% if event.enddate %}
     <strong>End Date:</strong>
-        {{ event.enddate.aslocaltime().strftime("%Y-%m-%d @ %H:%M") }}
+        {{ event.enddate.astimezone().strftime("%Y-%m-%d @ %I:%M%p") }}
     {% endif %}
 </div>
 

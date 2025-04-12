@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 
 from .utils import create_user
@@ -8,8 +10,13 @@ def user(client):
     yield "user"
 
 @pytest.fixture
-def jam(client):
+def jam(client, user):
     client.get("/jams/create")
+    return 1
+
+@pytest.fixture
+def event(client, jam):
+    client.get(f"/jams/{jam}/events/create")
     return 1
 
 # Jams #########################################################################
@@ -107,13 +114,91 @@ def test_create_event_on_other_users_jam(client, user, jam):
     response = client.get(f"/jams/{jam}/events/create", follow_redirects=True)
     assert response.status_code == 403
 
-# Update event
-# Update event invalid event
-# Update event not logged in
-# Update event other users jam
+def _to_utc(timestamp):
+    return (datetime
+            .fromisoformat(timestamp)
+            .astimezone(timezone.utc)
+            .isoformat())
 
-# Delete event
-# Delete event not logged in
-# Delete event invalid event
-# Delete event other users jam
+def _get_event_data(**kwargs):
+    event_data = {
+            "title": "Event Title",
+            "description": "description of the event",
+            "startdate": _to_utc("2040-01-01T00:00:00"),
+            "enddate": _to_utc("2040-01-02T00:00:00"),
+    }
+    for k, v in kwargs.items():
+        event_data[k] = v
+    return event_data
+
+def test_update_event(client, user, jam, event):
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(), follow_redirects=True)
+    assert response.request.path == f"/jams/{jam}/events/{event}"
+    assert b"Event Title" in response.data
+    assert b"description of the event" in response.data
+    assert b"2040-01-01" in response.data
+    assert b"2040-01-02" in response.data
+
+def test_update_event_invalid_eventid(client, user, jam):
+    response = client.post(f"/jams/{jam}/events/1/update", data=_get_event_data())
+    assert response.status_code == 404
+
+def test_update_event_invalid_jamid(client, user, event):
+    response = client.post(f"/jams/2/events/{event}/update", data=_get_event_data())
+    assert response.status_code == 404
+
+def test_update_event_not_logged_in(client, user, jam, event):
+    response = client.get("/logout")
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(),
+            follow_redirects=True)
+    assert response.request.path == "/login"
+
+def test_update_event_other_users_jam(client, user, jam, event):
+    create_user(client, "otheruser", login=True)
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(),
+            follow_redirects=True)
+    assert response.status_code == 403
+
+def test_update_event_invalid_startdate(client, user, jam, event):
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(startdate="notadate"),
+            follow_redirects=True)
+    assert response.status_code == 400
+
+def test_update_event_invalid_enddate(client, user, jam, event):
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(enddate="notadate"),
+            follow_redirects=True)
+    assert response.status_code == 400
+
+def test_delete_event(client, user, jam, event):
+    response = client.get(f"/jams/{jam}/events/{event}/delete", follow_redirects=True)
+    assert response.request.path == f"/jams/{jam}"
+    assert b"Event Title" not in response.data
+
+def test_delete_event_not_logged_in(client, user, jam, event):
+    client.get("/logout")
+    response = client.get(f"/jams/{jam}/events/{event}/delete", follow_redirects=True)
+    assert response.request.path == "/login"
+
+def test_delete_event_invalid_jamid(client, user, jam, event):
+    response = client.get(f"/jams/2/events/{event}/delete", follow_redirects=True)
+    assert response.status_code == 404
+
+def test_delete_event_invalid_eventid(client, user, jam, event):
+    response = client.get(f"/jams/{jam}/events/2/delete", follow_redirects=True)
+    assert response.status_code == 404
+
+def test_delete_event_other_users_jam(client, user, jam, event):
+    create_user(client, "otheruser", login=True)
+    response = client.get(f"/jams/{jam}/events/{event}/delete", follow_redirects=True)
+    assert response.status_code == 403
 
