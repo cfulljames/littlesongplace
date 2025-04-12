@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, g, redirect, render_template, url_for
 
 from . import auth, db
+from .sanitize import sanitize_user_text
 
 bp = Blueprint("jams", __name__, url_prefix="/jams")
 
@@ -100,7 +101,7 @@ class Jam:
         return cls(
                 jamid=row["jamid"],
                 title=row["title"],
-                description=row["description"], # TODO: Sanitize
+                description=sanitize_user_text(row["description"] or ""),
                 ownerid=row["userid"],
                 ownername=row["username"],
                 created=datetime.fromisoformat(row["created"]),
@@ -131,7 +132,7 @@ class JamEvent:
                 title=row["title"],
                 startdate=datetime.fromisoformat(row["startdate"]),
                 enddate=datetime.fromisoformat(row["enddate"]),
-                description=row["description"], # TODO: Sanitize
+                description=sanitize_user_text(row["description"] or ""),
                 # TODO: Comment object?
                 comments=comments,
         )
