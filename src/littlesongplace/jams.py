@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from flask import abort, Blueprint, g, redirect, render_template, request, url_for
 
-from . import auth, db
+from . import auth, comments, db
 from .sanitize import sanitize_user_text
 
 bp = Blueprint("jams", __name__, url_prefix="/jams")
@@ -55,14 +55,7 @@ def create():
 
 @bp.get("/<int:jamid>")
 def jam(jamid):
-    row = db.query(
-            """
-            SELECT * FROM jams
-            INNER JOIN users ON jams.ownerid = users.userid
-            WHERE jamid = ?
-            """, [jamid], expect_one=True)
-
-    jam = Jam.from_row(row)
+    jam = get_jam_by_id(jamid)
     # Show the main jam page
     return render_template("jam.html", jam=jam)
 
@@ -104,13 +97,30 @@ def delete(jamid):
 @jam_owner_only
 def events_create(jamid):
     # Create a new event and redirect to the edit form
-    ...
+    threadid = comments.create_thread(comments.ThreadType.JAM_EVENT, g.userid)
+    timestamp = datetime.now(timezone.utc).isoformat()
+    row = db.query(
+            """
+            INSERT INTO jam_events (jamid, threadid, created, title)
+            VALUES (?, ?, ?, ?)
+            RETURNING eventid
+            """, [jamid, threadid, timestamp, "New Event"], one=True)
+    db.commit()
+
+    eventid = row["eventid"]
+    return redirect(url_for("jams.events_view", jamid=jamid, eventid=eventid))
 
 
 @bp.get("/<int:jamid>/events/<int:eventid>")
 def events_view(jamid, eventid):
     # Show the event page
-    ...
+    jam = get_jam_by_id(jamid)
+    try:
+        event = next(e for e in jam.events if e.eventid == eventid)
+    except StopIteration:
+        abort(404)  # No event with this ID
+
+    return render_template("jam-event.html", jam=jam, event=event)
 
 
 @bp.post("/<int:jamid>/events/<int:eventid>/update")
@@ -128,6 +138,14 @@ def events_delete(jamid, eventid):
     # Delete an event, redirect to list of all events
     ...
 
+def get_jam_by_id(jamid):
+    row = db.query(
+            """
+            SELECT * FROM jams
+            INNER JOIN users ON jams.ownerid = users.userid
+            WHERE jamid = ?
+            """, [jamid], expect_one=True)
+    return Jam.from_row(row)
 
 @dataclass
 class Jam:
@@ -197,8 +215,8 @@ class JamEvent:
                 threadid=row["threadid"],
                 created=datetime.fromisoformat(row["created"]),
                 title=row["title"],
-                startdate=datetime.fromisoformat(row["startdate"]),
-                enddate=datetime.fromisoformat(row["enddate"]),
+                startdate=datetime.fromisoformat(row["startdate"]) if "startdate" in row else None,
+                enddate=datetime.fromisoformat(row["enddate"]) if "enddate" in row else None,
                 description=sanitize_user_text(row["description"] or ""),
                 jam_title=row["jam_title"],
                 jam_ownername=row["jam_ownername"],

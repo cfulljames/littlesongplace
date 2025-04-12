@@ -12,6 +12,7 @@ class ThreadType(enum.IntEnum):
     SONG = 0
     PROFILE = 1
     PLAYLIST = 2
+    JAM_EVENT = 3
 
 class ObjectType(enum.IntEnum):
     COMMENT = 0

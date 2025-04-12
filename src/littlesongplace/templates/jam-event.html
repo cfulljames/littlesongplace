@@ -10,11 +10,15 @@
     <strong>Host:</strong>
         <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
         <br/>
+    {% if event.startdate %}
     <strong>Start Date:</strong>
         {{ event.startdate.aslocaltime().strftime("%Y-%m-%d @ %H:%M") }}
         <br/>
+    {% endif %}
+    {% if event.enddate %}
     <strong>End Date:</strong>
         {{ event.enddate.aslocaltime().strftime("%Y-%m-%d @ %H:%M") }}
+    {% endif %}
 </div>
 
 <div class="jam-description">
@@ -31,6 +35,7 @@
 {% include "song-list.html" %}
 
 <h2>Comments</h2>
+{% from "comment-thread.html" import comment_thread %}
 {{ comment_thread(event.threadid, session['userid'], jam.ownerid, event.comments) }}
 
 {% endblock %}
