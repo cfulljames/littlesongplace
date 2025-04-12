@@ -22,6 +22,11 @@ def test_create_jam(client, user):
     assert response.request.path == "/jams/1"
     assert b"New Jam" in response.data
 
+def test_jams_list(client, user, jam):
+    response = client.get("/jams/")
+    assert response.status_code == 200
+    assert b"New Jam" in response.data
+
 def test_update_jam(client, user, jam):
     response = client.post(
             f"/jams/{jam}/update",

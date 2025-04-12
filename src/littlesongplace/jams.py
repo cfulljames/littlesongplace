@@ -8,10 +8,20 @@ from .sanitize import sanitize_user_text
 
 bp = Blueprint("jams", __name__, url_prefix="/jams")
 
+
 @bp.get("/")
 def jams():
-    # Show a list of all jams (or events?): current, upcoming, previous
-    ...
+    # Show a list of all jams: ongoing, upcoming, previous
+    rows = db.query(
+            """
+            SELECT * FROM jams
+            INNER JOIN users ON jams.ownerid = users.userid
+            """)
+    jams = [Jam.from_row(r) for r in rows]
+
+    # TODO: Sort into groups based on start/end dates
+    return render_template("jams-main.html", ongoing=jams, upcoming=[], past=[])
+
 
 @bp.get("/create")
 @auth.requires_login
@@ -28,6 +38,7 @@ def create():
     jamid = row["jamid"]
     return redirect(url_for("jams.jam", jamid=jamid))
 
+
 @bp.get("/<int:jamid>")
 def jam(jamid):
     row = db.query(
@@ -40,6 +51,7 @@ def jam(jamid):
     jam = Jam.from_row(row)
     # Show the main jam page
     return render_template("jam.html", jam=jam)
+
 
 @bp.post("/<int:jamid>/update")
 @auth.requires_login
@@ -58,6 +70,7 @@ def update(jamid):
     db.commit()
     return redirect(url_for("jams.jam", jamid=jamid))
 
+
 @bp.get("/<int:jamid>/delete")
 @auth.requires_login
 def delete(jamid):
@@ -69,10 +82,12 @@ def delete(jamid):
     db.commit()
     return redirect(url_for("jams.jams"))
 
+
 @bp.get("/<int:jamid>/events")
 def events(jamid):
     # Show a list of all events for the jam (current, upcoming, previous)
     ...
+
 
 @bp.get("/<int:jamid>/events/create")
 @auth.requires_login
@@ -80,10 +95,12 @@ def events_create():
     # Create a new event and redirect to the edit form
     ...
 
+
 @bp.get("/<int:jamid>/events/<int:eventid>")
 def events_view(eventid):
     # Show the event page
     ...
+
 
 @bp.post("/<int:jamid>/events/<int:eventid>/update")
 @auth.requires_login
@@ -91,11 +108,13 @@ def events_update(jamid):
     # Update an event with the new form data
     ...
 
+
 @bp.get("/<int:jamid>/events/<int:eventid>/delete")
 @auth.requires_login
 def events_delete(jamid):
     # Delete an event, redirect to list of all events
     ...
+
 
 @dataclass
 class Jam:
@@ -122,6 +141,7 @@ class Jam:
                 created=datetime.fromisoformat(row["created"]),
                 events=events,
         )
+
 
 @dataclass
 class JamEvent:
@@ -151,3 +171,4 @@ class JamEvent:
                 # TODO: Comment object?
                 comments=comments,
         )
+

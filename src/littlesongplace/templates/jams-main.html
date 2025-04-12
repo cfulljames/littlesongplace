@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Jams{% endblock %}
+
+{% block body %}
+
+<h1>Jams</h1>
+
+{% macro jam_list(list_title, jams) %}
+{% if jams %}
+<h2>{{ list_title }}</h2>
+<div class="jam-list">
+    {% for jam in jams %}
+    <div class="jam-list-entry">
+        <span class="jam-list-title">
+            {{ jam.title }}
+        </span>
+        <span class="jam-list-owner">
+            Hosted by <a href="/users/{{ jam.username }}" class="profile-link">{{ jam.username }}</a>
+        </span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{{ jam_list("Ongoing Jams", ongoing) }}
+{{ jam_list("Upcoming Jams", upcoming) }}
+{{ jam_list("Past Jams", past) }}
+
+{% endblock %}
