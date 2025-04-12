@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from flask import Blueprint, g, redirect, render_template, request, url_for
+from flask import abort, Blueprint, g, redirect, render_template, request, url_for
 
 from . import auth, db
 from .sanitize import sanitize_user_text
@@ -26,7 +26,7 @@ def create():
             """, [g.userid, timestamp, f"New Jam"], one=True)
     db.commit()
     jamid = row["jamid"]
-    return redirect(url_for('jams.jam', jamid=jamid))
+    return redirect(url_for("jams.jam", jamid=jamid))
 
 @bp.get("/<int:jamid>")
 def jam(jamid):
@@ -35,8 +35,8 @@ def jam(jamid):
             SELECT * FROM jams
             INNER JOIN users ON jams.ownerid = users.userid
             WHERE jamid = ?
-            """, [jamid], one=True)
-    print(type(jamid), row)
+            """, [jamid], expect_one=True)
+
     jam = Jam.from_row(row)
     # Show the main jam page
     return render_template("jam.html", jam=jam)
@@ -47,20 +47,27 @@ def update(jamid):
     # Update a jam with the new form data, redirect to view page
     title = request.form["title"]
     description = request.form["description"]
-    db.query(
+    row = db.query(
             """
             UPDATE jams
             SET title = ?, description = ?
             WHERE jamid = ?
-            """, [title, description, jamid])
+            RETURNING *
+            """, [title, description, jamid], expect_one=True)
+
     db.commit()
-    return redirect(url_for('jams.jam', jamid=jamid))
+    return redirect(url_for("jams.jam", jamid=jamid))
 
 @bp.get("/<int:jamid>/delete")
 @auth.requires_login
 def delete(jamid):
     # Delete a jam, redirect to the jams list
-    ...
+    row = db.query(
+            "DELETE FROM jams WHERE jamid = ? RETURNING *",
+            [jamid], expect_one=True)
+
+    db.commit()
+    return redirect(url_for("jams.jams"))
 
 @bp.get("/<int:jamid>/events")
 def events(jamid):

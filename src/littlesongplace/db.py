@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 import click
-from flask import g, current_app
+from flask import abort, g, current_app
 
 from . import datadir
 
@@ -31,11 +31,14 @@ def close(exception):
     if db is not None:
         db.close()
 
-def query(query, args=(), one=False):
+def query(query, args=(), one=False, expect_one=False):
     cur = get().execute(query, args)
     rv = cur.fetchall()
     cur.close()
-    return (rv[0] if rv else None) if one else rv
+    if expect_one and not rv:
+        abort(404)  # Not found
+
+    return (rv[0] if rv else None) if (one or expect_one) else rv
 
 def commit():
     get().commit()
