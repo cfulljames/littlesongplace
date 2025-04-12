@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from flask import Blueprint, g, redirect, render_template, url_for
+from flask import Blueprint, g, redirect, render_template, request, url_for
 
 from . import auth, db
 from .sanitize import sanitize_user_text
@@ -23,14 +23,12 @@ def create():
             INSERT INTO jams (ownerid, created, title)
             VALUES (?, ?, ?)
             RETURNING jamid
-            """,
-            args=[g.userid, timestamp, f"New Jam"],
-            one=True)
+            """, [g.userid, timestamp, f"New Jam"], one=True)
     db.commit()
     jamid = row["jamid"]
     return redirect(url_for('jams.jam', jamid=jamid))
 
-@bp.get("/<jamid>")
+@bp.get("/<int:jamid>")
 def jam(jamid):
     row = db.query(
             """
@@ -38,45 +36,55 @@ def jam(jamid):
             INNER JOIN users ON jams.ownerid = users.userid
             WHERE jamid = ?
             """, [jamid], one=True)
+    print(type(jamid), row)
     jam = Jam.from_row(row)
     # Show the main jam page
     return render_template("jam.html", jam=jam)
 
-@bp.post("/<jamid>/update")
+@bp.post("/<int:jamid>/update")
 @auth.requires_login
 def update(jamid):
     # Update a jam with the new form data, redirect to view page
-    ...
+    title = request.form["title"]
+    description = request.form["description"]
+    db.query(
+            """
+            UPDATE jams
+            SET title = ?, description = ?
+            WHERE jamid = ?
+            """, [title, description, jamid])
+    db.commit()
+    return redirect(url_for('jams.jam', jamid=jamid))
 
-@bp.get("/<jamid>/delete")
+@bp.get("/<int:jamid>/delete")
 @auth.requires_login
 def delete(jamid):
     # Delete a jam, redirect to the jams list
     ...
 
-@bp.get("/<jamid>/events")
+@bp.get("/<int:jamid>/events")
 def events(jamid):
     # Show a list of all events for the jam (current, upcoming, previous)
     ...
 
-@bp.get("/<jamid>/events/create")
+@bp.get("/<int:jamid>/events/create")
 @auth.requires_login
 def events_create():
     # Create a new event and redirect to the edit form
     ...
 
-@bp.get("/<jamid>/events/<int:eventid>")
+@bp.get("/<int:jamid>/events/<int:eventid>")
 def events_view(eventid):
     # Show the event page
     ...
 
-@bp.post("/<jamid>/events/<int:eventid>/update")
+@bp.post("/<int:jamid>/events/<int:eventid>/update")
 @auth.requires_login
 def events_update(jamid):
     # Update an event with the new form data
     ...
 
-@bp.get("/<jamid>/events/<int:eventid>/delete")
+@bp.get("/<int:jamid>/events/<int:eventid>/delete")
 @auth.requires_login
 def events_delete(jamid):
     # Delete an event, redirect to list of all events
