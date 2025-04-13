@@ -266,8 +266,16 @@ def upload_song():
             return redirect(
                 f"/song/{userid}/{request.args['songid']}?action=view")
         else:
-            # After creating a new song, go back to profile
-            return redirect(f"/users/{username}")
+            # After creating a new song, go back to profile/event page
+            if "eventid" in request.args:
+                eventid = int(request.args["eventid"])
+                evt = db.query(
+                        "SELECT * FROM jam_events WHERE eventid = ?",
+                        [eventid], one=True)
+                jamid = evt["jamid"]
+                return redirect(f"/jams/{jamid}/events/{eventid}")
+            else:
+                return redirect(f"/users/{username}")
 
     else:
         username = session["username"]

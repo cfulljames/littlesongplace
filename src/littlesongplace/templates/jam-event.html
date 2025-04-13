@@ -42,6 +42,7 @@
     <a class="button" href="/edit-song?eventid={{ event.eventid }}">Submit a Song</a>
     <br/>
     <br/>
+    {% if songs %}<p><small>This event has received {{ songs|length }} submission{% if songs|length > 1 %}s{% endif %}</small></p>{% endif %}
     {% include "song-list.html" %}
 
     <h2>Comments</h2>
