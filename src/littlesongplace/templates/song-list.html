@@ -9,6 +9,7 @@
 
     <div class="song-list-songs">
         {% for song in songs %}
+        {%- if not (song.hidden and g.uiserid != song.userid) -%}
         <div class="song" data-song="{{ song.json() }}">
             <div class="song-main">
                 <div class="song-list-pfp-container">
@@ -34,6 +35,7 @@
             </div>
             {{ song_details(song, current_user_playlists) | indent(8) }}
         </div>
+        {%- endif -%}
         {% endfor %}
     </div>
 </div>

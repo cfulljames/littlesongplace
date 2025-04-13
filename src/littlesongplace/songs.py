@@ -30,6 +30,7 @@ class Song:
     tags: list[str]
     collaborators: list[str]
     user_has_pfp: bool
+    hidden: bool
 
     def json(self):
         return json.dumps(vars(self))
@@ -161,47 +162,49 @@ def get_for_event(eventid):
         """,
         [eventid])
 
+def _get_song_info_list(table, column, songid):
+    rows = db.query(
+            f"SELECT ({column}) FROM {table} WHERE songid = ?", [songid])
+    return [r[column] for r in rows if r[column]]
+
 def _from_db(query, args=()):
     songs_data = db.query(query, args)
-    tags, collabs = _get_info_for_songs(songs_data)
     songs = []
     for sd in songs_data:
-        song_tags = [t["tag"] for t in tags[sd["songid"]] if t["tag"]]
-        song_collabs = [c["name"] for c in collabs[sd["songid"]] if c["name"]]
-        created = datetime.fromisoformat(sd["created"]).astimezone().strftime("%Y-%m-%d")
-        has_pfp = users.user_has_pfp(sd["userid"])
+        songid = sd["songid"]
+        song_tags = _get_song_info_list("song_tags", "tag", songid)
+        song_collabs = _get_song_info_list("song_collaborators", "name", songid)
+
+        # Song is hidden if it was submitted to an event that hasn't ended yet
+        hidden = False
+        if sd["eventid"]:
+            event_row = db.query(
+                    "SELECT * FROM jam_events WHERE eventid = ?",
+                    [sd["eventid"]],
+                    one=True)
+            if event_row and event_row["enddate"]:
+                enddate = datetime.fromisoformat(event_row["enddate"]).astimezone()
+                hidden = datetime.now().astimezone() < enddate
+
+        created = (
+                datetime.fromisoformat(sd["created"])
+                .astimezone()
+                .strftime("%Y-%m-%d"))
+
         songs.append(Song(
-            sd["songid"],
-            sd["userid"],
-            sd["threadid"],
-            sd["username"],
-            sd["title"],
-            sanitize_user_text(sd["description"]),
-            created,
-            song_tags,
-            song_collabs,
-            has_pfp
+            songid=sd["songid"],
+            userid=sd["userid"],
+            threadid=sd["threadid"],
+            username=sd["username"],
+            title=sd["title"],
+            description=sanitize_user_text(sd["description"]),
+            created=created,
+            tags=song_tags,
+            collaborators=song_collabs,
+            user_has_pfp=users.user_has_pfp(sd["userid"]),
+            hidden=hidden,
         ))
     return songs
-
-def _get_info_for_songs(songs):
-    tags = {}
-    collabs = {}
-    for song in songs:
-        songid = song["songid"]
-        tags[songid] = db.query(
-            """
-            select (tag) from song_tags
-            where songid = ?
-            """,
-            [songid])
-        collabs[songid] = db.query(
-            """
-            select (name) from song_collaborators
-            where songid = ?
-            """,
-            [songid])
-    return tags, collabs
 
 @bp.get("/edit-song")
 def edit_song():

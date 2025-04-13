@@ -15,7 +15,7 @@
 <p>
 Playlist by <a href="/users/{{ username }}" class="profile-link">{{ username }}</a>
 {% if session["userid"] == userid -%}
-<span class="playlist-type">
+<span class="visibility-indicator">
 [{% if private %}Private{% else %}Public{% endif %}]
 </span>
 {%- endif %}

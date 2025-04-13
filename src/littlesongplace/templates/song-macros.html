@@ -18,12 +18,13 @@
 {% macro song_info(song) %}
 <div class="song-info">
     <!-- Song Title -->
-    <div class="song-title"><a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a></div>
+    <div class="song-title"><a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a>
+    {%- if song.hidden %}<span class="visibility-indicator">[Hidden]</span>{% endif -%}
+    </div>
 
     <!-- Separator -->
-    <div class="song-info-sep">
-        -
-    </div>
+    <div class="song-info-sep"> - </div>
+
 
     <!-- Song Artist(s) -->
     {{ song_artist(song) | indent(4) }}

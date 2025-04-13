@@ -4,6 +4,11 @@ import pytest
 
 from .utils import create_user, upload_song
 
+# Shared timestamps
+today = datetime.now(timezone.utc)
+yesterday = (today - timedelta(days=1)).isoformat()
+tomorrow = (today + timedelta(days=1)).isoformat()
+
 @pytest.fixture
 def user(client):
     create_user(client, "user", login=True)
@@ -218,10 +223,6 @@ def _assert_appear_in_order(page, values):
         last_index = index
 
 def _create_past_present_future_events(client, jam):
-    today = datetime.now(timezone.utc)
-    yesterday = (today - timedelta(days=1)).isoformat()
-    tomorrow = (today + timedelta(days=1)).isoformat()
-
     _create_event(client, jam, "PastJam", yesterday, yesterday)
     _create_event(client, jam, "OngoingJam", yesterday, tomorrow)
     _create_event(client, jam, "UpcomingJam", tomorrow, tomorrow)
@@ -274,7 +275,30 @@ def test_jam_events_sorted_on_jam_info_page(client, user, jam):
 # Song Submissions #############################################################
 
 def test_submit_song_to_event(client, user, jam, event):
+    # Song always visible to owner
     upload_song(client, b"Success", eventid=event)
+    response = client.get(f"/jams/{jam}/events/{event}")
+    assert b"song title" in response.data
+
+def test_submitted_song_hidden_before_enddate(client, user, jam, event):
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(enddate=tomorrow),
+            follow_redirects=True)
+    upload_song(client, b"Success", eventid=event)
+    client.get("/logout")  # Log out to test public visibility
+
+    response = client.get(f"/jams/{jam}/events/{event}")
+    assert b"song title" not in response.data
+
+def test_submitted_song_visible_after_enddate(client, user, jam, event):
+    response = client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(enddate=yesterday),
+            follow_redirects=True)
+    upload_song(client, b"Success", eventid=event)
+    client.get("/logout")  # Log out to test public visibility
+
     response = client.get(f"/jams/{jam}/events/{event}")
     assert b"song title" in response.data
 

@@ -157,7 +157,7 @@
             <a class="playlist-name" href="/playlists/{{ plist['playlistid'] }}">{{ plist['name'] }}</a>
             <!-- Only show playlist type to owner, everyone else only sees public playlists -->
             {% if session["userid"] == userid -%}
-            <span class="playlist-type">
+            <span class="visibility-indicator">
             [{% if plist['private'] %}Private{% else %}Public{% endif %}]
             </span>
             {%- endif %}
