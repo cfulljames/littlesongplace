@@ -6,36 +6,82 @@
 
 <h1>{{ event.title }} - {{ jam.title }}</h1>
 
-<div>
-    <strong>Host:</strong>
-        <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
+<div id="jam-event-view">
+    <div>
+        <strong>Host:</strong>
+            <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
+            <br/>
+        {% if event.startdate %}
+        <strong>Start Date:</strong>
+            {{ event.startdate.astimezone().strftime("%Y-%m-%d %I:%M%p") }}
+            <br/>
+        {% endif %}
+        {% if event.enddate %}
+        <strong>End Date:</strong>
+            {{ event.enddate.astimezone().strftime("%Y-%m-%d %I:%M%p") }}
+        {% endif %}
+    </div>
+
+    {% if session["userid"] == jam.ownerid -%}
+    <div class="jam-actions">
+    <button class="song-list-button" onclick="showJamEventEditor()" title="Edit"><img class="lsp_btn_edit02" /></button>
+    <a href="/jams/{{ jam.jamid }}/delete" class="song-list-button" onclick="return confirm('Are you sure you want to delete this jam and all events?')" title="Delete"><img class="lsp_btn_delete02" /></a>
+    </div>
+    {%- endif %}
+
+    <div class="jam-description">
+    {{ event.description }}
+    </div>
+
+    <h2>About the Jam</h2>
+    <div class="jam-description">
+    {{ jam.description }}
+    </div>
+
+    <h2>Submissions</h2>
+    <button class="button">Submit a Song</button>
+    {% include "song-list.html" %}
+
+    <h2>Comments</h2>
+    {% from "comment-thread.html" import comment_thread %}
+    {{ comment_thread(event.threadid, session['userid'], jam.ownerid, event.comments) }}
+</div> <!-- jam-event-view -->
+
+{% if session["userid"] == jam.ownerid -%}
+<div id="jam-event-edit" hidden>
+    <form action="/jams/{{ jam.jamid }}/events/{{ event.eventid }}/update" method="post">
+        <label>Title<br/><input type="text" name="title" value="{{ event.title }}"/></label>
         <br/>
-    {% if event.startdate %}
-    <strong>Start Date:</strong>
-        {{ event.startdate.astimezone().strftime("%Y-%m-%d %I:%M%p") }}
+        <label>
+            Description
+            <textarea name="description">{{ event.description|safe }}</textarea>
+        </label>
         <br/>
-    {% endif %}
-    {% if event.enddate %}
-    <strong>End Date:</strong>
-        {{ event.enddate.astimezone().strftime("%Y-%m-%d %I:%M%p") }}
-    {% endif %}
-</div>
+        <label>
+            Event Start (When the event title and description become public)<br/>
+            <input type="datetime-local" name="startdate" value="{{ event.startdate }}" required/>
+        </label>
+        <br/>
+        <label>
+            Event End (When submitted songs become public)<br/>
+            <input type="datetime-local" name="enddate" value="{{ event.enddate }}" required/>
+        </label>
+        <br/>
+        <input type="submit" value="Save"/>
+        <a href="javascript:hideJamEventEditor()">Cancel</a>
+    </form>
+</div> <!-- jam-event-edit -->
 
-<div class="jam-description">
-{{ event.description }}
-</div>
-
-<h2>About the Jam</h2>
-<div class="jam-description">
-{{ jam.description }}
-</div>
-
-<h2>Submissions</h2>
-<button class="button">Submit a Song</button>
-{% include "song-list.html" %}
-
-<h2>Comments</h2>
-{% from "comment-thread.html" import comment_thread %}
-{{ comment_thread(event.threadid, session['userid'], jam.ownerid, event.comments) }}
+<script>
+function showJamEventEditor() {
+    document.getElementById("jam-event-view").hidden = true;
+    document.getElementById("jam-event-edit").hidden = false;
+}
+function hideJamEventEditor() {
+    document.getElementById("jam-event-view").hidden = false;
+    document.getElementById("jam-event-edit").hidden = true;
+}
+</script>
+{%- endif %} {# jam owner #}
 
 {% endblock %}

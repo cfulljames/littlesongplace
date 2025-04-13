@@ -6,12 +6,13 @@
 
 <h1>{{ jam.title }}</h1>
 
-<div>
-    <strong>Host:</strong>
-    <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
-</div>
-<br/>
 <div id="jam-view">
+    <div>
+        <strong>Host:</strong>
+        <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
+    </div>
+    <br/>
+
     {% if session["userid"] == jam.ownerid -%}
     <div class="jam-actions">
     <button class="song-list-button" onclick="showJamEditor()" title="Edit"><img class="lsp_btn_edit02" /></button>
