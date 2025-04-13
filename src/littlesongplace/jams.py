@@ -269,7 +269,7 @@ class JamEvent:
 
     @classmethod
     def from_row(cls, row):
-        comments = db.query("SELECT * FROM comments WHERE threadid = ?", [row["threadid"]])
+        event_comments = comments.for_thread(row["threadid"])
         return cls(
                 eventid=row["eventid"],
                 jamid=row["jamid"],
@@ -282,6 +282,6 @@ class JamEvent:
                 jam_title=row["jam_title"],
                 jam_ownername=row["jam_ownername"],
                 # TODO: Comment object?
-                comments=comments,
+                comments=event_comments,
         )
 
