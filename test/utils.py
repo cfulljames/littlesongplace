@@ -75,6 +75,8 @@ def upload_song(
         assert response.headers["Location"] == "None"
     elif songid:
         assert response.headers["Location"] == f"/song/{userid}/{songid}?action=view"
+    elif eventid:
+        assert response.headers["Location"] == f"/jams/1/events/{eventid}"
     else:
         assert response.headers["Location"] == f"/users/{user}"
 
