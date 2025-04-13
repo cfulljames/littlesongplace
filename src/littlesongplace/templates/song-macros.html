@@ -18,8 +18,9 @@
 {% macro song_info(song) %}
 <div class="song-info">
     <!-- Song Title -->
-    <div class="song-title"><a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a>
-    {%- if song.hidden %}<span class="visibility-indicator">[Hidden]</span>{% endif -%}
+    <div class="song-title">
+        {%- if song.hidden %}<span class="visibility-indicator" title="This song is not visible to others until the end of the event">[Hidden]</span>{% endif %}
+        <a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a>
     </div>
 
     <!-- Separator -->

@@ -214,6 +214,7 @@ def edit_song():
     song = None
 
     song_colors = users.get_user_colors(session["userid"])
+    eventid = request.args.get("eventid", None)
 
     if "songid" in request.args:
         try:
@@ -240,7 +241,7 @@ def edit_song():
                 f"- song doesn't exist ({songid})")
             abort(404)
 
-    return render_template("edit-song.html", song=song, **song_colors)
+    return render_template("edit-song.html", song=song, **song_colors, eventid=eventid)
 
 @bp.post("/upload-song")
 def upload_song():

@@ -9,7 +9,7 @@
 
     <div class="song-list-songs">
         {% for song in songs %}
-        {%- if not (song.hidden and session['uiserid'] != song.userid) -%}
+        {%- if not (song.hidden and session['userid'] != song.userid) -%}
         <div class="song" data-song="{{ song.json() }}">
             <div class="song-main">
                 <div class="song-list-pfp-container">

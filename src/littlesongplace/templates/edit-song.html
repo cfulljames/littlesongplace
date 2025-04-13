@@ -14,7 +14,7 @@ Most standard audio/video formats are supported - .wav, .mp3, .ogg, .mp4, etc.
 <form action="/upload-song?songid={{ song.songid }}" method="post" enctype="multipart/form-data" onsubmit="onUpload()">
     <h2>Edit Song</h2>
 {% else %}
-<form action="/upload-song" method="post" enctype="multipart/form-data" onsubmit="onUpload()">
+<form action="/upload-song{% if eventid %}?eventid={{ eventid }}{% endif %}" method="post" enctype="multipart/form-data" onsubmit="onUpload()">
     <h2>Upload a New Song</h2>
 {% endif %}
     <div class="upload-form">
