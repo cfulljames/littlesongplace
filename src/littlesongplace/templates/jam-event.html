@@ -13,12 +13,12 @@
             <br/>
         {% if event.startdate %}
         <strong>Start Date:</strong>
-            {{ event.startdate.astimezone().strftime("%Y-%m-%d %I:%M%p") }}
+            {{ event.startdate.strftime("%Y-%m-%d %I:%M%p") }} (UTC)
             <br/>
         {% endif %}
         {% if event.enddate %}
         <strong>End Date:</strong>
-            {{ event.enddate.astimezone().strftime("%Y-%m-%d %I:%M%p") }}
+            {{ event.enddate.strftime("%Y-%m-%d %I:%M%p") }} (UTC)
         {% endif %}
     </div>
 
@@ -38,11 +38,11 @@
     {{ jam.description }}
     </div>
 
-    <h2>Submissions</h2>
+    <h2>Entries</h2>
     <a class="button" href="/edit-song?eventid={{ event.eventid }}">Submit a Song</a>
     <br/>
     <br/>
-    {% if songs %}<p><small>This event has received {{ songs|length }} submission{% if songs|length > 1 %}s{% endif %}</small></p>{% endif %}
+    {% if songs %}<p><small>This event has received {{ songs|length }} {% if songs|length > 1 %}entries{% else %}entry{% endif %}</small></p>{% endif %}
     {% include "song-list.html" %}
 
     <h2>Comments</h2>
@@ -62,12 +62,12 @@
         <br/>
         <label>
             Event Start (When the event title and description become public)<br/>
-            <input type="datetime-local" name="startdate" value="{{ event.startdate }}" required/>
+            <input type="datetime-local" name="startdate" value="{% if event.startdate %}{{ event.startdate.replace(tzinfo=None).isoformat() }}{% endif %}" required/> (UTC)
         </label>
         <br/>
         <label>
             Event End (When submitted songs become public)<br/>
-            <input type="datetime-local" name="enddate" value="{{ event.enddate }}" required/>
+            <input type="datetime-local" name="enddate" value="{% if event.enddate %}{{ event.enddate.replace(tzinfo=None).isoformat() }}{% endif %}" required/> (UTC)
         </label>
         <br/>
         <input type="submit" value="Save"/>

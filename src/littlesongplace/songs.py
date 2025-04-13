@@ -183,12 +183,11 @@ def _from_db(query, args=()):
                     [sd["eventid"]],
                     one=True)
             if event_row and event_row["enddate"]:
-                enddate = datetime.fromisoformat(event_row["enddate"]).astimezone()
-                hidden = datetime.now().astimezone() < enddate
+                enddate = datetime.fromisoformat(event_row["enddate"])
+                hidden = datetime.now(timezone.utc) < enddate
 
         created = (
                 datetime.fromisoformat(sd["created"])
-                .astimezone()
                 .strftime("%Y-%m-%d"))
 
         songs.append(Song(

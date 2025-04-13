@@ -161,8 +161,8 @@ def events_update(jamid, eventid):
     description = request.form["description"]
     startdate = request.form["startdate"]
     enddate = request.form["enddate"]
-    _validate_timestamp(startdate)
-    _validate_timestamp(enddate)
+    startdate = _validate_timestamp(startdate)
+    enddate = _validate_timestamp(enddate)
     db.query(
             """
             UPDATE jam_events
@@ -202,7 +202,13 @@ def _get_jam_by_id(jamid):
 
 def _validate_timestamp(timestamp):
     try:
-        datetime.fromisoformat(timestamp)
+        dt = datetime.fromisoformat(timestamp)
+        if dt.tzinfo:
+            # Has timezone, convert to UTC
+            return dt.astimezone(timezone.utc)
+        else:
+            # No timezone, assume it is already UTC
+            return dt.replace(tzinfo=timezone.utc)
     except ValueError:
         abort(400)
 
