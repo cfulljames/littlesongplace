@@ -10,20 +10,54 @@
     <strong>Host:</strong>
     <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
 </div>
+<br/>
+<div id="jam-view">
+    {% if session["userid"] == jam.ownerid -%}
+    <div class="jam-actions">
+    <button class="song-list-button" onclick="showJamEditor()" title="Edit"><img class="lsp_btn_edit02" /></button>
+    <a href="/jams/{{ jam.jamid }}/delete" class="song-list-button" onclick="return confirm('Are you sure you want to delete this jam and all events?')" title="Delete"><img class="lsp_btn_delete02" /></a>
+    </div>
+    {%- endif %}
 
-<h2>Description</h2>
-<div>
-{{ jam.description }}
-</div>
+    <h2>Description</h2>
+    <div>
+    {{ jam.description|safe }}
+    </div>
 
-<h2>Events</h2>
-{%- if jam.ownerid == session["userid"] -%}
-<a class="song-list-button" title="Create Event" href="/jams/{{ jam.jamid }}/events/create"><img class="lsp_btn_add02" /></a>
-{%- endif -%}
+    <h2>Events</h2>
+    {%- if jam.ownerid == session["userid"] -%}
+    <a class="song-list-button" title="Create Event" href="/jams/{{ jam.jamid }}/events/create"><img class="lsp_btn_add02" /></a>
+    {%- endif -%}
 
-{% from "jam-event-list.html" import jam_event_list %}
-{{ jam_event_list("Ongoing Events", ongoing) }}
-{{ jam_event_list("Upcoming Events", upcoming) }}
-{{ jam_event_list("Past Events", past) }}
+    {% from "jam-event-list.html" import jam_event_list %}
+    {{ jam_event_list("Ongoing Events", ongoing) }}
+    {{ jam_event_list("Upcoming Events", upcoming) }}
+    {{ jam_event_list("Past Events", past) }}
+</div> <!-- jam-view -->
+
+{% if session["userid"] == jam.ownerid -%}
+<div id="jam-edit" hidden>
+    <form action="/jams/{{ jam.jamid }}/update" method="post">
+        <label>Title<input type="text" name="title" value="{{ jam.title }}"/></label>
+        <label>
+            Description
+            <textarea name="description">{{ jam.description|safe }}</textarea>
+        </label>
+        <input type="submit" value="Save"/>
+        <a href="javascript:hideJamEditor()">Cancel</a>
+    </form>
+</div> <!-- jam-edit -->
+
+<script>
+function showJamEditor() {
+    document.getElementById("jam-view").hidden = true;
+    document.getElementById("jam-edit").hidden = false;
+}
+function hideJamEditor() {
+    document.getElementById("jam-view").hidden = false;
+    document.getElementById("jam-edit").hidden = true;
+}
+</script>
+{%- endif %} {# jam owner #}
 
 {% endblock %}

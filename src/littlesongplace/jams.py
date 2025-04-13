@@ -50,7 +50,6 @@ def jams():
     ongoing_events, upcoming_events, past_events, _ = _sort_events(all_events)
     past_events = past_events[-5:] # Only show 5 most recent events
 
-    # TODO: Sort into groups based on start/end dates
     return render_template(
             "jams-main.html",
             ongoing=ongoing_events,
