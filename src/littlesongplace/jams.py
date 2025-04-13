@@ -25,11 +25,12 @@ def jam_owner_only(f):
 def _sort_events(events):
     now = datetime.now(timezone.utc)
     # Only show events with valid timestamps
-    events = [e for e in events if e.startdate and e.enddate]
-    ongoing_events = [e for e in events if e.startdate <= now and e.enddate >= now]
-    upcoming_events = [e for e in events if e.startdate > now]
-    past_events = [e for e in events if e.enddate < now]
-    return ongoing_events, upcoming_events, past_events
+    timed_events = [e for e in events if e.startdate and e.enddate]
+    ongoing_events = [e for e in timed_events if e.startdate <= now and e.enddate >= now]
+    upcoming_events = [e for e in timed_events if e.startdate > now]
+    past_events = [e for e in timed_events if e.enddate < now]
+    other_events = [e for e in events if e not in timed_events]
+    return ongoing_events, upcoming_events, past_events, other_events
 
 @bp.get("")
 def jams():
@@ -46,9 +47,7 @@ def jams():
         all_events.extend(j.events)
 
     # Only show events with valid timestamps
-    all_events = [e for e in all_events if e.startdate and e.enddate]
-
-    ongoing_events, upcoming_events, past_events = _sort_events(all_events)
+    ongoing_events, upcoming_events, past_events, _ = _sort_events(all_events)
     past_events = past_events[-5:] # Only show 5 most recent events
 
     # TODO: Sort into groups based on start/end dates
@@ -79,13 +78,13 @@ def create():
 @bp.get("/<int:jamid>")
 def jam(jamid):
     jam = _get_jam_by_id(jamid)
-    ongoing_events, upcoming_events, past_events = _sort_events(jam.events)
+    ongoing_events, upcoming_events, past_events, other_events = _sort_events(jam.events)
     # Show the main jam page
     return render_template(
             "jam.html",
             jam=jam,
             ongoing=ongoing_events,
-            upcoming=upcoming_events,
+            upcoming=upcoming_events+other_events,  # Show events without timestamps as upcoming
             past=past_events)
 
 

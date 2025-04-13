@@ -6,23 +6,17 @@
 
 <h1>Jams</h1>
 
+<h2>Events</h2>
 {% from "jam-event-list.html" import jam_event_list %}
 {{ jam_event_list("Ongoing Events", ongoing) }}
 {{ jam_event_list("Upcoming Events", upcoming) }}
 {{ jam_event_list("Recent Events", past) }}
 
 <h2>All Jams</h2>
-<div class="jam-list">
-    {% for jam in jams %}
-    <div class="jam-list-entry">
-        <span class="jam-list-title">
-            {{ jam.title }}
-        </span>
-        <span class="jam-list-owner">
-            Hosted by <a href="/users/{{ jam.username }}" class="profile-link">{{ jam.username }}</a>
-        </span>
-    </div>
-    {% endfor %}
-</div>
+<ul class="jam-list">
+    {% for jam in jams -%}
+    <li><a href="/jams/{{ jam.jamid }}">{{ jam.title }}</a></li>
+    {%- endfor %}
+</ul>
 
 {% endblock %}

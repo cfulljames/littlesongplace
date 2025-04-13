@@ -16,6 +16,11 @@
 {{ jam.description }}
 </div>
 
+<h2>Events</h2>
+{%- if jam.ownerid == session["userid"] -%}
+<a class="song-list-button" title="Create Event" href="/jams/{{ jam.jamid }}/events/create"><img class="lsp_btn_add02" /></a>
+{%- endif -%}
+
 {% from "jam-event-list.html" import jam_event_list %}
 {{ jam_event_list("Ongoing Events", ongoing) }}
 {{ jam_event_list("Upcoming Events", upcoming) }}
