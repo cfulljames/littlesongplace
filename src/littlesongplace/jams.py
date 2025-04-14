@@ -270,22 +270,26 @@ class JamEvent:
     jam_ownername: str
     # TODO: Comment object?
     comments: list
+    hidden: bool
 
     @classmethod
     def from_row(cls, row):
         event_comments = comments.for_thread(row["threadid"])
+        startdate = datetime.fromisoformat(row["startdate"]) if row["startdate"] else None
+        enddate = datetime.fromisoformat(row["enddate"]) if row["enddate"] else None
         return cls(
                 eventid=row["eventid"],
                 jamid=row["jamid"],
                 threadid=row["threadid"],
                 created=datetime.fromisoformat(row["created"]),
                 title=row["title"],
-                startdate=datetime.fromisoformat(row["startdate"]) if row["startdate"] else None,
-                enddate=datetime.fromisoformat(row["enddate"]) if row["enddate"] else None,
+                startdate=startdate,
+                enddate=enddate,
                 description=sanitize_user_text(row["description"] or ""),
                 jam_title=row["jam_title"],
                 jam_ownername=row["jam_ownername"],
                 # TODO: Comment object?
                 comments=event_comments,
+                hidden=((startdate is None) or startdate > datetime.now(timezone.utc)),
         )
 
