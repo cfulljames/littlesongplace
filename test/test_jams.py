@@ -242,8 +242,8 @@ def test_jam_events_sorted_on_jams_page(client, user, jam):
                 b"OngoingJam",
 
                 b"Upcoming Events",
-                b"UpcomingJam",
-                b"OtherJam",
+                b"[Upcoming Event]", # Upcoming jam name hidden
+                b"[Upcoming Event]", # Upcoming jam name hidden
 
                 b"Recent Events",
                 b"PastJam",
@@ -266,7 +266,7 @@ def test_jam_events_sorted_on_jam_info_page(client, user, jam):
                 b"OngoingJam",
 
                 b"Upcoming Events",
-                b"UpcomingJam",
+                b"[Upcoming Event]", # Upcoming jam name hidden
 
                 b"Past Events",
                 b"PastJam",

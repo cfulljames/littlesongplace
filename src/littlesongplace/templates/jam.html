@@ -31,9 +31,9 @@
     {%- endif -%}
 
     {% from "jam-event-list.html" import jam_event_list %}
-    {{ jam_event_list("Ongoing Events", ongoing) }}
-    {{ jam_event_list("Upcoming Events", upcoming) }}
-    {{ jam_event_list("Past Events", past) }}
+    {{ jam_event_list("Ongoing Events", ongoing, "Ends", "end") }}
+    {{ jam_event_list("Upcoming Events", upcoming, "Starts", "start") }}
+    {{ jam_event_list("Past Events", past, "Ended", "end") }}
 </div> <!-- jam-view -->
 
 {% if session["userid"] == jam.ownerid -%}
