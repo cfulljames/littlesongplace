@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from flask import abort, Blueprint, g, redirect, render_template, request, url_for
 
-from . import auth, comments, db, songs
+from . import auth, comments, db, jams, songs
 from .sanitize import sanitize_user_text
 
 bp = Blueprint("jams", __name__, url_prefix="/jams")

@@ -9,6 +9,13 @@
 🎶 Welcome to a little song place.  Make music, and share it with friends! 🎵
 </p>
 
+{% if ongoing_events or upcoming_events %}
+<h2>Jams</h2>
+{% from "jam-event-list.html" import jam_event_list %}
+{{ jam_event_list("Ongoing Events", ongoing_events, "Ends", "end") }}
+{{ jam_event_list("Upcoming Events", upcoming_events, "Starts", "start") }}
+{% endif %}
+
 <h2>Humans</h2>
 <p>
 Check out the music and profiles of the fine folks below!

@@ -27,7 +27,7 @@ def test_activity_for_comment_on_jam_event(client, user, event):
 
     client.post("/login", data={"username": "user", "password": "password"})
     response = client.get("/activity")
-    assert b"New Event" in response.data, response.data.decode()
+    assert b"[Upcoming Event]" in response.data, response.data.decode()
     assert b"hey cool event" in response.data, response.data.decode()
 
 def test_activity_for_reply_to_comment(client):

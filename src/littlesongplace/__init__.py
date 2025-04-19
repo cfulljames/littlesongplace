@@ -63,8 +63,25 @@ def index():
     titles, weights = zip(*titles)
     title = random.choices(titles, weights)[0]
 
+    rows = db.query(
+            """
+            SELECT * FROM jams
+            INNER JOIN users ON jams.ownerid = users.userid
+            """)
+    all_jams = [jams.Jam.from_row(r) for r in rows]
+    all_events = []
+    for j in all_jams:
+        all_events.extend(j.events)
+    ongoing_events, upcoming_events, _, _ = jams._sort_events(all_events)
+
     page_songs = songs.get_latest(50)
-    return render_template("index.html", users=all_users, songs=page_songs, page_title=title)
+    return render_template(
+            "index.html",
+            users=all_users,
+            songs=page_songs,
+            page_title=title,
+            ongoing_events=ongoing_events,
+            upcoming_events=upcoming_events)
 
 @app.get("/site-news")
 def site_news():

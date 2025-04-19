@@ -70,9 +70,12 @@ def activity():
                     INNER JOIN users ON jams.ownerid = users.userid
                     WHERE jam_events.threadid = ?
                     """, [comment["threadid"]], one=True)
+            # TODO: This is duplicated in the JamEvent class
+            startdate = datetime.fromisoformat(jam_event["startdate"]) if jam_event["startdate"] else None
+            hidden = ((startdate is None) or startdate > datetime.now(timezone.utc))
             comment["eventid"] = jam_event["eventid"]
             comment["jamid"] = jam_event["jamid"]
-            comment["title"] = jam_event["title"]
+            comment["title"] = "[Upcoming Event]" if hidden else jam_event["title"]
             comment["content_userid"] = jam_event["userid"]
             comment["content_username"] = jam_event["username"]
 

@@ -22,7 +22,7 @@
 
     <h2>Description</h2>
     <div>
-    {{ jam.description|safe }}
+    {{ (jam.description.replace("\n", "<br>"))|safe }}
     </div>
 
     <h2>Events</h2>

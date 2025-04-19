@@ -5,7 +5,9 @@
     {% for event in events %}
     <li class="jam-event-list-entry">
         {% if event.hidden -%}
-        <span class="visibility-indicator">[Upcoming Event]</span>
+        <span class="visibility-indicator">
+            <a href="/jams/{{ event.jamid }}/events/{{ event.eventid }}">[Upcoming Event]</a>
+        </span>
         {%- else -%}
         <span class="jam-event-list-title">
             <a href="/jams/{{ event.jamid }}/events/{{ event.eventid }}">{{ event.title }}</a>
