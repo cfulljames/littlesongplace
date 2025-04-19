@@ -4,7 +4,7 @@
 
 {% block body %}
 
-<h1>{{ event.title }} - {{ jam.title }}</h1>
+<h1>{% if event.hidden -%}[Upcoming Event]{%- else -%}{{ event.title }}{%- endif %} - {{ jam.title }}</h1>
 
 <div id="jam-event-view">
     <div>
@@ -30,7 +30,11 @@
     {%- endif %}
 
     <div class="jam-description">
-    {{ event.description }}
+        {% if event.hidden -%}
+        <em>Event description is hidden until the event starts.</em>
+        {%- else -%}
+        {{ event.description }}
+        {%- endif %}
     </div>
 
     <h2>About the Jam</h2>
@@ -38,12 +42,14 @@
     {{ jam.description }}
     </div>
 
+    {% if not event.hidden -%}
     <h2>Entries</h2>
     <a class="button" href="/edit-song?eventid={{ event.eventid }}">Submit a Song</a>
     <br/>
     <br/>
     {% if songs %}<p><small>This event has received {{ songs|length }} {% if songs|length > 1 %}entries{% else %}entry{% endif %}</small></p>{% endif %}
     {% include "song-list.html" %}
+    {%- endif %}
 
     <h2>Comments</h2>
     {% from "comment-thread.html" import comment_thread %}
