@@ -1,9 +1,9 @@
 {% macro jam_event_list(list_title, events, date_label, which_date) %}
 {% if events %}
 <h3>{{ list_title }}</h3>
-<div class="jam-event-list">
+<ul class="jam-event-list">
     {% for event in events %}
-    <div class="jam-event-list-entry">
+    <li class="jam-event-list-entry">
         {% if event.hidden -%}
         <span class="visibility-indicator">[Upcoming Event]</span>
         {%- else -%}
@@ -11,18 +11,19 @@
             <a href="/jams/{{ event.jamid }}/events/{{ event.eventid }}">{{ event.title }}</a>
         </span>
         {%- endif %}
-        -
+        <strong>&nbsp;|&nbsp;</strong>
         <span class="jam-event-list-jam-title">
             <a href="/jams/{{ event.jamid }}">{{ event.jam_title }}</a>
         </span>
+        <strong>&nbsp;|&nbsp;</strong>
         <strong>{{ date_label }}:</strong>
         {% if which_date == "start" and event.startdate %}
         <span class="date" data-date="{{ event.startdate.isoformat() }}"><!-- Populated by nav.js --></span>
         {% elif which_date == "end" and event.enddate %}
         <span class="date" data-date="{{ event.enddate.isoformat() }}"><!-- Populated by nav.js --></span>
         {% endif %}
-    </div>
+    </li>
     {% endfor %}
-</div>
+</ul>
 {% endif %}
 {% endmacro %}

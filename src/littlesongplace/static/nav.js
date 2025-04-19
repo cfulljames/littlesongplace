@@ -33,6 +33,12 @@ document.addEventListener("DOMContentLoaded", (e) => {
 
     // Update activity indicator status
     checkForNewActivity();
+
+    // Convert UTC to local date/time
+    document.querySelectorAll(".date").forEach((e) => {
+        let date = new Date(e.dataset.date);
+        e.textContent = date.toLocaleString();
+    });
 });
 
 function onLinkClick(event) {

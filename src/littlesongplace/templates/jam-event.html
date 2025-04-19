@@ -7,38 +7,43 @@
 <h1>{% if event.hidden -%}[Upcoming Event]{%- else -%}{{ event.title }}{%- endif %} - {{ jam.title }}</h1>
 
 <div id="jam-event-view">
-    <div>
+    <div class="info">
         <strong>Host:</strong>
             <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
             <br/>
         {% if event.startdate %}
         <strong>Start Date:</strong>
-            {{ event.startdate.strftime("%Y-%m-%d %I:%M%p") }} (UTC)
+            <span class="date" data-date="{{ event.startdate.isoformat() }}"><!-- Populated by nav.js --></span>
             <br/>
         {% endif %}
         {% if event.enddate %}
         <strong>End Date:</strong>
-            {{ event.enddate.strftime("%Y-%m-%d %I:%M%p") }} (UTC)
+            <span class="date" data-date="{{ event.enddate.isoformat() }}"><!-- Populated by nav.js --></span>
         {% endif %}
     </div>
 
     {% if session["userid"] == jam.ownerid -%}
-    <div class="jam-actions">
+    <div class="actions">
     <button class="song-list-button" onclick="showJamEventEditor()" title="Edit"><img class="lsp_btn_edit02" /></button>
     <a href="/jams/{{ jam.jamid }}/delete" class="song-list-button" onclick="return confirm('Are you sure you want to delete this jam and all events?')" title="Delete"><img class="lsp_btn_delete02" /></a>
     </div>
     {%- endif %}
 
     <div class="jam-description">
+        <h2>Event Details</h2>
         {% if event.hidden -%}
-        <em>Event description is hidden until the event starts.</em>
+        <em>Event details are hidden until the event starts.</em>
         {%- else -%}
-        {{ event.description }}
+        {{ (event.description.replace("\n", "<br>"))|safe }}
         {%- endif %}
     </div>
 
     <h2>About the Jam</h2>
-    <div class="jam-description">
+    <div>
+        <strong><a href="/jams/{{ jam.jamid }}">{{ jam.title }}</a></strong>
+    </div>
+    <br/>
+    <div>
     {{ jam.description }}
     </div>
 
@@ -62,7 +67,7 @@
         <label>Title<br/><input type="text" name="title" value="{{ event.title }}"/></label>
         <br/>
         <label>
-            Description
+            Details
             <textarea name="description">{{ event.description|safe }}</textarea>
         </label>
         <br/>
@@ -76,8 +81,8 @@
             <input type="datetime-local" name="enddate" value="{% if event.enddate %}{{ event.enddate.replace(tzinfo=None).isoformat() }}{% endif %}" required/> (UTC)
         </label>
         <br/>
-        <input type="submit" value="Save"/>
-        <a href="javascript:hideJamEventEditor()">Cancel</a>
+        <br/>
+        <input type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;<a href="javascript:hideJamEventEditor()">Cancel</a>
     </form>
 </div> <!-- jam-event-edit -->
 
