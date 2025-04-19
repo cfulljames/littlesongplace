@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ event.title }} - {{ jam.title }}{% endblock %}
+{% block title %}{% if not event.hidden %}{{ event.title }} - {% endif %}{{ jam.title }}{% endblock %}
 
 {% block body %}
 

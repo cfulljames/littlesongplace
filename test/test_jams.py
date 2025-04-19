@@ -275,30 +275,32 @@ def test_jam_events_sorted_on_jam_info_page(client, user, jam):
 # Song Submissions #############################################################
 
 def test_submit_song_to_event(client, user, jam, event):
+    client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(startdate=yesterday, enddate=tomorrow))
     # Song always visible to owner
     upload_song(client, b"Success", eventid=event)
     response = client.get(f"/jams/{jam}/events/{event}")
-    assert b"song title" in response.data
+    assert b"song title" in response.data, response.data.decode()
 
 def test_submitted_song_hidden_before_enddate(client, user, jam, event):
-    response = client.post(
+    client.post(
             f"/jams/{jam}/events/{event}/update",
-            data=_get_event_data(enddate=tomorrow),
-            follow_redirects=True)
+            data=_get_event_data(startdate=yesterday, enddate=tomorrow))
     upload_song(client, b"Success", eventid=event)
     client.get("/logout")  # Log out to test public visibility
 
     response = client.get(f"/jams/{jam}/events/{event}")
-    assert b"song title" not in response.data
+    assert b"song title" not in response.data, response.data.decode()
 
 def test_submitted_song_visible_after_enddate(client, user, jam, event):
     response = client.post(
             f"/jams/{jam}/events/{event}/update",
-            data=_get_event_data(enddate=yesterday),
+            data=_get_event_data(startdate=yesterday, enddate=yesterday),
             follow_redirects=True)
     upload_song(client, b"Success", eventid=event)
     client.get("/logout")  # Log out to test public visibility
 
     response = client.get(f"/jams/{jam}/events/{event}")
-    assert b"song title" in response.data
+    assert b"song title" in response.data, response.data.decode()
 
