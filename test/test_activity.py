@@ -21,6 +21,15 @@ def test_activity_for_comment_on_song(client):
     response = client.get("/activity")
     assert b"hey cool song" in response.data
 
+def test_activity_for_comment_on_jam_event(client, user, event):
+    create_user(client, "user2", login=True)
+    client.post("/comment?threadid=2", data={"content": "hey cool event"})
+
+    client.post("/login", data={"username": "user", "password": "password"})
+    response = client.get("/activity")
+    assert b"New Event" in response.data, response.data.decode()
+    assert b"hey cool event" in response.data, response.data.decode()
+
 def test_activity_for_reply_to_comment(client):
     create_user_and_song(client)
     create_user(client, "user2", login=True)

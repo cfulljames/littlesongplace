@@ -10,7 +10,7 @@ import pytest
 
 pytest.register_assert_rewrite("test.utils")
 
-from .utils import login
+from .utils import login, create_user
 
 fresh_db = None
 
@@ -54,6 +54,21 @@ def session():
     # User may already exist, but that's fine - we'll just ignore the signup error
     login(session, "user", "1234asdf!@#$")
     yield session
+
+@pytest.fixture
+def user(client):
+    create_user(client, "user", login=True)
+    yield "user"
+
+@pytest.fixture
+def jam(client, user):
+    client.get("/jams/create")
+    return 1
+
+@pytest.fixture
+def event(client, jam):
+    client.get(f"/jams/{jam}/events/create")
+    return 1
 
 def pytest_addoption(parser):
     parser.addoption("--yt", action="store_true", help="run youtube importer tests")

@@ -62,6 +62,19 @@ def activity():
             comment["name"] = playlist["name"]
             comment["content_userid"] = playlist["userid"]
             comment["content_username"] = playlist["username"]
+        elif threadtype == comments.ThreadType.JAM_EVENT:
+            jam_event = db.query(
+                    """\
+                    SELECT * FROM jam_events
+                    INNER JOIN jams ON jam_events.jamid = jams.jamid
+                    INNER JOIN users ON jams.ownerid = users.userid
+                    WHERE jam_events.threadid = ?
+                    """, [comment["threadid"]], one=True)
+            comment["eventid"] = jam_event["eventid"]
+            comment["jamid"] = jam_event["jamid"]
+            comment["title"] = jam_event["title"]
+            comment["content_userid"] = jam_event["userid"]
+            comment["content_username"] = jam_event["username"]
 
     timestamp = datetime.now(timezone.utc).isoformat()
     db.query(

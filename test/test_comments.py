@@ -71,6 +71,11 @@ def test_comment_on_playlist(client):
     assert response.request.path == "/playlists/1"
     assert b"comment on playlist" in response.data
 
+def test_comment_on_jam_event(client, user, jam, event):
+    response = client.get("/comment?threadid=2", headers={"Referer": f"/jams/{jam}/events/{event}"})
+    response = client.post("/comment?threadid=2", data={"content": "comment on event"}, follow_redirects=True)
+    assert b"comment on event" in response.data, response.data.decode()
+
 # Comments - Auth Status and Errors ############################################
 
 def test_comment_page_redirects_when_not_logged_in(client):

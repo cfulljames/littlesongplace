@@ -9,21 +9,6 @@ today = datetime.now(timezone.utc)
 yesterday = (today - timedelta(days=1)).isoformat()
 tomorrow = (today + timedelta(days=1)).isoformat()
 
-@pytest.fixture
-def user(client):
-    create_user(client, "user", login=True)
-    yield "user"
-
-@pytest.fixture
-def jam(client, user):
-    client.get("/jams/create")
-    return 1
-
-@pytest.fixture
-def event(client, jam):
-    client.get(f"/jams/{jam}/events/create")
-    return 1
-
 # Jams #########################################################################
 
 def test_view_invalid_jam(client):
