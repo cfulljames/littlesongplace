@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from dataclasses import dataclass
+from typing import Optional
 
 from flask import Blueprint, current_app, render_template, request, redirect, \
         session, abort, send_from_directory
@@ -31,6 +32,9 @@ class Song:
     collaborators: list[str]
     user_has_pfp: bool
     hidden: bool
+    eventid: Optional[int]
+    jamid: Optional[int]
+    event_title: Optional[str]
 
     def json(self):
         return json.dumps(vars(self))
@@ -177,14 +181,21 @@ def _from_db(query, args=()):
 
         # Song is hidden if it was submitted to an event that hasn't ended yet
         hidden = False
+        jamid = None
+        event_title = None
+
         if sd["eventid"]:
             event_row = db.query(
                     "SELECT * FROM jam_events WHERE eventid = ?",
                     [sd["eventid"]],
                     one=True)
-            if event_row and event_row["enddate"]:
-                enddate = datetime.fromisoformat(event_row["enddate"])
-                hidden = datetime.now(timezone.utc) < enddate
+            if event_row:
+                jamid = event_row["jamid"]
+                event_title = event_row["title"]
+                if event_row["enddate"]:
+                    enddate = datetime.fromisoformat(event_row["enddate"])
+                    hidden = datetime.now(timezone.utc) < enddate
+
 
         created = (
                 datetime.fromisoformat(sd["created"])
@@ -202,6 +213,9 @@ def _from_db(query, args=()):
             collaborators=song_collabs,
             user_has_pfp=users.user_has_pfp(sd["userid"]),
             hidden=hidden,
+            eventid=sd["eventid"],
+            jamid=jamid,
+            event_title=event_title,
         ))
     return songs
 

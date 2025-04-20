@@ -64,6 +64,12 @@
     </div>
     {%- endif %}
 
+    {% if song.eventid %}
+    <div class="song-event">
+        Jam Event: <a href="/jams/{{ song.jamid }}/events/{{ song.eventid }}">{{ song.event_title }}</a>
+    </div>
+    {% endif %}
+
     <div class="song-date">
         Uploaded {{ song.created }}
     </div>

@@ -268,6 +268,10 @@ def test_submit_song_to_event(client, user, jam, event):
     response = client.get(f"/jams/{jam}/events/{event}")
     assert b"song title" in response.data, response.data.decode()
 
+    # Check for event title on song page
+    response = client.get(f"/song/1/1?action=view")
+    assert b"Event Title" in response.data, response.data.decode()
+
 def test_submitted_song_hidden_before_enddate(client, user, jam, event):
     client.post(
             f"/jams/{jam}/events/{event}/update",
