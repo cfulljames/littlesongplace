@@ -5,7 +5,7 @@ from .utils import create_user, post_signup_form
 
 def test_signup_get(client):
     response = client.get("/signup")
-    assert b"Create a new account" in response.data
+    assert b"create a new account" in response.data
 
 def test_signup_success(client):
     response = post_signup_form(client, "user", "password")

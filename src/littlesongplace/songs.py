@@ -23,6 +23,7 @@ bp = Blueprint("songs", __name__)
 class Song:
     songid: int
     userid: int
+    user: users.User
     threadid: int
     username: str
     title: str
@@ -37,7 +38,8 @@ class Song:
     event_title: Optional[str]
 
     def json(self):
-        return json.dumps(vars(self))
+        vs = vars(self)
+        return json.dumps({k: vs[k] for k in vs if not isinstance(vs[k], users.User)})
 
     def get_comments(self):
         return comments.for_thread(self.threadid)
@@ -204,6 +206,7 @@ def _from_db(query, args=()):
         songs.append(Song(
             songid=sd["songid"],
             userid=sd["userid"],
+            user=users.User.from_row(sd),
             threadid=sd["threadid"],
             username=sd["username"],
             title=sd["title"],

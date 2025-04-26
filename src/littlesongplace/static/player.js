@@ -198,17 +198,17 @@ document.addEventListener("DOMContentLoaded", (event) => {
     var miniButton = document.getElementById("mini-play-pause-button");
     audio.addEventListener("play", (event) => {
         button.className = "lsp_btn_pause02";
-        button.src = customImage(document.getElementById("lsp_btn_pause02"));
+        button.src = customImage(document.getElementById("lsp_btn_pause02"), button);
         miniButton.className = "lsp_btn_pause02";
-        miniButton.src = customImage(document.getElementById("lsp_btn_pause02"));
+        miniButton.src = customImage(document.getElementById("lsp_btn_pause02"), button);
     })
 
     // Show play button when audio is paused
     audio.addEventListener("pause", (event) => {
         button.className = "lsp_btn_play02";
-        button.src = customImage(document.getElementById("lsp_btn_play02"));
+        button.src = customImage(document.getElementById("lsp_btn_play02"), button);
         miniButton.className = "lsp_btn_play02";
-        miniButton.src = customImage(document.getElementById("lsp_btn_play02"));
+        miniButton.src = customImage(document.getElementById("lsp_btn_play02"), button);
     })
 
     // Audio position scrubbing

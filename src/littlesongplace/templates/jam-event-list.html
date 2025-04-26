@@ -1,6 +1,6 @@
 {% macro jam_event_list(list_title, events, date_label, which_date) %}
 {% if events %}
-<h3>{{ list_title }}</h3>
+<h3 class="jam-event-list-title">{{ list_title }}</h3>
 <ul class="jam-event-list">
     {% for event in events %}
     <li class="jam-event-list-entry">
@@ -9,12 +9,12 @@
             <a href="/jams/{{ event.jamid }}/events/{{ event.eventid }}">[Upcoming Event]</a>
         </span>
         {%- else -%}
-        <span class="jam-event-list-title">
+        <span>
             <a href="/jams/{{ event.jamid }}/events/{{ event.eventid }}">{{ event.title }}</a>
         </span>
         {%- endif %}
         <strong>&nbsp;|&nbsp;</strong>
-        <span class="jam-event-list-jam-title">
+        <span>
             <a href="/jams/{{ event.jamid }}">{{ event.jam_title }}</a>
         </span>
         <strong>&nbsp;|&nbsp;</strong>

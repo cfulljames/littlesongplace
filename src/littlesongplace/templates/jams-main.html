@@ -4,15 +4,15 @@
 
 {% block body %}
 
-<h1>Jams</h1>
+<h1>jams</h1>
 
-<h2>Events</h2>
+<h2>events</h2>
 {% from "jam-event-list.html" import jam_event_list %}
-{{ jam_event_list("Ongoing Events", ongoing, "Ends", "end") }}
-{{ jam_event_list("Upcoming Events", upcoming, "Starts", "start") }}
-{{ jam_event_list("Recent Events", past, "Ended", "end") }}
+{{ jam_event_list("ongoing events", ongoing, "ends", "end") }}
+{{ jam_event_list("upcoming events", upcoming, "starts", "start") }}
+{{ jam_event_list("recent events", past, "ended", "end") }}
 
-<h2>All Jams</h2>
+<h2>all jams</h2>
 <ul class="jam-list">
     {% for jam in jams -%}
     <li><a href="/jams/{{ jam.jamid }}">{{ jam.title }}</a></li>

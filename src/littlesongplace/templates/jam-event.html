@@ -4,20 +4,23 @@
 
 {% block body %}
 
-<h1>{% if event.hidden -%}[Upcoming Event]{%- else -%}{{ event.title }}{%- endif %} - {{ jam.title }}</h1>
+<h1>{% if event.hidden -%}[Upcoming Event]{%- else -%}{{ event.title }}{%- endif %}</h1>
 
 <div id="jam-event-view">
     <div class="info">
-        <strong>Host:</strong>
+        <strong>jam:</strong>
+            <a href="/jams/{{ jam.jamid }}">{{ jam.title }}</a>
+            <br/>
+        <strong>host:</strong>
             <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
             <br/>
         {% if event.startdate %}
-        <strong>Start Date:</strong>
+        <strong>start date:</strong>
             <span class="date" data-date="{{ event.startdate.isoformat() }}"><!-- Populated by nav.js --></span>
             <br/>
         {% endif %}
         {% if event.enddate %}
-        <strong>End Date:</strong>
+        <strong>end date:</strong>
             <span class="date" data-date="{{ event.enddate.isoformat() }}"><!-- Populated by nav.js --></span>
         {% endif %}
     </div>
@@ -39,10 +42,6 @@
     </div>
 
     <h2>About the Jam</h2>
-    <div>
-        <strong><a href="/jams/{{ jam.jamid }}">{{ jam.title }}</a></strong>
-    </div>
-    <br/>
     <div>
     {{ (jam.description.replace("\n", "<br>"))|safe }}
     </div>

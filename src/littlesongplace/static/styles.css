@@ -1,15 +1,46 @@
+/* Fonts */
+@font-face {
+    font-family: "Mat Saleh";
+    src: url("/static/MatSaleh.otf");
+}
+
+@font-face {
+    font-family: "Unageo";
+    src: url("/static/Unageo-Medium.ttf");
+}
+
+@font-face {
+    font-family: "Unageo";
+    src: url("/static/Unageo-Medium-Italic.ttf");
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Unageo";
+    src: url("/static/Unageo-ExtraBold.ttf");
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Unageo";
+    src: url("/static/Unageo-ExtraBold-Italic.ttf");
+    font-weight: bold;
+    font-style: italic;
+}
+
 /* General */
 :root {
     --yellow: #e8e6b5;
-    --purple: #9373a9;
+    --purple: #b36fab;
     --blue: #44b7b7;
-    --black: #695c73;
+    --black: #514659;
+    --radius: 5px;
 }
 
 body {
     background: var(--yellow);
     color: var(--black);
-    font-family: sans-serif;
+    font-family: "Unageo", sans-serif;
     border-color: var(--purple);
     max-width: 700px;
     margin: auto;
@@ -21,22 +52,35 @@ a {
 
 h1, h2, h3, h4 {
     color: var(--purple);
+    font-family: "Mat Saleh", sans-serif;
+}
+
+h1 {
+    font-size: 40px;
+    text-align: center;
 }
 
 h2 {
-    font-size: 20px;
+    font-size: 26px;
+    /*border: 2px solid var(--purple);*/
+    box-shadow: 3px 3px 0px 0px var(--black);
+    background: var(--purple);
+    color: var(--yellow);
+    border-radius: var(--radius);
+    text-align: center;
+    padding: 5px;
 }
 
 h3 {
-    font-size: 16px;
+    font-size: 22px;
 }
 
 textarea {
-    font-family: sans-serif;
+    font-family: "Unageo", sans-serif;
     font-size: 16px;
     color: var(--black);
     border: 3px solid var(--purple);
-    border-radius: 10px;
+    border-radius: var(--radius);
     padding: 10px;
     background: var(--yellow);
     height: 200px;
@@ -49,11 +93,11 @@ textarea {
 input[type=text], input[type=password], input[type=url], input[type=datetime-local] {
     background: var(--yellow);
     margin: 10px;
-    font-family: sans-serif;
+    font-family: "Unageo", sans-serif;
     font-size: 16px;
     color: var(--black);
     border: 3px solid var(--purple);
-    border-radius: 10px;
+    border-radius: var(--radius);
     padding: 5px;
     width: 300px;
     max-width: calc(100% - 40px);
@@ -61,14 +105,14 @@ input[type=text], input[type=password], input[type=url], input[type=datetime-loc
 
 .button, input[type=submit] {
     cursor: pointer;
-    font-family: sans-serif;
+    font-family: "Unageo", sans-serif;
     font-size: 16px;
     font-weight: bold;
     text-decoration: none;
     color: var(--yellow);
     background: var(--purple);
     border: 0px;
-    border-radius: 5px;
+    border-radius: var(--radius);
     padding: 8px;
 }
 
@@ -76,7 +120,7 @@ select {
     border: none;
     background-color: var(--purple);
     color: var(--yellow);
-    border-radius: 5px;
+    border-radius: var(--radius);
     font-size: 16px;
     padding: 8px;
 }
@@ -88,14 +132,16 @@ div.main {
 }
 
 div.page-header {
-    box-shadow: 0px 0px 20px 0px;
-    border-radius: 10px;
+    box-shadow: 5px 5px 0px 0px var(--black);
+    border: 1px solid var(--black);
+    border-radius: var(--radius);
     margin: 10px;
+    padding: 5px;
 }
 
 .flashes {
     border: 3px solid var(--blue);
-    border-radius: 10px;
+    border-radius: var(--radius);
     margin: 20px;
 }
 
@@ -103,7 +149,7 @@ div.page-header {
     box-sizing: border-box;
     margin: 10px;
     border-width: 3px;
-    border-radius: 10px;
+    border-radius: var(--radius);
     border-style: solid;
     padding: 10px;
     background-color: var(--yellow);
@@ -125,18 +171,22 @@ div.page-header {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    justify-content: center;
 }
 
 .user-list-entry-container {
-    border-radius: 10px;
-    box-shadow: 0px 0px 5px 0px;
+    border-radius: var(--radius);
+    background: var(--black);
+    box-shadow: 2px 2px 0px 0px var(--black);
+    border: 1px solid var(--black);
+    overflow: hidden;
 }
 
 .user-list-entry {
     box-sizing: border-box;
     height: 100%;
     background: var(--yellow);
-    border-radius: 10px;
+    /*border-radius: var(--radius);*/
     padding: 5px;
 
     display: flex;
@@ -232,7 +282,7 @@ input[type=file] {
     max-width: 40%;
     background: var(--purple);
     padding: 5px;
-    border-radius: 10px;
+    border-radius: var(--radius);
 }
 
 .big-pfp {
@@ -241,13 +291,13 @@ input[type=file] {
     margin: 0px;
     padding: 0px;
     display: block;
-    border-radius: 5px;
+    border-radius: calc(var(--radius) / 2);
 }
 
 .small-pfp {
     max-width: 32px;
     max-height: 32px;
-    border-radius: 5px;
+    border-radius: calc(var(--radius) / 2);
     border: solid 2px var(--purple);
     background-color: var(--purple);
     vertical-align: middle;
@@ -270,8 +320,9 @@ input[type=file] {
 }
 
 .playlist-list-entry {
-    box-shadow: 0px 0px 5px 0px;
-    border-radius: 10px;
+    box-shadow: 3px 3px 0px 0px;
+    border-radius: var(--radius);
+    border: 1px solid var(--black);
     padding: 10px;
     margin: 10px 0px;
 }
@@ -286,7 +337,7 @@ input[type=file] {
 
 .draggable-song {
     box-shadow: 0px 0px 5px 0px;
-    border-radius: 10px;
+    border-radius: var(--radius);
     padding: 5px 10px;
     margin: 10px 0px;
     display: flex;
@@ -302,7 +353,7 @@ input[type=file] {
     height: 22px !important;
     left: 7px;
     right: auto;
-    border-radius: 5px;
+    border-radius: calc(var(--radius) / 2);
 }
 
 .clr-field input {
@@ -329,11 +380,15 @@ div.song-list-songs {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    font-size: 14px;
 }
 
-.song-list-songs .song {
-    box-shadow: 0px 0px 5px 0px;
-    border-radius: 10px;
+div.song {
+    background: var(--yellow);
+    box-shadow: 2px 2px 0px 0px;
+    border-radius: var(--radius);
+    border: 1px solid var(--black);
+    overflow: hidden;
 }
 
 div.song-main {
@@ -347,6 +402,7 @@ div.song-main {
 }
 
 div.song-info {
+    font-family: "Unageo", sans-serif;
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -410,7 +466,7 @@ div.top-level-comment {
     margin-top: 10px;
     padding: 10px;
     box-shadow: 0px 0px 5px 0px;
-    border-radius: 10px;
+    border-radius: var(--radius);
 }
 
 div.reply-comment {
@@ -418,7 +474,7 @@ div.reply-comment {
     margin-bottom: 10px;
     padding: 10px;
     box-shadow: 0px 0px 5px 0px;
-    border-radius: 10px;
+    border-radius: var(--radius);
 }
 
 div.comment-button-container {
@@ -450,7 +506,7 @@ div.player {
     padding: 10px;
     padding-bottom: 0px;
     box-shadow: 0px 0px 20px 0px;
-    border-radius: 10px;
+    border-radius: var(--radius);
     background: var(--yellow);
 }
 
@@ -458,7 +514,7 @@ div.player {
     margin: 10px;
     padding-left: 10px;
     box-shadow: 0px 0px 20px 0px;
-    border-radius: 10px;
+    border-radius: var(--radius);
     background: var(--yellow);
 
     display: flex;
@@ -528,13 +584,13 @@ div.player-info {
 #position-slider::-webkit-slider-thumb {
     height: 20px;
     width: 20px;
-    border-radius: 10px;
+    border-radius: var(--radius);
 }
 
 #position-slider::-moz-range-thumb {
     height: 20px;
     width: 20px;
-    border-radius: 10px;
+    border-radius: var(--radius);
 }
 
 .player-button img {
@@ -558,7 +614,7 @@ div.comment-notification {
     margin: 10px;
     padding: 10px;
     box-shadow: 0px 0px 5px 0px;
-    border-radius: 10px;
+    border-radius: var(--radius);
 }
 
 /* Platform-specific global overrides */
@@ -566,4 +622,9 @@ div.comment-notification {
     .desktop-only {
         display: none;
     }
+}
+
+/* Jam Events */
+.jam-event-list-title {
+    margin-left: 20px;
 }

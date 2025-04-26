@@ -4,24 +4,21 @@
 
 {% block body %}
 
-<h2>Hello!</h2>
-<p>
-🎶 Welcome to a little song place.  Make music, and share it with friends! 🎵
-</p>
+<h2>hello!</h2>
+<div style="display: flex; flex-direction: row; justify-content: center; gap: 10px; align-items: center;">
+<div>🎶</div>
+<div style="text-align: center;">Welcome to littlesong.place.<br/>Make music, and share it with friends!</div>
+<div>🎵</div>
+</div>
 
 {% if ongoing_events or upcoming_events %}
-<h2>Jams</h2>
+<h2>happenings</h2>
 {% from "jam-event-list.html" import jam_event_list %}
-{{ jam_event_list("Ongoing Events", ongoing_events, "Ends", "end") }}
-{{ jam_event_list("Upcoming Events", upcoming_events, "Starts", "start") }}
+{{ jam_event_list("ongoing events", ongoing_events, "ends", "end") }}
+{{ jam_event_list("upcoming events", upcoming_events, "starts", "start") }}
 {% endif %}
 
-<h2>Humans</h2>
-<p>
-Check out the music and profiles of the fine folks below!
-{% if not session["userid"] %}If you create an account, you'll show up here too.{% endif %}
-</p>
-
+<h2>humans</h2>
 <div class="user-list">
     {% for user in users %}
     <div class="user-list-entry-container">
@@ -35,8 +32,7 @@ Check out the music and profiles of the fine folks below!
     {% endfor %}
 </div>
 
-<h2>Hot New Tunes</h2>
-<p>Listen to the 50 latest tracks!</p>
+<h2>hot new tunes</h2>
 {% include "song-list.html" %}
 
 {% endblock %}

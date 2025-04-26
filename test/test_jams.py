@@ -223,17 +223,17 @@ def test_jam_events_sorted_on_jams_page(client, user, jam):
     _assert_appear_in_order(
             response.data,
             [
-                b"Ongoing Events",
+                b"ongoing events",
                 b"OngoingJam",
 
-                b"Upcoming Events",
+                b"upcoming events",
                 b"[Upcoming Event]", # Upcoming jam name hidden
                 b"[Upcoming Event]", # Upcoming jam name hidden
 
-                b"Recent Events",
+                b"recent events",
                 b"PastJam",
 
-                b"All Jams",
+                b"all jams",
                 b"New Jam",
                 b"New Jam",
             ])
@@ -247,13 +247,13 @@ def test_jam_events_sorted_on_jam_info_page(client, user, jam):
     _assert_appear_in_order(
             response.data,
             [
-                b"Ongoing Events",
+                b"ongoing events",
                 b"OngoingJam",
 
-                b"Upcoming Events",
+                b"upcoming events",
                 b"[Upcoming Event]", # Upcoming jam name hidden
 
-                b"Past Events",
+                b"past events",
                 b"PastJam",
             ])
 

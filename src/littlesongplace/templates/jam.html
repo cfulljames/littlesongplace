@@ -8,7 +8,7 @@
 
 <div id="jam-view">
     <div>
-        <strong>Host:</strong>
+        <strong>host:</strong>
         <a href="/users/{{ jam.ownername }}" class="profile-link">{{ jam.ownername }}</a>
     </div>
     <br/>
@@ -20,20 +20,20 @@
     </div>
     {%- endif %}
 
-    <h2>Description</h2>
+    <h2>description</h2>
     <div>
     {{ (jam.description.replace("\n", "<br>"))|safe }}
     </div>
 
-    <h2>Events</h2>
+    <h2>events</h2>
     {%- if jam.ownerid == session["userid"] -%}
     <a class="song-list-button" title="Create Event" href="/jams/{{ jam.jamid }}/events/create"><img class="lsp_btn_add02" /></a>
     {%- endif -%}
 
     {% from "jam-event-list.html" import jam_event_list %}
-    {{ jam_event_list("Ongoing Events", ongoing, "Ends", "end") }}
-    {{ jam_event_list("Upcoming Events", upcoming, "Starts", "start") }}
-    {{ jam_event_list("Past Events", past, "Ended", "end") }}
+    {{ jam_event_list("ongoing events", ongoing, "ends", "end") }}
+    {{ jam_event_list("upcoming events", upcoming, "starts", "start") }}
+    {{ jam_event_list("past events", past, "ended", "end") }}
 </div> <!-- jam-view -->
 
 {% if session["userid"] == jam.ownerid -%}

@@ -50,14 +50,14 @@ function showDetails(event) {
         songDetails.hidden = false;
         detailsToggle.alt = "Hide Details";
         detailsToggle.className = "lsp_btn_hide02";
-        detailsToggle.src = customImage(document.getElementById("lsp_btn_hide02"));
+        detailsToggle.src = customImage(document.getElementById("lsp_btn_hide02"), detailsToggle);
     }
     else {
         // Hide details
         songDetails.hidden = true;
         detailsToggle.alt = "Show Details";
         detailsToggle.className = "lsp_btn_show02";
-        detailsToggle.src = customImage(document.getElementById("lsp_btn_show02"));
+        detailsToggle.src = customImage(document.getElementById("lsp_btn_show02"), detailsToggle);
     }
     return false;
 }

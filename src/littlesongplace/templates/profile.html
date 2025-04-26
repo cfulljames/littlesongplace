@@ -118,7 +118,7 @@
 
 {% if session["userid"] == userid or playlists -%}
 <div id="profile-playlists">
-    <h2>Playlists</h2>
+    <h2>playlists</h2>
 
     <!-- Add Playlist button/form -->
     {% if session["userid"] == userid -%}
@@ -170,7 +170,7 @@
 
 {% if session["userid"] == userid or songs %}
 <div id="profile-songs">
-    <h2>Songs</h2>
+    <h2>songs</h2>
 
     <!-- Add Song button -->
     {% if session["userid"] == userid %}
@@ -185,7 +185,7 @@
 
 {% endif %}
 
-<h2>Comments</h2>
+<h2>comments</h2>
 {{ comment_thread(threadid, session['userid'], userid, comments) }}
 
 {% endblock %}
