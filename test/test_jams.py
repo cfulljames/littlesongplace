@@ -66,6 +66,18 @@ def test_delete_jam(client, user, jam):
     response = client.get(f"/jams/{jam}")
     assert response.status_code == 404
 
+def test_delete_jam_with_event_and_song(client, user, jam, event):
+    client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(startdate=yesterday, enddate=tomorrow))
+    upload_song(client, b"Success", eventid=event)
+
+    response = client.get(f"/jams/{jam}/delete", follow_redirects=True)
+    assert response.request.path == f"/jams"
+    assert b"New Jam" not in response.data
+    assert b"Event Title" not in response.data
+    assert b"[Upcoming Event]" not in response.data
+
 def test_delete_jam_not_logged_in(client):
     response = client.get("/jams/1/delete", follow_redirects=True)
     assert response.request.path == "/login"
@@ -173,6 +185,18 @@ def test_delete_event(client, user, jam, event):
     response = client.get(f"/jams/{jam}/events/{event}/delete", follow_redirects=True)
     assert response.request.path == f"/jams/{jam}"
     assert b"Event Title" not in response.data
+    assert b"[Upcoming Event]" not in response.data
+
+def test_delete_event_with_song(client, user, jam, event):
+    client.post(
+            f"/jams/{jam}/events/{event}/update",
+            data=_get_event_data(startdate=yesterday, enddate=tomorrow))
+    upload_song(client, b"Success", eventid=event)
+
+    response = client.get(f"/jams/{jam}/events/{event}/delete", follow_redirects=True)
+    assert response.request.path == f"/jams/{jam}"
+    assert b"Event Title" not in response.data
+    assert b"[Upcoming Event]" not in response.data
 
 def test_delete_event_not_logged_in(client, user, jam, event):
     client.get("/logout")

@@ -111,6 +111,12 @@ def update(jamid):
 @jam_owner_only
 def delete(jamid):
     # Delete a jam, redirect to the jams list
+
+    # First delete all events
+    events = db.query("SELECT * FROM jam_events WHERE jamid = ?", [jamid])
+    for event in events:
+        events_delete(jamid, event["eventid"])
+
     row = db.query(
             "DELETE FROM jams WHERE jamid = ? RETURNING *",
             [jamid], expect_one=True)
@@ -181,12 +187,14 @@ def events_update(jamid, eventid):
 @jam_owner_only
 def events_delete(jamid, eventid):
     # Delete an event, redirect to list of all events
+    db.query("UPDATE songs SET eventid = NULL WHERE eventid = ?", [eventid])
     db.query(
             """
             DELETE FROM jam_events
             WHERE eventid = ? AND jamid = ?
             RETURNING *
             """, [eventid, jamid], expect_one=True)
+    db.commit()
     return redirect(url_for("jams.jam", jamid=jamid))
 
 

@@ -28,7 +28,7 @@
     {% if session["userid"] == jam.ownerid -%}
     <div class="actions">
     <button class="song-list-button" onclick="showJamEventEditor()" title="Edit"><img class="lsp_btn_edit02" /></button>
-    <a href="/jams/{{ jam.jamid }}/delete" class="song-list-button" onclick="return confirm('Are you sure you want to delete this jam and all events?')" title="Delete"><img class="lsp_btn_delete02" /></a>
+    <a href="/jams/{{ jam.jamid }}/events/{{ event.eventid }}/delete" class="song-list-button" onclick="return confirm('Are you sure you want to delete this event?')" title="Delete"><img class="lsp_btn_delete02" /></a>
     </div>
     {%- endif %}
 
