@@ -75,7 +75,7 @@ jobs:
           . venv/bin/activate
 
           # Install package, remove wheel
-          pip install ./*.whl
+          pip install --ignore-installed ./*.whl
 
           # Restart service
           sudo systemctl restart littlesongplace-test.service
@@ -159,7 +159,7 @@ jobs:
           cd /var/www/littlesongplace
           python3 -m venv venv
           . venv/bin/activate
-          pip install *.whl
+          pip install --ignore-installed *.whl
 
           # Restart service
           sudo systemctl restart littlesongplace.service
