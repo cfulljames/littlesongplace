@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", (e) => {
+document.addEventListener("DOMContentLoaded", async (e) => {
 
     // Handle link clicks with AJAX
     document.querySelectorAll("a").forEach((anchor) => {
@@ -40,6 +40,17 @@ document.addEventListener("DOMContentLoaded", (e) => {
         e.textContent = date.toLocaleString();
     });
 });
+
+async function requestNotificationPermission() {
+    const permission = await window.Notification.requestPermission();
+    if (permission === "granted") {
+        // Register service worker
+        navigator.serviceWorker.register("service.js");
+    }
+    else {
+        console.log("Did not get permission to send notifications:", permission);
+    }
+}
 
 function onLinkClick(event) {
     if (event.defaultPrevented) {

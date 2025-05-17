@@ -6,7 +6,7 @@ from flask import abort, g, current_app
 
 from . import datadir
 
-DB_VERSION = 5
+DB_VERSION = 6
 
 def get():
     db = getattr(g, '_database', None)

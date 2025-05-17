@@ -7,6 +7,7 @@ dependencies = [
     "flask",
     "gunicorn",
     "pillow",
+    "pywebpush",
     "yt-dlp",
 ]
 requires-python = ">=3.11"

@@ -21,9 +21,12 @@ CREATE TABLE songs (
     title TEXT NOT NULL,
     description TEXT,
     threadid INTEGER,
-    FOREIGN KEY(userid) REFERENCES users(userid)
+    eventid INTEGER,
+    FOREIGN KEY(userid) REFERENCES users(userid),
+    FOREIGN KEY(eventid) REFERENCES jam_events(eventid)
 );
 CREATE INDEX idx_songs_by_user ON songs(userid);
+CREATE INDEX idx_songs_by_eventid ON songs(eventid);
 
 DROP TABLE IF EXISTS song_collaborators;
 CREATE TABLE song_collaborators (
@@ -41,34 +44,6 @@ CREATE TABLE song_tags (
     PRIMARY KEY(songid, tag)
 );
 CREATE INDEX idx_song_tags_tag ON song_tags(tag);
- 
--- Old comment system (superceded by comments/comment_threads/comment_notifications
---
--- DROP TABLE IF EXISTS song_comments;
--- CREATE TABLE song_comments (
---     commentid INTEGER PRIMARY KEY,
---     songid INTEGER NOT NULL,
---     userid INTEGER NOT NULL,
---     replytoid INTEGER,
---     created TEXT NOT NULL,
---     content TEXT NOT NULL,
---     FOREIGN KEY(songid) REFERENCES songs(songid) ON DELETE CASCADE,
---     FOREIGN KEY(userid) REFERENCES users(userid) ON DELETE CASCADE
--- );
--- CREATE INDEX idx_comments_by_song ON song_comments(songid);
--- CREATE INDEX idx_comments_by_user ON song_comments(userid);
--- CREATE INDEX idx_comments_by_replyto ON song_comments(replytoid);
--- CREATE INDEX idx_comments_by_time ON song_comments(created);
--- 
--- DROP TABLE IF EXISTS song_comment_notifications;
--- CREATE TABLE song_comment_notifications (
---     notificationid INTEGER PRIMARY KEY,
---     commentid INTEGER NOT NULL,
---     targetuserid INTEGER NOT NULL,
---     FOREIGN KEY(commentid) REFERENCES song_comments(commentid) ON DELETE CASCADE,
---     FOREIGN KEY(targetuserid) REFERENCES users(userid) ON DELETE CASCADE
--- );
--- CREATE INDEX idx_song_comment_notifications_by_target ON song_comment_notifications(targetuserid);
 
 DROP TABLE IF EXISTS playlists;
 CREATE TABLE playlists (
@@ -159,5 +134,29 @@ BEGIN
     DELETE FROM notifications WHERE objectid = OLD.commentid AND objecttype = 0;
 END;
 
-PRAGMA user_version = 4;
+DROP TABLE IF EXISTS jams;
+CREATE TABLE jams (
+    jamid INTEGER PRIMARY KEY,
+    ownerid INTEGER NOT NULL,
+    created TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    FOREIGN KEY(ownerid) REFERENCES users(userid)
+);
+
+DROP TABLE IF EXISTS jam_events;
+CREATE TABLE jam_events(
+    eventid INTEGER PRIMARY KEY,
+    jamid INTEGER NOT NULL,
+    threadid INTEGER NOT NULL,
+    created TEXT NOT NULL,
+    title TEXT NOT NULL, -- Hidden until startdate
+    startdate TEXT,
+    enddate TEXT,
+    description TEXT, -- Hidden until startdate
+    FOREIGN KEY(jamid) REFERENCES jams(jamid),
+    FOREIGN KEY(threadid) REFERENCES comment_threads(threadid)
+);
+
+PRAGMA user_version = 5;
 
