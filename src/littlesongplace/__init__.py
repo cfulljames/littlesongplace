@@ -7,12 +7,13 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import click
+import pywebpush
 from flask import Flask, render_template, request, redirect, g, session, abort, \
         send_from_directory, flash, get_flashed_messages
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from . import activity, auth, colors, comments, datadir, db, jams, playlists, \
-        profiles, songs, users
+        profiles, push_notifications, songs, users
 from .logutils import flash_and_log
 
 # Logging
@@ -35,6 +36,7 @@ app.register_blueprint(comments.bp)
 app.register_blueprint(jams.bp)
 app.register_blueprint(playlists.bp)
 app.register_blueprint(profiles.bp)
+app.register_blueprint(push_notifications.bp)
 app.register_blueprint(songs.bp)
 db.init_app(app)
 
@@ -99,6 +101,10 @@ def site_news():
 @app.get("/about")
 def about():
     return render_template("about.html")
+
+@app.get("/service.js")
+def service_worker():
+    return send_from_directory("static", "service.js")
 
 def get_gif_data():
     # Convert all .gifs to base64 strings and embed them as dataset entries
