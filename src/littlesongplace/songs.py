@@ -8,12 +8,12 @@ from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import Optional
 
-from flask import Blueprint, current_app, render_template, request, redirect, \
+from flask import Blueprint, current_app, g, render_template, request, redirect, \
         session, abort, send_from_directory
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
-from . import comments, colors, datadir, db, users
+from . import auth, comments, colors, datadir, db, push_notifications, users
 from .sanitize import sanitize_user_text
 from .logutils import flash_and_log
 
@@ -223,10 +223,8 @@ def _from_db(query, args=()):
     return songs
 
 @bp.get("/edit-song")
+@auth.requires_login
 def edit_song():
-    if not "userid" in session:
-        return redirect("/login")  # Must be logged in to edit
-
     song = None
 
     song_colors = users.get_user_colors(session["userid"])
@@ -260,10 +258,8 @@ def edit_song():
     return render_template("edit-song.html", song=song, **song_colors, eventid=eventid)
 
 @bp.post("/upload-song")
+@auth.requires_login
 def upload_song():
-    if not "userid" in session:
-        return redirect("/login")  # Must be logged in to edit
-
     userid = session["userid"]
 
     error = validate_song_form()
@@ -457,7 +453,12 @@ def create_song():
             db.commit()
 
             flash_and_log(f"Successfully uploaded '{title}'", "success")
-            return False
+
+            # Send push notifications to all other users
+            push_notifications.notify_all(
+                    f"New song from {g.username}", title, _except=g.userid)
+
+            return False  # No error
 
 def convert_song(tmp_file, request_file, yt_url):
     if request_file:
@@ -512,6 +513,7 @@ def yt_import(tmp_file, yt_url):
         ydl.download([yt_url])
 
 @bp.get("/delete-song/<int:songid>")
+@auth.requires_login
 def delete_song(songid):
     song_data = db.query(
         "select * from songs where songid = ?", [songid], one=True)

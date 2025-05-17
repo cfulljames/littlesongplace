@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from flask import abort, Blueprint, redirect, render_template, request, session
 
-from . import db, songs
+from . import auth, db, push_notifications, songs
 from .sanitize import sanitize_user_text
 
 bp = Blueprint("comments", __name__)
@@ -55,10 +55,8 @@ def for_thread(threadid):
     return song_comments
 
 @bp.route("/comment", methods=["GET", "POST"])
+@auth.requires_login
 def comment():
-    if not "userid" in session:
-        return redirect("/login")
-
     if not "threadid" in request.args:
         abort(400) # Must have threadid
 
@@ -178,7 +176,7 @@ def comment():
             if userid in notification_targets:
                 notification_targets.remove(userid)
 
-            # Create notifications
+            # Create notifications in database
             for target in notification_targets:
                 db.query(
                         """
@@ -187,6 +185,10 @@ def comment():
                         values (?, ?, ?, ?)
                         """,
                         [commentid, ObjectType.COMMENT, target, timestamp])
+
+            # Send push notifications
+            push_notifications.notify(
+                    notification_targets, f"Comment from {g.username}", content)
 
         db.commit()
 

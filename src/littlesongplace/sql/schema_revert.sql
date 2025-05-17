@@ -1,7 +1,4 @@
-DROP INDEX idx_songs_by_eventid;
-ALTER TABLE songs DROP COLUMN eventid;
-DROP TABLE IF EXISTS jams;
-DROP TABLE IF EXISTS jam_events;
+DROP TABLE users_push_subscriptions;
 
-PRAGMA user_version = 4;
+PRAGMA user_version = 5;
 
