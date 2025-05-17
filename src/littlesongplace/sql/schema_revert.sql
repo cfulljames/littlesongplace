@@ -1,3 +1,4 @@
-DROP VIEW songs_view;
-PRAGMA user_version = 5;
+DROP TABLE users_push_subscriptions;
+
+PRAGMA user_version = 6;
 

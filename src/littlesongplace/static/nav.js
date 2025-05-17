@@ -48,6 +48,17 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     });
 });
 
+async function requestNotificationPermission() {
+    const permission = await window.Notification.requestPermission();
+    if (permission === "granted") {
+        // Register service worker
+        navigator.serviceWorker.register("service.js");
+    }
+    else {
+        console.log("Did not get permission to send notifications:", permission);
+    }
+}
+
 function onLinkClick(event) {
     if (event.defaultPrevented) {
         return;
