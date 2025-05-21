@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime, timezone
 
-from flask import abort, Blueprint, redirect, render_template, request, session
+from flask import abort, Blueprint, g, redirect, render_template, request, session
 
 from . import auth, db, push_notifications, songs
 from .sanitize import sanitize_user_text
