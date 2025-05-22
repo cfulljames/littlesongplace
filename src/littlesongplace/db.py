@@ -53,7 +53,7 @@ def init_cmd():
         db.commit()
 
 @click.command("revert-db")
-def init_cmd():
+def revert_cmd():
     """Revert the database to the previous schema"""
     with current_app.app_context():
         db = sqlite3.connect(datadir.get_db_path())
@@ -63,5 +63,6 @@ def init_cmd():
 
 def init_app(app):
     app.cli.add_command(init_cmd)
+    app.cli.add_command(revert_cmd)
     app.teardown_appcontext(close)
 
