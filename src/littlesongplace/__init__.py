@@ -106,6 +106,10 @@ def about():
 def service_worker():
     return send_from_directory("static", "service.js")
 
+@app.get("/manifest.json")
+def manifest():
+    return send_from_directory("static", "manifest.json")
+
 def get_gif_data():
     # Convert all .gifs to base64 strings and embed them as dataset entries
     # in <div>s.  This is used by nav.js:customImage() - it replaces specific
