@@ -111,9 +111,14 @@ input[type=text], input[type=password], input[type=url], input[type=datetime-loc
     text-decoration: none;
     color: var(--yellow);
     background: var(--purple);
+    box-shadow: 2px 2px 0px 0px var(--black);
     border: 0px;
     border-radius: var(--radius);
     padding: 8px;
+}
+
+.button:active, input[type=submit]:active {
+    box-shadow: -2px -2px 0px 0px var(--black);
 }
 
 select {
