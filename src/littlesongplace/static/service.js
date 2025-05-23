@@ -1,5 +1,4 @@
 self.addEventListener("activate", async () => {
-    console.log("hello?");
     try {
         // TODO: Use VAPID key
         const options = {};
@@ -15,7 +14,7 @@ self.addEventListener("activate", async () => {
         console.log(response);
     }
     catch (err) {
-        console.log("Error", err);
+        console.log("Error while activating service:", err);
     }
 
 });
@@ -23,7 +22,7 @@ self.addEventListener("activate", async () => {
 self.addEventListener("push", (event) => {
     if (event.data) {
         const data = event.data.json();
-        self.registration.showNotification(data.title, {body: data.body});
+        event.waitUntil(self.registration.showNotification(data.title, {body: data.body}));
     }
 });
 
