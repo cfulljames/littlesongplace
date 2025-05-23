@@ -34,11 +34,13 @@ def get_user_subscriptions(userid):
             WHERE userid = ?
             """,
             [userid])
-    str_subs = (r["subscription"] for r in rows)
+    # print([dict(r) for r in rows])
+    # str_subs = (r["subscription"] for r in rows)
     subs = []
-    for s in str_subs:
+    for r in rows:
+        s = r["subscription"]
         try:
-            subs.append(json.loads(s))
+            subs.append((r["subid"], json.loads(s)))
         except json.decoder.JSONDecodeError:
             current_app.logger.error(f"Invalid subscription: {s}")
     return subs
@@ -61,13 +63,23 @@ def notify(userids, title, body):
 def _do_push(app, userids, title, body):
     data = {"title": title, "body": body}
     data_str = json.dumps(data)
-    for userid in userids:
-        with app.app_context():
+    sent_notifications = 0
+    with app.app_context():
+        for userid in userids:
             subs = get_user_subscriptions(userid)
-            for sub in subs:
+            for subid, sub in subs:
                 try:
                     # TODO: Use VAPID keys
                     pywebpush.webpush(sub, data_str)
+                    sent_notifications += 1
                 except pywebpush.WebPushException as ex:
-                    current_app.logger.error(f"Failed to send push: {ex}")
+                    if ex.response.status_code == 410:  # Subscription deleted
+                        app.logger.warning(f"Deleting dead push subscription: {subid}")
+                        db.query("DELETE FROM users_push_subscriptions WHERE subid = ?", [subid])
+                        db.commit()
+                    else:
+                        app.logger.error(f"Failed to send push: {ex}")
+
+        if sent_notifications > 0:
+            app.logger.info(f"Pushed {sent_notifications} notifications")
 
