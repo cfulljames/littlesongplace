@@ -4,7 +4,7 @@ import threading
 import pywebpush
 from flask import Blueprint, current_app, g, request
 
-from . import auth, db
+from . import auth, datadir, db
 
 bp = Blueprint("push-notifications", __name__, url_prefix="/push-notifications")
 
@@ -63,14 +63,25 @@ def notify(userids, title, body):
 def _do_push(app, userids, title, body):
     data = {"title": title, "body": body}
     data_str = json.dumps(data)
+
+    private_key_path = datadir.get_vapid_private_key_path()
+    claims = {"sub": "mailto:littlesongplace@gmail.com"}
+    private_key = None
+    if private_key_path.exists():
+        with open(private_key_path, "r") as private_key_file:
+            private_key = private_key_file.read().strip()
+
     sent_notifications = 0
     with app.app_context():
         for userid in userids:
             subs = get_user_subscriptions(userid)
             for subid, sub in subs:
                 try:
-                    # TODO: Use VAPID keys
-                    pywebpush.webpush(sub, data_str)
+                    if private_key:
+                        pywebpush.webpush(sub, data_str, vapid_private_key=private_key, vapid_claims=claims)
+                    else:
+                        pywebpush.webpush(sub, data_str)
+
                     sent_notifications += 1
                 except pywebpush.WebPushException as ex:
                     if ex.response.status_code == 410:  # Subscription deleted
