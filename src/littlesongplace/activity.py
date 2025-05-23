@@ -46,6 +46,8 @@ def activity():
                     "select * from users where threadid = ?",
                     [comment["threadid"]],
                     one=True)
+            if profile is None:
+                continue
             comment["content_userid"] = profile["userid"]
             comment["content_username"] = profile["username"]
         elif threadtype == comments.ThreadType.PLAYLIST:
@@ -58,6 +60,8 @@ def activity():
                 [comment["threadid"]],
                 one=True,
             )
+            if playlist is None:
+                continue
             comment["playlistid"] = playlist["playlistid"]
             comment["name"] = playlist["name"]
             comment["content_userid"] = playlist["userid"]
@@ -70,6 +74,8 @@ def activity():
                     INNER JOIN users ON jams.ownerid = users.userid
                     WHERE jam_events.threadid = ?
                     """, [comment["threadid"]], one=True)
+            if jam_event is None:
+                continue
             # TODO: This is duplicated in the JamEvent class
             startdate = datetime.fromisoformat(jam_event["startdate"]) if jam_event["startdate"] else None
             hidden = ((startdate is None) or startdate > datetime.now(timezone.utc))
