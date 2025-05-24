@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from flask import Blueprint, redirect, render_template, session
 
-from . import comments, db, songs
+from . import comments, db, push_notifications, songs
 
 bp = Blueprint("activity", __name__)
 
@@ -91,7 +91,17 @@ def activity():
             [timestamp, session["userid"]])
     db.commit()
 
-    return render_template("activity.html", comments=notifications)
+    comment_push = False
+    song_push = False
+    if "subid" in session:
+        row = db.query(
+                "SELECT settings FROM users_push_subscriptions WHERE subid = ?",
+                [session["subid"]], one=True)
+        if row:
+            comment_push = (row["settings"] & push_notifications.SubscriptionSetting.COMMENTS) > 0
+            song_push = (row["settings"] & push_notifications.SubscriptionSetting.SONGS) > 0
+
+    return render_template("activity.html", comments=notifications, comment_push=comment_push, song_push=song_push)
 
 @bp.get("/new-activity")
 def new_activity():

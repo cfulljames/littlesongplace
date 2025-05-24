@@ -126,6 +126,22 @@ input[type=text], input[type=password], input[type=url], input[type=datetime-loc
     box-shadow: -2px -2px 0px 0px var(--black);
 }
 
+.boxy {
+    margin: 10px 0px;
+    padding: 10px;
+    box-shadow: 2px 2px 0px 0px;
+    border: 1px solid;
+    border-radius: var(--radius);
+}
+
+.boxy-lite {
+    margin: 10px 0px;
+    padding: 10px;
+    box-shadow: 1px 1px 0px 0px;
+    border: 1px solid;
+    border-radius: var(--radius);
+}
+
 select {
     border: none;
     background-color: var(--purple);
@@ -541,21 +557,6 @@ div.song-details {
     margin: 10px;
 }
 
-div.top-level-comment {
-    margin-top: 10px;
-    padding: 10px;
-    border: 2px solid;
-    border-radius: var(--radius);
-}
-
-div.reply-comment {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 2px solid;
-    border-radius: var(--radius);
-}
-
 div.comment-button-container {
     display: flex;
     gap: 10px;
@@ -688,15 +689,6 @@ div.player-info {
 
 .player-label {
     font-size: 14px;
-}
-
-/* Activity */
-div.comment-notification {
-    margin: 10px;
-    padding: 10px;
-    box-shadow: 2px 2px 0px 0px;
-    border: 1px solid;
-    border-radius: var(--radius);
 }
 
 /* Platform-specific global overrides */
