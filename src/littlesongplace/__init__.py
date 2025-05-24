@@ -1,7 +1,6 @@
 import base64
 import logging
 import os
-import random
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -56,15 +55,6 @@ def index():
         for key, value in users.get_user_colors(user).items():
             user[key] = value
 
-    titles = [
-            ("Little Song Place", 2.0),
-            ("Lumpy Space Princess", 0.2),
-            ("Language Server Protocol", 0.1),
-            ("Liskov Substitution Principle", 0.1),
-    ]
-    titles, weights = zip(*titles)
-    title = random.choices(titles, weights)[0]
-
     rows = db.query(
             """
             SELECT * FROM jams
@@ -81,7 +71,6 @@ def index():
             "index.html",
             users=all_users,
             songs=page_songs,
-            page_title=title,
             ongoing_events=ongoing_events,
             upcoming_events=upcoming_events)
 

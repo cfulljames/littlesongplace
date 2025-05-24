@@ -1,12 +1,17 @@
 import json
 import threading
+import enum
 
 import pywebpush
-from flask import Blueprint, current_app, g, request
+from flask import Blueprint, current_app, g, request, session
 
 from . import auth, datadir, db
 
 bp = Blueprint("push-notifications", __name__, url_prefix="/push-notifications")
+
+class SubscriptionSetting(enum.IntEnum):
+    COMMENTS = 0x0001
+    SONGS = 0x0002
 
 @bp.post("/subscribe")
 @auth.requires_login
@@ -15,15 +20,48 @@ def subscribe():
         # Request must contain valid subscription JSON
         abort(400)
 
-    db.query(
+    row = db.query(
             """
-            INSERT INTO users_push_subscriptions (userid, subscription)
-            VALUES (?, ?)
+            INSERT INTO users_push_subscriptions (userid, subscription, settings)
+            VALUES (?, ?, ?)
+            RETURNING subid
             """,
-            [g.userid, json.dumps(request.json)])
+            [g.userid, json.dumps(request.json), 0], expect_one=True)
     db.commit()
 
     current_app.logger.info(f"{g.username} registered push subscription")
+
+    session["subid"] = row["subid"]
+
+    return {"status": "success"}
+
+@bp.post("/update-settings")
+@auth.requires_login
+def update_settings():
+    if not request.json:
+        # Request must contain valid subscription JSON
+        abort(400)
+
+    if "subid" not in session:
+        return {"status": "failed", "message": "no subid in current session"}
+
+    bitfield = 0
+    settings = request.json
+    if settings["comments"]:
+        bitfield |= SubscriptionSetting.COMMENTS
+    if settings["songs"]:
+        bitfield |= SubscriptionSetting.SONGS
+
+    db.query(
+            """
+            UPDATE users_push_subscriptions
+            SET settings = ?
+            WHERE subid = ? AND userid = ?
+            """,
+            [bitfield, session["subid"], g.userid])
+    db.commit()
+
+    current_app.logger.info(f"{g.username} updated push subscription settings: {bitfield:04x}")
 
     return {"status": "success"}
 

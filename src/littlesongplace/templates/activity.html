@@ -3,49 +3,140 @@
 {% block title %}Activity{% endblock %}
 
 {% block body %}
-
-{% if comments %}
 <h1>activity</h1>
 
-    {% for comment in comments %}
-        <div class="comment-notification">
-            <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>
-            {% if comment['replyto_content'] %}
-            replied to &quot;{{ comment['replyto_content'] }}&quot;
-            {% else %}
-            commented
-            {% endif %}
-            on
-            {% if 'songid' in comment %}
-            <a href="/song/{{ comment['content_userid'] }}/{{ comment['songid'] }}?action=view">{{ comment['title'] }}</a> -
-            {# Nothing to do for user profile #}
-            {% elif 'playlistid' in comment %}
-            <a href="/playlists/{{ comment['playlistid'] }}">{{ comment['name'] }}</a> -
-            {% elif 'eventid' in comment %}
-            <a href="/jams/{{ comment['jamid']}}/events/{{ comment['eventid'] }}">{{ comment['title'] }}</a> -
-            {% endif %}
-            <a href="/users/{{ comment['content_username'] }}" class="profile-link">{{ comment['content_username'] }}</a>
-            <div class="top-level-comment">
-                <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>:
-                {{ comment['content'] }}
+<button class="button" onclick="showSettings()" id="btn-show-settings">Settings</button>
 
-                <div class="comment-button-container">
-                    {% if comment['replytoid'] %}
-                        <!-- Comment is already part of a thread; reply to the same thread -->
-                        <a href="/comment?threadid={{ comment['threadid'] }}&replytoid={{ comment['replytoid'] }}">Reply</a>
-                    {% else %}
-                        <!-- Comment is a top-level, reply to the comment -->
-                        <a href="/comment?threadid={{ comment['threadid'] }}&replytoid={{ comment['commentid'] }}">Reply</a>
-                    {% endif %}
-                </div>
+<div id="activity-settings" class="boxy" style="line-height: 1.5;" hidden>
+    <!--<span>Push notifications are currently disabled on this device.</span>-->
+    <!--<button onclick="enablePushNotifications()" class="button" style="float: right;">Enable</button>-->
+    Send me a push notification on this device when:
+    <br/>
+    <label><input type="checkbox" onclick="updateSettings()" id="comment-push" {% if comment_push %}checked{% endif %}>I get a new comment</label>
+    <br/>
+    <label><input type="checkbox" onclick="updateSettings()" id="song-push" {% if song_push %}checked{% endif %}>Anyone uploads a new song</label>
+</div>
+
+<br/>
+<br/>
+
+<script>
+function showSettings() {
+    document.getElementById("activity-settings").hidden = false;
+    document.getElementById("btn-show-settings").hidden = true;
+}
+
+async function updateSettings() {
+    const comment_push_enabled = document.getElementById("comment-push").checked;
+    const song_push_enabled = document.getElementById("song-push").checked;
+
+    // Enable/subscribe to notifications
+    if (comment_push_enabled || song_push_enabled)
+    {
+        await enablePushNotifications();
+    }
+
+    // Update notification settings
+    const response = await fetch(
+        "/push-notifications/update-settings", {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({comments: comment_push_enabled, songs: song_push_enabled})
+        }
+    );
+}
+
+async function enablePushNotifications() {
+    if (!("serviceWorker" in navigator))
+    {
+        return;  // Browser does not support notifications
+    }
+
+    // Show notification permission request dialog
+    const permission = await window.Notification.requestPermission();
+    if (permission === "granted") {
+        // Subscribe to push notifications (if we don't already have an active subscription)
+        try {
+            const registration = await navigator.serviceWorker.getRegistration();
+            const existingSubscription = await registration.pushManager.getSubscription();
+            if (!existingSubscription)
+            {
+                // Subscribe via browser's push service
+                const vapid_public_key = "BLsO37LostwqKch7SFr5Df0MexEoBOcujdMRY7wJurRPc_MGdz9rAkMrqs_dil4qSFxVbVyAA3FqLEPSL-WRNZs";
+                const options = {userVisibleOnly: true, applicationServerKey: vapid_public_key};
+                const subscription = await registration.pushManager.subscribe(options);
+                console.log(JSON.stringify(subscription));
+
+                // Register subscription with LSP server
+                await fetch(
+                    "/push-notifications/subscribe", {
+                        method: "post",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(subscription)
+                    }
+                );
+            }
+        }
+        catch (err) {
+            console.log("Error subscribing to push notifications:", err);
+        }
+    }
+    else {
+        console.log("Did not get permission to send notifications:", permission);
+    }
+}
+
+async function notificationsEnabled() {
+    const registration = await navigator.serviceWorker.getRegistration();
+    const permission = await registration.pushManager.permissionState();
+    if (permission == "granted") {
+        const existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+</script>
+
+<div id="activity-contents">
+    {% for comment in comments -%}
+    <div class="boxy">
+        <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>
+        {% if comment['replyto_content'] %}
+        replied to &quot;{{ comment['replyto_content'] }}&quot;
+        {% else %}
+        commented
+        {% endif %}
+        on
+        {% if 'songid' in comment %}
+        <a href="/song/{{ comment['content_userid'] }}/{{ comment['songid'] }}?action=view">{{ comment['title'] }}</a> -
+        {# Nothing to do for user profile #}
+        {% elif 'playlistid' in comment %}
+        <a href="/playlists/{{ comment['playlistid'] }}">{{ comment['name'] }}</a> -
+        {% elif 'eventid' in comment %}
+        <a href="/jams/{{ comment['jamid']}}/events/{{ comment['eventid'] }}">{{ comment['title'] }}</a> -
+        {% endif %}
+        <a href="/users/{{ comment['content_username'] }}" class="profile-link">{{ comment['content_username'] }}</a>
+        <div class="boxy-lite">
+            <a href="/users/{{ comment['comment_username'] }}" class="profile-link">{{ comment['comment_username'] }}</a>:
+            {{ comment['content'] }}
+
+            <div class="comment-button-container">
+                {% if comment['replytoid'] %}
+                    <!-- Comment is already part of a thread; reply to the same thread -->
+                    <a href="/comment?threadid={{ comment['threadid'] }}&replytoid={{ comment['replytoid'] }}">Reply</a>
+                {% else %}
+                    <!-- Comment is a top-level, reply to the comment -->
+                    <a href="/comment?threadid={{ comment['threadid'] }}&replytoid={{ comment['commentid'] }}">Reply</a>
+                {% endif %}
             </div>
         </div>
+    </div>
     {% endfor %}
 
-{% else %}
-
-    Nothing to show here yet!
-
-{% endif %}
+    {% if not comments %} <p>Nothing to show here yet!</p> {% endif %}
+</div>
 
 {% endblock %}
