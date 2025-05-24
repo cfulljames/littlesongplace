@@ -5,7 +5,7 @@
         {% endif %}
 
         {% for comment in comments %}
-        <div class="top-level-comment">
+        <div class="boxy-lite">
 
             <a href="/users/{{ comment['username'] }}" class="profile-link">{{ comment['username'] }}</a>:
             {{ (comment['content'].replace("\n", "<br>"))|safe }}
@@ -27,10 +27,10 @@
             {% endif %}
 
             {% for reply in comment['replies'] %}
-            <div class="reply-comment">
+            <div class="boxy-lite">
 
                 <a href="/users/{{ reply['username'] }}" class="profile-link">{{ reply['username'] }}</a>:
-                {{ reply['content'] }}
+                {{ (reply['content'].replace("\n", "<br>"))|safe }}
 
                 {% if current_userid == reply['userid'] or current_userid == thread_userid %}
                 <div class="comment-button-container">
