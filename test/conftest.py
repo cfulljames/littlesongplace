@@ -41,6 +41,8 @@ def app():
 
         yield lsp.app
 
+        lsp.push_notifications.wait_all()
+
 @pytest.fixture
 def client(app):
     # Mock bcrypt to speed up tests

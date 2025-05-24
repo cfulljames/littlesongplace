@@ -9,6 +9,8 @@ from . import auth, datadir, db
 
 bp = Blueprint("push-notifications", __name__, url_prefix="/push-notifications")
 
+push_threads = []
+
 class SubscriptionSetting(enum.IntEnum):
     COMMENTS = 0x0001
     SONGS = 0x0002
@@ -96,7 +98,13 @@ def notify(userids, title, body):
     thread = threading.Thread(
             target=_do_push,
             args=(current_app._get_current_object(), userids, title, body))
+    push_threads.append(thread)
     thread.start()
+
+def wait_all():
+    push_copy = push_threads[:]
+    for thread in push_copy:
+        thread.join()
 
 def _do_push(app, userids, title, body):
     data = {"title": title, "body": body}
@@ -131,4 +139,6 @@ def _do_push(app, userids, title, body):
 
         if sent_notifications > 0:
             app.logger.info(f"Pushed {sent_notifications} notifications")
+
+    push_threads.remove(threading.current_thread())
 
