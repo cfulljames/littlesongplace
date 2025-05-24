@@ -39,18 +39,13 @@ document.addEventListener("DOMContentLoaded", async (e) => {
         let date = new Date(e.dataset.date);
         e.textContent = date.toLocaleString();
     });
-});
 
-async function requestNotificationPermission() {
-    const permission = await window.Notification.requestPermission();
-    if (permission === "granted") {
-        // Register service worker
+    // Register service worker
+    if ("serviceWorker" in navigator)
+    {
         navigator.serviceWorker.register("service.js");
     }
-    else {
-        console.log("Did not get permission to send notifications:", permission);
-    }
-}
+});
 
 function onLinkClick(event) {
     if (event.defaultPrevented) {
