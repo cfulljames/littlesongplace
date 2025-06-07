@@ -3,7 +3,7 @@ import threading
 import enum
 
 import pywebpush
-from flask import Blueprint, current_app, g, request, session
+from flask import Blueprint, current_app, g, request
 
 from . import auth, datadir, db
 
@@ -35,13 +35,28 @@ def subscribe():
 
     return {"status": "success", "subid": row["subid"]}
 
+@bp.get("/settings")
+@auth.requires_login
+def get_settings():
+    subid = request.args["subid"]
+    row = db.query(
+            """
+            SELECT settings FROM users_push_subscriptions
+            WHERE subid = ? AND userid = ?
+            """,
+            [subid, g.userid], expect_one=True)
+
+    comments = (row["settings"] & SubscriptionSetting.COMMENTS) > 0
+    songs = (row["settings"] & SubscriptionSetting.SONGS) > 0
+
+    return {"comments": comments, "songs": songs}
+
 @bp.post("/update-settings")
 @auth.requires_login
 def update_settings():
     if not request.json:
         # Request must contain valid subscription JSON
         abort(400)
-
 
     bitfield = 0
     settings = request.json
@@ -65,7 +80,7 @@ def update_settings():
             [bitfield, subid, g.userid])
     db.commit()
 
-    current_app.logger.info(f"{g.username} updated push subscription settings: {bitfield:04x}")
+    current_app.logger.info(f"{g.username} updated push subscription settings: ({subid}) {bitfield:04x}")
 
     return {"status": "success"}
 
