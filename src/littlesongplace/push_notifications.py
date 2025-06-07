@@ -33,9 +33,7 @@ def subscribe():
 
     current_app.logger.info(f"{g.username} registered push subscription")
 
-    session["subid"] = row["subid"]
-
-    return {"status": "success"}
+    return {"status": "success", "subid": row["subid"]}
 
 @bp.post("/update-settings")
 @auth.requires_login
@@ -44,11 +42,15 @@ def update_settings():
         # Request must contain valid subscription JSON
         abort(400)
 
-    if "subid" not in session:
-        return {"status": "failed", "message": "no subid in current session"}
 
     bitfield = 0
     settings = request.json
+
+    if ("subid" not in settings) or ("comments" not in settings) or ("songs" not in settings):
+        abort(400)
+
+    subid = settings["subid"]
+
     if settings["comments"]:
         bitfield |= SubscriptionSetting.COMMENTS
     if settings["songs"]:
@@ -60,7 +62,7 @@ def update_settings():
             SET settings = ?
             WHERE subid = ? AND userid = ?
             """,
-            [bitfield, session["subid"], g.userid])
+            [bitfield, subid, g.userid])
     db.commit()
 
     current_app.logger.info(f"{g.username} updated push subscription settings: {bitfield:04x}")
