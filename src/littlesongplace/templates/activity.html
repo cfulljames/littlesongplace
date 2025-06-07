@@ -41,7 +41,11 @@ async function updateSettings() {
         "/push-notifications/update-settings", {
             method: "post",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({comments: comment_push_enabled, songs: song_push_enabled})
+            body: JSON.stringify({
+                comments: comment_push_enabled,
+                songs: song_push_enabled,
+                subid: window.localStorage.getItem("subid"),
+            })
         }
     );
 }
@@ -59,7 +63,7 @@ async function enablePushNotifications() {
         try {
             const registration = await navigator.serviceWorker.getRegistration();
             const existingSubscription = await registration.pushManager.getSubscription();
-            if (!existingSubscription)
+            if (!existingSubscription || !window.localStorage.getItem("subid"))
             {
                 // Subscribe via browser's push service
                 const vapid_public_key = "BLsO37LostwqKch7SFr5Df0MexEoBOcujdMRY7wJurRPc_MGdz9rAkMrqs_dil4qSFxVbVyAA3FqLEPSL-WRNZs";
@@ -68,13 +72,17 @@ async function enablePushNotifications() {
                 console.log(JSON.stringify(subscription));
 
                 // Register subscription with LSP server
-                await fetch(
+                const response = await fetch(
                     "/push-notifications/subscribe", {
                         method: "post",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify(subscription)
                     }
                 );
+
+                const rspJson = await response.json();
+                console.log("Subscription ID:", rspJson.subid);
+                window.localStorage.setItem("subid", rspJson.subid);
             }
         }
         catch (err) {
