@@ -43,11 +43,11 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     // Register service worker
     if ("serviceWorker" in navigator)
     {
-        navigator.serviceWorker.register("service.js");
+        navigator.serviceWorker.register("/service.js");
     }
 });
 
-function onLinkClick(event) {
+async function onLinkClick(event) {
     if (event.defaultPrevented) {
         return;
     }
@@ -55,6 +55,18 @@ function onLinkClick(event) {
     if (urlIsOnSameSite(targetUrl)) {
         event.preventDefault();
         event.stopPropagation();
+        if (targetUrl.pathname == "/logout")
+        {
+            console.log("logging out");
+            // Logging out - delete notification subscription
+            window.localStorage.removeItem("subid");
+            const registration = await navigator.serviceWorker.getRegistration();
+            const existingSubscription = await registration.pushManager.getSubscription();
+            if (existingSubscription)
+            {
+                existingSubscription.unsubscribe();
+            }
+        }
         fetch(targetUrl, {redirect: "follow"}).then(handleAjaxResponse).catch((err) => console.log(err));
     }
 }

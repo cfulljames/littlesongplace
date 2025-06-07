@@ -91,17 +91,7 @@ def activity():
             [timestamp, session["userid"]])
     db.commit()
 
-    comment_push = False
-    song_push = False
-    if "subid" in session:
-        row = db.query(
-                "SELECT settings FROM users_push_subscriptions WHERE subid = ?",
-                [session["subid"]], one=True)
-        if row:
-            comment_push = (row["settings"] & push_notifications.SubscriptionSetting.COMMENTS) > 0
-            song_push = (row["settings"] & push_notifications.SubscriptionSetting.SONGS) > 0
-
-    return render_template("activity.html", comments=notifications, comment_push=comment_push, song_push=song_push)
+    return render_template("activity.html", comments=notifications)
 
 @bp.get("/new-activity")
 def new_activity():

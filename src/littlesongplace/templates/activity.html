@@ -12,15 +12,34 @@
     <!--<button onclick="enablePushNotifications()" class="button" style="float: right;">Enable</button>-->
     Send me a push notification on this device when:
     <br/>
-    <label><input type="checkbox" onclick="updateSettings()" id="comment-push" {% if comment_push %}checked{% endif %}>I get a new comment</label>
+    <label><input type="checkbox" onclick="updateSettings()" id="comment-push">I get a new comment</label>
     <br/>
-    <label><input type="checkbox" onclick="updateSettings()" id="song-push" {% if song_push %}checked{% endif %}>Anyone uploads a new song</label>
+    <label><input type="checkbox" onclick="updateSettings()" id="song-push">Anyone uploads a new song</label>
 </div>
 
 <br/>
 <br/>
 
 <script>
+
+function updateSelections() {
+    // Prevent this from getting called again on the next page load
+    document.removeEventListener("DOMContentLoaded", updateSelections);
+
+    if (window.localStorage.getItem("subid"))
+    {
+        const params = new URLSearchParams({subid: window.localStorage.getItem("subid")});
+        fetch(`/push-notifications/settings?${params}`).then((r) => {
+            r.json().then((j) => {
+                console.log(j);
+                document.getElementById("comment-push").checked = j.comments;
+                document.getElementById("song-push").checked = j.songs;
+            });
+        })
+    }
+}
+document.addEventListener("DOMContentLoaded", updateSelections());
+
 function showSettings() {
     document.getElementById("activity-settings").hidden = false;
     document.getElementById("btn-show-settings").hidden = true;
