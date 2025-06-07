@@ -98,11 +98,14 @@ def append_to_playlist():
     if not song_data:
         abort(404)
 
-    # Set index to count of songs in list
+    # Set index to one more than the current max
     existing_songs = db.query(
             "select * from playlist_songs where playlistid = ?",
             args=[playlistid])
-    new_position = len(existing_songs)
+    if existing_songs:
+        new_position = max(s["position"] for s in existing_songs) + 1
+    else:
+        new_position = 1
 
     # Add to playlist
     db.query(
