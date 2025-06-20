@@ -21,8 +21,10 @@ def get():
         # Run update script if DB is out of date
         schema_update_script = Path(current_app.root_path) / 'sql' / 'schema_update.sql'
         if user_version < DB_VERSION and schema_update_script.exists():
+            current_app.logger.info(f"Expected schema {DB_VERSION}, have {user_version}.  Updating DB...")
             with current_app.open_resource(schema_update_script, mode='r') as f:
                 db.cursor().executescript(f.read())
+            current_app.logger.info(f"DB updated successfully")
             db.commit()
     return db
 
