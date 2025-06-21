@@ -1,4 +1,9 @@
+var m_firstLoadNav = true;
 document.addEventListener("DOMContentLoaded", async (e) => {
+    if (m_firstLoadNav) {
+        m_firstLoadNav = false;
+        window.history.replaceState(document.documentElement.outerHTML, "");
+    }
 
     // Handle link clicks with AJAX
     document.querySelectorAll("a").forEach((anchor) => {
@@ -30,6 +35,11 @@ document.addEventListener("DOMContentLoaded", async (e) => {
         document.getElementById("logged-in-status").innerText = `Signed in as ${username}`;
         document.getElementById("my-profile").href = `/users/${username}`;
     }
+
+    // Add event handler to navbar links to hide menu on mobile
+    document.querySelectorAll("#navbar a, #page-header div a").forEach((link) => {
+        link.addEventListener("click", (e) => {hideNavMenu(e)});
+    });
 
     // Update activity indicator status
     checkForNewActivity();
@@ -135,6 +145,7 @@ async function handleAjaxResponse(response) {
 
         // Get page content from response
         var text = await response.text();
+        console.log("PUSH", url);
         window.history.pushState(text, "", url);
 
         updatePageState(text);
@@ -250,4 +261,25 @@ function updateImageColors() {
         });
     });
 }
+
+// Navigation menu visibility
+const sizeQuery = window.matchMedia('(min-width: 480px)');
+function showNavMenu() {
+    document.getElementById('page-header').style['display'] = 'block';
+}
+
+function hideNavMenu() {
+    if (!sizeQuery.matches) {
+        document.getElementById('page-header').style['display'] = 'none';
+    }
+}
+
+sizeQuery.addListener((e) => {
+    if (e.matches) { // Switch from small to big, show menu
+        showNavMenu();
+    }
+    else {
+        hideNavMenu();
+    }
+});
 

@@ -177,14 +177,14 @@ function songUpdate() {
 }
 
 // Add event listeners
-var m_firstLoad = true;
+var m_firstLoadPlayer = true;
 document.addEventListener("DOMContentLoaded", (event) => {
 
     // The player never gets rebuilt, so we only need to set it up the first time
-    if (!m_firstLoad) {
+    if (!m_firstLoadPlayer) {
         return;
     }
-    m_firstLoad = false;
+    m_firstLoadPlayer = false;
 
     // Audio playback position while playing
     var audio = document.getElementById("player-audio");

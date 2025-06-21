@@ -254,13 +254,14 @@ input[type=range]::-moz-range-thumb {
 #page-header {
     display: none;
     position: fixed;
-    box-shadow: 5px 5px 0px 0px var(--black);
-    border: 1px solid var(--black);
-    border-radius: var(--radius);
     background-color: var(--yellow);
-    margin: 10px;
+    margin: 0px;
     padding: 5px;
-    width: calc(100% - 30px);
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
 }
 
 #navbar {
@@ -278,6 +279,10 @@ input[type=range]::-moz-range-thumb {
         width: auto;
         display: block;
         position: static;
+        margin: 10px;
+        box-shadow: 5px 5px 0px 0px var(--black);
+        border: 1px solid var(--black);
+        border-radius: var(--radius);
     }
     #navbar {
         flex-direction: row;
@@ -339,6 +344,7 @@ input[type=range]::-moz-range-thumb {
     background: none;
     border: none;
     padding: 10px;
+    padding-bottom: 0px;
     /* margin-left: 10px; */
     /* margin-top: 10px; */
     /* left: 10px; */
