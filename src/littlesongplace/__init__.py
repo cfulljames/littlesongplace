@@ -29,6 +29,7 @@ root_logger.addHandler(handler)
 app = Flask(__name__)
 app.secret_key = os.environ["SECRET_KEY"] if "SECRET_KEY" in os.environ else "dev"
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024 * 1024
+app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 app.register_blueprint(activity.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(comments.bp)
@@ -77,6 +78,16 @@ def index():
 @app.get("/site-news")
 def site_news():
     return render_template("news.html")
+
+@app.get("/folks")
+def folks():
+    all_users = db.query("select * from users order by username asc")
+    all_users = [dict(row) for row in all_users]
+    for user in all_users:
+        user["has_pfp"] = users.user_has_pfp(user["userid"])
+        for key, value in users.get_user_colors(user).items():
+            user[key] = value
+    return render_template("folks.html", users=all_users)
 
 @app.get("/about")
 def about():

@@ -152,14 +152,6 @@ div.main {
     padding: 10px;
 }
 
-div.page-header {
-    box-shadow: 5px 5px 0px 0px var(--black);
-    border: 1px solid var(--black);
-    border-radius: var(--radius);
-    margin: 10px;
-    padding: 5px;
-}
-
 .flashes {
     border: 3px solid var(--blue);
     border-radius: var(--radius);
@@ -258,7 +250,21 @@ input[type=range]::-moz-range-thumb {
 }
 
 /* Desktop Navbar */
-div.navbar {
+#page-header {
+    display: none;
+    box-shadow: 5px 5px 0px 0px var(--black);
+    border: 1px solid var(--black);
+    border-radius: var(--radius);
+    margin: 10px;
+    padding: 5px;
+}
+@media screen and (min-width: 480px) {
+    #page-header {
+        display: block;
+    }
+}
+
+#navbar {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -292,11 +298,25 @@ div.navbar {
     border-radius: var(--radius);
     box-shadow: 3px 3px 0px 0px;
 }
+@media screen and (min-width: 480px) {
+    #mobile-navbar {
+        display: none;
+    }
+}
 
-#mobile-navbar button {
+#mobile-navbar a {
     color: var(--black);
     border: none;
     background: none;
+    width: 56px;
+    text-align: center;
+    font-size: 0.8em;
+    text-decoration: none;
+}
+
+#mobile-nav-pfp {
+    border: 2px solid var(--black);
+    border-radius: var(--radius);
 }
 
 /* Upload/Edit Form */
