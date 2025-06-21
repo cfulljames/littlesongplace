@@ -58,6 +58,7 @@ h1, h2, h3, h4 {
 h1 {
     font-size: 40px;
     text-align: center;
+    margin-top: 10px;
 }
 
 h2 {
@@ -252,27 +253,37 @@ input[type=range]::-moz-range-thumb {
 /* Desktop Navbar */
 #page-header {
     display: none;
+    position: fixed;
     box-shadow: 5px 5px 0px 0px var(--black);
     border: 1px solid var(--black);
     border-radius: var(--radius);
+    background-color: var(--yellow);
     margin: 10px;
     padding: 5px;
-}
-@media screen and (min-width: 480px) {
-    #page-header {
-        display: block;
-    }
+    width: calc(100% - 30px);
 }
 
 #navbar {
     display: flex;
     flex-wrap: wrap;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 10px;
     padding-bottom: 10px;
 }
+
+@media screen and (min-width: 480px) {
+    #page-header {
+        width: auto;
+        display: block;
+        position: static;
+    }
+    #navbar {
+        flex-direction: row;
+    }
+}
+
 
 #activity-indicator {
     width: 8px;
@@ -284,12 +295,8 @@ input[type=range]::-moz-range-thumb {
 
 /* Mobile Navbar */
 #mobile-navbar {
-    position: fixed;
-    width: calc(100% - 20px);
-    left: 10px;
-    bottom: 5px;
-    margin-left: auto;
-    margin-right: auto;
+    /* position: fixed; */
+    margin: 10px;
     padding: 5px 0px;
     display: flex;
     justify-content: space-evenly;
@@ -298,8 +305,15 @@ input[type=range]::-moz-range-thumb {
     border-radius: var(--radius);
     box-shadow: 3px 3px 0px 0px;
 }
+
 @media screen and (min-width: 480px) {
     #mobile-navbar {
+        display: none;
+    }
+    #mobile-menu-btn {
+        display: none;
+    }
+    #mobile-hide-header-btn {
         display: none;
     }
 }
@@ -319,6 +333,28 @@ input[type=range]::-moz-range-thumb {
     border-radius: var(--radius);
 }
 
+#mobile-menu-btn {
+    color: var(--black);
+    /* position: absolute; */
+    background: none;
+    border: none;
+    padding: 10px;
+    /* margin-left: 10px; */
+    /* margin-top: 10px; */
+    /* left: 10px; */
+    /* top: 10px; */
+}
+
+#mobile-hide-header-btn {
+    color: var(--black);
+    /* position: absolute; */
+    background: none;
+    border: none;
+    padding: 10px;
+    /* left: 2px; */
+    /* top: 5px; */
+}
+
 /* Upload/Edit Form */
 
 div.upload-form {
@@ -335,11 +371,6 @@ input[type=file] {
 }
 
 /* Profile */
-.profile-name {
-    text-align: center;
-    font-size: 40px;
-}
-
 .big-pfp-container {
     margin: 0 auto;
     width: 200px;
@@ -555,7 +586,7 @@ div.player {
     margin: 10px;
     padding: 10px;
     padding-bottom: 0px;
-    box-shadow: 0px 0px 10px 0px;
+    box-shadow: 3px 3px 0px 0px;
     border: 2px solid;
     border-radius: var(--radius);
     background: var(--yellow);
@@ -564,7 +595,7 @@ div.player {
 .mini-player {
     margin: 10px;
     padding-left: 10px;
-    box-shadow: 0px 0px 10px 0px;
+    box-shadow: 3px 3px 0px 0px;
     border: 2px solid;
     border-radius: var(--radius);
     background: var(--yellow);
