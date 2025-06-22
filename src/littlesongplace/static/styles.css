@@ -42,7 +42,7 @@ body {
     color: var(--black);
     font-family: "Unageo", sans-serif;
     border-color: var(--purple);
-    max-width: 700px;
+    max-width: 1200px;
     margin: auto;
 }
 
@@ -147,10 +147,62 @@ select {
     padding: 8px;
 }
 
-div.main {
-    max-width: 700px;
-    margin: auto;
+#outer {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#left {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#main {
+    flex-grow: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#right {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.page-section {
+    border: 1px solid var(--black);
+    box-shadow: 4px 4px 0px 0px var(--black);
+    border-radius: var(--radius);
     padding: 10px;
+}
+
+.page-section-header {
+    font-size: 26px;
+    font-family: "Mat Saleh", sans-serif;
+    /*border: 2px solid var(--purple);*/
+    background: var(--purple);
+    color: var(--yellow);
+    border-radius: var(--radius) var(--radius) 0px 0px;
+    text-align: center;
+    position: relative;
+    left: -10px;
+    top: -10px;
+    padding: 5px 0px;
+    width: calc(100% + 20px);
+}
+
+#user-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: space-evenly;
+    margin: 10px 0px 0px 0px;
 }
 
 .flashes {
@@ -257,7 +309,6 @@ input[type=range]::-moz-range-thumb {
     background-color: var(--yellow);
     margin: 0px;
     padding: 5px;
-    box-sizing: border-box;
     width: 100%;
     height: 100%;
     top: 0px;
@@ -271,15 +322,27 @@ input[type=range]::-moz-range-thumb {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    padding-bottom: 10px;
+    margin: 10px;
+}
+
+#site-title {
+    padding: 10px 20px;
+}
+
+#site-title a {
+    font-family: "Mat Saleh", sans-serif;
+    color: var(--purple);
+    font-size: 2em;
 }
 
 @media screen and (min-width: 480px) {
     #page-header {
         width: auto;
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         position: static;
-        margin: 10px;
+        margin: 10px 0px;
         box-shadow: 5px 5px 0px 0px var(--black);
         border: 1px solid var(--black);
         border-radius: var(--radius);
@@ -506,27 +569,13 @@ div.song-main {
 div.song-info {
     font-family: "Unageo", sans-serif;
     display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
+    flex-direction: column;
+    align-items: flex-start;
     row-gap: 0px;
-    column-gap: 10px;
-    align-items: center;
     flex-grow: 1;
     margin: 5px 0px;
     min-width: 0;
     overflow: hidden;
-}
-
-/* Artist on separate line for mobile */
-@media screen and (max-width: 480px) {
-    div.song-info {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    div.song-info-sep {
-        display: none;
-    }
 }
 
 .song-title a {
@@ -581,7 +630,7 @@ div.comment-button-container {
 
 div.player-container {
     position: fixed;
-    max-width: 700px;
+    max-width: 1200px;
     margin: auto;
     bottom: 0;
     left: 0;

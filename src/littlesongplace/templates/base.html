@@ -29,32 +29,34 @@
             <button id="mobile-hide-header-btn" onclick="hideNavMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="currentColor" d="m12 14.122l5.303 5.303a1.5 1.5 0 0 0 2.122-2.122L14.12 12l5.304-5.303a1.5 1.5 0 1 0-2.122-2.121L12 9.879L6.697 4.576a1.5 1.5 0 1 0-2.122 2.12L9.88 12l-5.304 5.304a1.5 1.5 0 1 0 2.122 2.12z"/></g></svg>
             </button>
-            <div style="text-align: center;">
-                <!--<img class="title-image littlesongplace02">-->
-                <a href="/" style="text-decoration: none;"><h1>little song place</h1></a>
+
+            <div id="site-title">
+                <a href="/" style="text-decoration: none;">little song place</a>
             </div>
+
             <!-- Navbar/Menu -->
             <div id="navbar">
-                <a href="/jams/1">Jam</a>
-                <a href="/about">About</a>
-                <a href="/site-news">News</a>
-                <a href="/songs">Random</a>
+                <a href="/site-news">site news</a>
+                <a href="/about">about the site</a>
 
-                <a href="/users/{{ session["username"] }}" class="nav-logged-in" id="my-profile" hidden>My Profile</a>
-                <a href="/activity" class="nav-logged-in" hidden><span id="activity-indicator" hidden></span>Activity</a>
-                <a href="/logout" class="nav-logged-in" hidden>Sign Out</a>
+                <!-- <a href="/songs">tunes</a> -->
+                <!-- <a href="/jams/1">jams</a> -->
 
-                <a href="/signup" class="nav-logged-out">Create Account</a>
-                <a href="/login" class="nav-logged-out">Sign In</a>
+                <!-- <a href="/users/{{ session["username"] }}" class="nav-logged-in" id="my-profile" hidden>profile</a> -->
+                <!-- <a href="/activity" class="nav-logged-in" hidden><span id="activity-indicator" hidden></span>activity</a> -->
+                <!-- <a href="/logout" class="nav-logged-in" hidden>sign out</a> -->
 
-                <span class="nav-logged-in" id="logged-in-status" hidden></span>
+                <!-- <a href="/signup" class="nav-logged-out">create account</a> -->
+                <!-- <a href="/login" class="nav-logged-out">sign in</a> -->
+
+                <!-- <span class="nav-logged-in" id="logged-in-status" hidden></span> -->
             </div>
         </div>
 
         <!-- Flashed Status Messages -->
         <div id="flashes-container">
             {% with messages = get_flashed_messages(with_categories=True) -%}
-            {% if messages  -%}
+            {% if messages -%}
             <div class="flashes">
                 <ul>
                     {% for category, message in messages %}
@@ -66,8 +68,34 @@
             {%- endwith %}
         </div>
 
-        <!-- Page-Specific Content -->
-        <div class="main" id="main" data-bgcolor="{{ bgcolor }}" data-fgcolor="{{ fgcolor }}" data-accolor="{{ accolor }}" data-username="{{ session['username'] }}">{% block body %}{% endblock %}</div>
+        <div id="outer">
+            <div id="left">
+                <div class="page-section">
+                    <div class="page-section-header">me</div>
+                    <div class="user-list-entry-container">
+                        <a href="/users/{{ g.user.username }}" class="user-list-entry" style="--yellow:{{ g.user.bgcolor }};--black:{{ g.user.fgcolor }};--purple:{{ g.user.accolor }};">
+                            {% if g.user.has_pfp -%}
+                            <img class="small-pfp" src="/pfp/{{ g.user['userid'] }}" width="32" height="32" />
+                            {%- endif %}
+                            <span>{{ g.user.username }}</span>
+                        </a>
+                    </div>
+                    <div id="user-actions">
+                        <a href="/activity" class="nav-logged-in" hidden><span id="activity-indicator" hidden></span>activity</a>
+                        <a href="/logout" class="nav-logged-in" hidden>sign out</a>
+                    </div>
+                </div>
+                {% block left %}{% endblock %}
+            </div>
+
+            <!-- Page-Specific Content -->
+            <div id="main" data-bgcolor="{{ bgcolor }}" data-fgcolor="{{ fgcolor }}" data-accolor="{{ accolor }}" data-username="{{ session['username'] }}">{% block body %}{% endblock %}</div>
+
+            <div id="right">
+                {% block right %}{% endblock %}
+            </div>
+
+        </div> <!-- outer -->
 
         <!-- Padding to prevent player from obscuring content -->
         <div id="scroll-padding"></div>

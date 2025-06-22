@@ -31,10 +31,10 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     var loggedIn = username ? true : false;
     document.querySelectorAll(".nav-logged-in").forEach((e) => {e.hidden = !loggedIn;});
     document.querySelectorAll(".nav-logged-out").forEach((e) => {e.hidden = loggedIn;});
-    if (loggedIn) {
-        document.getElementById("logged-in-status").innerText = `Signed in as ${username}`;
-        document.getElementById("my-profile").href = `/users/${username}`;
-    }
+    // if (loggedIn) {
+    //     document.getElementById("logged-in-status").innerText = `signed in as ${username}`;
+    //     document.getElementById("my-profile").href = `/users/${username}`;
+    // }
 
     // Add event handler to navbar links to hide menu on mobile
     document.querySelectorAll("#navbar a, #page-header div a").forEach((link) => {
@@ -166,9 +166,9 @@ function updatePageState(data) {
     data = parser.parseFromString(data, "text/html");
 
     // Update main body content
-    var newMainDiv = data.getElementById("main");
-    var oldMainDiv = document.getElementById("main");
-    document.body.replaceChild(newMainDiv, oldMainDiv);
+    var newOuterDiv = data.getElementById("outer");
+    var oldOuterDiv = document.getElementById("outer");
+    document.body.replaceChild(newOuterDiv, oldOuterDiv);
 
     // Update flashed messages
     var newFlashes = data.getElementById("flashes-container");
@@ -179,7 +179,7 @@ function updatePageState(data) {
     document.title = data.title;
 
     // Load inline scripts (DOMParser disables these by default)
-    var scripts = document.getElementById("main").getElementsByTagName("script");
+    var scripts = document.getElementById("outer").getElementsByTagName("script");
     for (const script of scripts) {
         var newScript = document.createElement("script");
         newScript.type = script.type;

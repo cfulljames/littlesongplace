@@ -11,6 +11,10 @@ class User:
     accolor: str
 
     @property
+    def has_pfp(self):
+        return user_has_pfp(self.userid)
+
+    @property
     def colors(self):
         return {
             "fgcolor": self.fgcolor,
