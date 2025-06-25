@@ -43,6 +43,7 @@ body {
     font-family: "Unageo", sans-serif;
     border-color: var(--purple);
     max-width: 1200px;
+    width: calc(100% - 40px);
     margin: auto;
 }
 
@@ -156,7 +157,8 @@ select {
 }
 
 #left {
-    flex-grow: 1;
+    /* flex-grow: 1; */
+    width: 25%;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -167,10 +169,12 @@ select {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    max-width: calc(50% - 40px);
 }
 
 #right {
-    flex-grow: 1;
+    width: 25%;
+    /* flex-grow: 1; */
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -189,11 +193,12 @@ select {
     /*border: 2px solid var(--purple);*/
     background: var(--purple);
     color: var(--yellow);
+    border: 1px solid var(--black);
     border-radius: var(--radius) var(--radius) 0px 0px;
     text-align: center;
     position: relative;
-    left: -10px;
-    top: -10px;
+    left: -11px;
+    top: -11px;
     padding: 5px 0px;
     width: calc(100% + 20px);
 }
