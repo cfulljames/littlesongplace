@@ -233,6 +233,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
             case "ArrowRight":
                 newTime += 10;
                 break;
+            default:
+                // Unhandled key - just ignore it
+                return;
         }
         if (newTime < 0) {
             newTime = 0;
