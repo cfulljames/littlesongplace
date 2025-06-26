@@ -177,17 +177,21 @@ function songUpdate() {
 }
 
 // Add event listeners
-var m_firstLoad = true;
+var m_firstLoadPlayer = true;
 document.addEventListener("DOMContentLoaded", (event) => {
 
+    // Sync volume with current slider position (may be reset after refresh)
+    var audio = document.getElementById("player-audio");
+    const slider = document.getElementById("volume-slider");
+    audio.volume = slider.value;
+
     // The player never gets rebuilt, so we only need to set it up the first time
-    if (!m_firstLoad) {
+    if (!m_firstLoadPlayer) {
         return;
     }
-    m_firstLoad = false;
+    m_firstLoadPlayer = false;
 
     // Audio playback position while playing
-    var audio = document.getElementById("player-audio");
     audio.addEventListener("timeupdate", songUpdate);
 
     // Next song on audio playback end

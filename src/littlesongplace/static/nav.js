@@ -1,4 +1,9 @@
-document.addEventListener("DOMContentLoaded", (e) => {
+var m_firstLoadNav = true;
+document.addEventListener("DOMContentLoaded", async (e) => {
+    if (m_firstLoadNav) {
+        m_firstLoadNav = false;
+        window.history.replaceState(document.documentElement.outerHTML, "");
+    }
 
     // Handle link clicks with AJAX
     document.querySelectorAll("a").forEach((anchor) => {
