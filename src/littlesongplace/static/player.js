@@ -106,6 +106,7 @@ function playCurrentSong() {
 function showBigPlayer() {
     document.getElementById("mini-player").hidden = true;
     document.getElementById("player").hidden = false;
+    updateImageColors();
 }
 
 function showMiniPlayer(event) {
@@ -115,6 +116,7 @@ function showMiniPlayer(event) {
         bigPlayer.hidden = true;
         document.getElementById("mini-player").hidden = false;
     }
+    updateImageColors();
 }
 
 // Play or pause the current song in the player
@@ -205,6 +207,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         button.src = customImage(document.getElementById("lsp_btn_pause02"), button);
         miniButton.className = "lsp_btn_pause02";
         miniButton.src = customImage(document.getElementById("lsp_btn_pause02"), button);
+        updateImageColors();
     })
 
     // Show play button when audio is paused
@@ -213,6 +216,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         button.src = customImage(document.getElementById("lsp_btn_play02"), button);
         miniButton.className = "lsp_btn_play02";
         miniButton.src = customImage(document.getElementById("lsp_btn_play02"), button);
+        updateImageColors();
     })
 
     // Audio position scrubbing
