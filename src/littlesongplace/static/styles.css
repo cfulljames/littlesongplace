@@ -460,26 +460,14 @@ div.song-info {
     font-family: "Unageo", sans-serif;
     display: flex;
     flex-wrap: wrap;
-    flex-direction: row;
+    flex-direction: column;
     row-gap: 0px;
     column-gap: 10px;
-    align-items: center;
+    align-items: flex-start;
     flex-grow: 1;
     margin: 5px 0px;
     min-width: 0;
     overflow: hidden;
-}
-
-/* Artist on separate line for mobile */
-@media screen and (max-width: 480px) {
-    div.song-info {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    div.song-info-sep {
-        display: none;
-    }
 }
 
 .song-title a {

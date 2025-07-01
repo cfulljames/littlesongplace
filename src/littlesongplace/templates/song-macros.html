@@ -23,10 +23,6 @@
         <a href="/song/{{ song.userid }}/{{ song.songid }}?action=view">{{ song.title }}</a>
     </div>
 
-    <!-- Separator -->
-    <div class="song-info-sep"> - </div>
-
-
     <!-- Song Artist(s) -->
     {{ song_artist(song) | indent(4) }}
 </div>
