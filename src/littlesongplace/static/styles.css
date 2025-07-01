@@ -148,6 +148,11 @@ div.main {
     flex-grow: 1;
 }
 
+.sticky {
+    position: sticky;
+    top: 10px;
+}
+
 @media screen and (max-width: 900px) {
     .layout-flex {
         flex-direction: column;
@@ -155,11 +160,7 @@ div.main {
     }
     .layout-main { width: 100%; }
     .layout-side { width: auto; }
-}
-
-.sticky {
-    position: sticky;
-    top: 10px;
+    .sticky { position: static; }
 }
 
 .site-title {
