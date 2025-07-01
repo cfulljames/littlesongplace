@@ -42,7 +42,7 @@ body {
     color: var(--black);
     font-family: "Unageo", sans-serif;
     border-color: var(--purple);
-    max-width: 700px;
+    max-width: 900px;
     margin: auto;
 }
 
@@ -125,18 +125,52 @@ select {
     padding: 8px;
 }
 
+.mt0 { margin-top: 0px; }
+
 div.main {
     max-width: 700px;
     margin: auto;
     padding: 10px;
 }
 
-div.page-header {
-    box-shadow: 5px 5px 0px 0px var(--black);
-    border: 1px solid var(--black);
-    border-radius: var(--radius);
-    margin: 10px;
-    padding: 5px;
+.layout-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.layout-side {
+    width: 20%;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.layout-main {
+    flex-grow: 1;
+}
+
+@media screen and (max-width: 900px) {
+    .layout-flex {
+        flex-direction: column;
+        align-items: center;
+    }
+    .layout-main { width: 100%; }
+    .layout-side { width: auto; }
+}
+
+.site-title {
+    text-align: center;
+    font-size: 3em;
+    font-family: "Mat Saleh", sans-serif;
+    font-weight: bold;
+    color: var(--purple);
+    margin: 20px;
+    text-shadow: 2px 2px 0px var(--black);
+}
+
+@media screen and (max-width: 480px) {
+    .site-title {
+        font-size: 2em;
+    }
 }
 
 .flashes {
@@ -237,14 +271,35 @@ input[type=range]::-moz-range-thumb {
 }
 
 /* Navbar */
-div.navbar {
+.navbar {
+    position: sticky;
+    top: 10px;
+
     display: flex;
     flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
     gap: 10px;
-    padding-bottom: 10px;
+
+    overflow: hidden;
+
+    box-shadow: 2px 2px 0px 0px var(--black);
+    border: 1px solid var(--black);
+    border-radius: var(--radius);
+    margin: 10px;
+    padding: 10px;
+    /* padding-bottom: 10px; */
+}
+
+@media screen and (max-width: 900px) {
+    .navbar {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        max-width: 700px;
+    }
 }
 
 #activity-indicator {

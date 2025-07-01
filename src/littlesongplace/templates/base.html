@@ -20,47 +20,52 @@
         <!-- Embedded image data -->
         {{ gif_data|safe }}
 
-        <div class="page-header">
-            <div style="text-align: center;">
-                <!--<img class="title-image littlesongplace02">-->
-                <h1>little song place</h1>
-            </div>
+        <div class="site-title">little song place</div>
+
+        <div class="layout-flex">
+
             <!-- Navbar -->
-            <div class="navbar">
-                <a href="/">Home</a>
-                <a href="/jams/1">Jam</a>
-                <a href="/about">About</a>
-                <a href="/site-news">News</a>
-                <a href="/songs">Random</a>
+            <div class="layout-side">
+                <div class="navbar">
+                    <a href="/">Home</a>
+                    <a href="/jams/1">Jam</a>
+                    <a href="/about">About</a>
+                    <a href="/site-news">News</a>
+                    <a href="/songs">Random</a>
+                </div>
 
-                <a href="/users/{{ session["username"] }}" class="nav-logged-in" id="my-profile" hidden>My Profile</a>
-                <a href="/activity" class="nav-logged-in" hidden><span id="activity-indicator" hidden></span>Activity</a>
-                <a href="/logout" class="nav-logged-in" hidden>Sign Out</a>
+                <div class="navbar">
+                    <a href="/users/{{ session["username"] }}" class="nav-logged-in" id="my-profile" hidden>My Profile</a>
+                    <a href="/activity" class="nav-logged-in" hidden><span id="activity-indicator" hidden></span>Activity</a>
+                    <a href="/logout" class="nav-logged-in" hidden>Sign Out</a>
 
-                <a href="/signup" class="nav-logged-out">Create Account</a>
-                <a href="/login" class="nav-logged-out">Sign In</a>
+                    <a href="/signup" class="nav-logged-out">Create Account</a>
+                    <a href="/login" class="nav-logged-out">Sign In</a>
 
-                <span class="nav-logged-in" id="logged-in-status" hidden></span>
+                    <span class="nav-logged-in" id="logged-in-status" hidden></span>
+                </div>
+            </div>
+
+            <div class="layout-main">
+                <!-- Flashed Status Messages -->
+                <div id="flashes-container">
+                    {% with messages = get_flashed_messages(with_categories=True) -%}
+                    {% if messages  -%}
+                    <div class="flashes">
+                        <ul>
+                            {% for category, message in messages %}
+                            <li class="flash-msg {{ category }}">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {%- endif %}
+                    {%- endwith %}
+                </div>
+
+                <!-- Page-Specific Content -->
+                <div class="main" id="main" data-bgcolor="{{ bgcolor }}" data-fgcolor="{{ fgcolor }}" data-accolor="{{ accolor }}" data-username="{{ session['username'] }}">{% block body %}{% endblock %}</div>
             </div>
         </div>
-
-        <!-- Flashed Status Messages -->
-        <div id="flashes-container">
-            {% with messages = get_flashed_messages(with_categories=True) -%}
-            {% if messages  -%}
-            <div class="flashes">
-                <ul>
-                    {% for category, message in messages %}
-                    <li class="flash-msg {{ category }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {%- endif %}
-            {%- endwith %}
-        </div>
-
-        <!-- Page-Specific Content -->
-        <div class="main" id="main" data-bgcolor="{{ bgcolor }}" data-fgcolor="{{ fgcolor }}" data-accolor="{{ accolor }}" data-username="{{ session['username'] }}">{% block body %}{% endblock %}</div>
 
         <!-- Padding to prevent player from obscuring content -->
         <div id="scroll-padding"></div>

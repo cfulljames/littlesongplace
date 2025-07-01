@@ -144,7 +144,7 @@ function updatePageState(data) {
     // Update main body content
     var newMainDiv = data.getElementById("main");
     var oldMainDiv = document.getElementById("main");
-    document.body.replaceChild(newMainDiv, oldMainDiv);
+    oldMainDiv.parentElement.replaceChild(newMainDiv, oldMainDiv);
 
     // Update flashed messages
     var newFlashes = data.getElementById("flashes-container");
