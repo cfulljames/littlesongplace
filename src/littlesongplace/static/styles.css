@@ -157,6 +157,11 @@ div.main {
     .layout-side { width: auto; }
 }
 
+.sticky {
+    position: sticky;
+    top: 10px;
+}
+
 .site-title {
     text-align: center;
     font-size: 3em;
@@ -272,9 +277,6 @@ input[type=range]::-moz-range-thumb {
 
 /* Navbar */
 .navbar {
-    position: sticky;
-    top: 10px;
-
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
@@ -294,7 +296,6 @@ input[type=range]::-moz-range-thumb {
 
 @media screen and (max-width: 900px) {
     .navbar {
-        position: static;
         flex-direction: row;
         justify-content: center;
         align-items: center;
