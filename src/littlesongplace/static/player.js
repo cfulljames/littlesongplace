@@ -42,9 +42,6 @@ function playCurrentSong() {
     title.textContent = songData.title;
     title.href = `/song/${songData.userid}/${songData.songid}?action=view`;
 
-    var separator = document.getElementById("player-info-sep");
-    separator.hidden = false;
-
     var artist = document.getElementById("player-artist");
     artist.textContent = songData.username;
     artist.href = `/users/${songData.username}`;
