@@ -164,6 +164,9 @@ div.main {
 }
 
 .site-title {
+    display: flex;
+    justify-content: center;
+
     text-align: center;
     font-size: 3em;
     font-family: "Mat Saleh", sans-serif;
@@ -171,6 +174,17 @@ div.main {
     color: var(--purple);
     margin: 20px;
     text-shadow: 2px 2px 0px var(--black);
+}
+
+.site-title span {
+    position: relative;
+    animation: gentle-wave 8s infinite;
+    animation-delay: calc(0.5s * var(--i));
+}
+
+@keyframes gentle-wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
 
 @media screen and (max-width: 480px) {
