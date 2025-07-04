@@ -548,17 +548,22 @@ def delete_song(songid):
 
 @bp.get("/song/<int:userid>/<int:songid>")
 def song(userid, songid):
-    if request.args.get("action", None) == "view":
+    action = request.args.get("action", None)
+    if action in ["view", "download"]:
         try:
             song = by_id(songid)
             if song.userid != userid:
                 abort(404)
 
-            return render_template(
-                    "song.html",
-                    songs=[song],
-                    song=song,
-                    **users.get_user_colors(userid))
+            if action == "view":
+                return render_template(
+                        "song.html",
+                        songs=[song],
+                        song=song,
+                        **users.get_user_colors(userid))
+            else:  # download
+                return send_from_directory(
+                    datadir.get_user_songs_path(userid), str(songid) + ".mp3", as_attachment=True, download_name=song.title + ".mp3")
         except ValueError:
             abort(404)
     else:

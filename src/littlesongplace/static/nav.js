@@ -8,7 +8,9 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     // Handle link clicks with AJAX
     document.querySelectorAll("a").forEach((anchor) => {
         anchor.removeEventListener("click", onLinkClick);
-        anchor.addEventListener("click", onLinkClick);
+        if (!anchor.download) {
+            anchor.addEventListener("click", onLinkClick);
+        }
     });
 
     // Handle form submissions with AJAX
