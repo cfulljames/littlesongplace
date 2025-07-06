@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import bcrypt
 from flask import Blueprint, render_template, redirect, flash, g, request, current_app, session
 
-from . import comments, db
+from . import comments, db, users
 from .logutils import flash_and_log
 
 bp = Blueprint("auth", __name__)
@@ -108,10 +108,14 @@ def requires_login(f):
         if not "userid" in session:
             return redirect("/login")
 
-        g.userid = session["userid"]
-        g.username = session["username"]
-
         return f(*args, **kwargs)
 
     return _wrapper
+
+@bp.before_app_request
+def load_user():
+    if "userid" in session:
+        g.userid = session["userid"]
+        g.username = session["username"]
+        g.user = users.by_id(session["userid"])
 

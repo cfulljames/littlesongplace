@@ -91,6 +91,10 @@ def site_news():
 def about():
     return render_template("about.html")
 
+@app.get("/notifications")
+def notifications():
+    return render_template("notifications.html")
+
 def get_gif_data():
     # Convert all .gifs to base64 strings and embed them as dataset entries
     # in <div>s.  This is used by nav.js:customImage() - it replaces specific

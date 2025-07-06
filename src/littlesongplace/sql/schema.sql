@@ -1,3 +1,17 @@
+DROP TABLE IF EXISTS jam_events;
+CREATE TABLE jam_events(
+    eventid INTEGER PRIMARY KEY,
+    jamid INTEGER NOT NULL,
+    threadid INTEGER NOT NULL,
+    created TEXT NOT NULL,
+    title TEXT NOT NULL, -- Hidden until startdate
+    startdate TEXT,
+    enddate TEXT,
+    description TEXT, -- Hidden until startdate
+    FOREIGN KEY(jamid) REFERENCES jams(jamid),
+    FOREIGN KEY(threadid) REFERENCES comment_threads(threadid)
+);
+
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     userid INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,9 +35,12 @@ CREATE TABLE songs (
     title TEXT NOT NULL,
     description TEXT,
     threadid INTEGER,
-    FOREIGN KEY(userid) REFERENCES users(userid)
+    eventid INTEGER,
+    FOREIGN KEY(userid) REFERENCES users(userid),
+    FOREIGN KEY(eventid) REFERENCES jam_events(eventid)
 );
 CREATE INDEX idx_songs_by_user ON songs(userid);
+CREATE INDEX idx_songs_by_eventid ON songs(eventid);
 
 DROP TABLE IF EXISTS song_collaborators;
 CREATE TABLE song_collaborators (
@@ -159,5 +176,15 @@ BEGIN
     DELETE FROM notifications WHERE objectid = OLD.commentid AND objecttype = 0;
 END;
 
-PRAGMA user_version = 4;
+DROP TABLE IF EXISTS jams;
+CREATE TABLE jams (
+    jamid INTEGER PRIMARY KEY,
+    ownerid INTEGER NOT NULL,
+    created TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    FOREIGN KEY(ownerid) REFERENCES users(userid)
+);
+
+PRAGMA user_version = 5;
 

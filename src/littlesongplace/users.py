@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 
 from . import colors, datadir, db
@@ -9,6 +10,7 @@ class User:
     fgcolor: str
     bgcolor: str
     accolor: str
+    _ntfy_uuid: str
 
     @property
     def colors(self):
@@ -18,12 +20,23 @@ class User:
             "accolor": self.accolor,
         }
 
+    @property
+    def ntfy_uuid(self):
+        if not self._ntfy_uuid:
+            self._ntfy_uuid = str(uuid.uuid4())
+            db.query(
+                    "UPDATE users SET ntfyuuid = ? WHERE userid = ?",
+                    [self._ntfy_uuid, self.userid])
+            db.commit()
+        return self._ntfy_uuid
+
     @classmethod
     def from_row(cls, row):
         user_colors = get_user_colors(row)
         return User(
                 userid=row["userid"],
                 username=row["username"],
+                _ntfy_uuid=row["ntfyuuid"],
                 **user_colors)
 
 def by_id(userid):

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Push Notifications{% endblock %}
+
+{% block body %}
+
+<h1>Push Notifications</h1>
+
+<p>
+littlesong.place can send you push notifications on your phone via
+<a href="https://ntfy.sh/">ntfy</a>.
+It takes a few minutes to set up (I know, it's a little clunky), but you only have to do it once.
+Here's how it works:
+</p>
+<ol>
+    <li>Install the <a href="https://ntfy.sh/">ntfy app</a> on your device.</li>
+    <li>Open the app and grant it permission to send you push notifications when asked.</li>
+    <li>In the ntfy app, open the <b>Settings</b> tab, and set <b>Default server</b> to <a href="https://ntfy.littlesong.place">https://ntfy.littlesong.place</a>.<br><img src="/static/ntfy_server.webp" width="256"></li>
+    <li>Subscribe to each topic you'd like to be notified about using the '+' button in the app (see available topics below).<br><img src="/static/ntfy_sub.webp" width="256"></li>
+    <li>When you're done, it should look something like this:<br><img src="/static/ntfy_done.webp" width="256"><br></li>
+</ol>
+Available topics include:
+<ul>
+    <li><b>songs</b> - get notified (at most once per day) when new songs are uploaded</li>
+    <li><b>news</b> - get notified about <a href="/site-news">site news</a></li>
+    <li><b>jams</b> - get notified when <a href="/site-news">jams</a> start or end</li>
+    {% if g.user %}
+    <li><b>{{ g.user.ntfy_uuid }}</b> (unique to you) - get notified about <a href="/activity">activity</a> (comments)</li>
+    {% endif %}
+</ul>
+
+{% endblock %}
