@@ -28,6 +28,9 @@ def get_user_images_path(userid):
 def get_app_log_path():
     return _data_dir / "app.log"
 
+def get_vapid_public_key_path():
+    return _data_dir / "vapid-public.key"
+
 def get_vapid_private_key_path():
     return _data_dir / "vapid-private.key"
 
