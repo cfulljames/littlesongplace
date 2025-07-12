@@ -141,7 +141,7 @@ def _do_push(app, userids, title, body):
             for subid, sub in subs:
                 try:
                     if private_key:
-                        pywebpush.webpush(sub, data_str, vapid_private_key=private_key, vapid_claims=claims)
+                        pywebpush.webpush(sub, data_str, vapid_private_key=private_key, vapid_claims=claims.copy())
                     else:
                         pywebpush.webpush(sub, data_str)
 
