@@ -35,6 +35,27 @@ def subscribe():
 
     return {"status": "success", "subid": row["subid"]}
 
+@bp.post("/update-subscription/<int:subid>")
+@auth.requires_login
+def update_subscription(subid):
+    if not request.json:
+        # Request must contain valid subscription JSON
+        abort(400)
+
+    row = db.query(
+            """
+            UPDATE users_push_subscriptions
+            SET subscription = ?
+            WHERE subid = ? AND userid = ?
+            RETURNING subid
+            """,
+            [json.dumps(request.json), subid, g.userid], expect_one=True)
+    db.commit()
+
+    current_app.logger.info(f"{g.username} updated push subscription")
+
+    return {"status": "success", "subid": row["subid"]}
+
 @bp.get("/settings")
 @auth.requires_login
 def get_settings():
