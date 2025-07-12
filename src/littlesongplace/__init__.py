@@ -46,6 +46,12 @@ if "DATA_DIR" in os.environ:
     )
     app.logger.setLevel(logging.INFO)
 
+VAPID_PUBLIC_KEY = ""
+_vapid_key_path = datadir.get_vapid_public_key_path()
+if _vapid_key_path.exists():
+    with open(_vapid_key_path, "r") as f:
+        VAPID_PUBLIC_KEY = f.read().strip()
+
 @app.route("/")
 def index():
     all_users = db.query("select * from users order by username asc")
@@ -136,6 +142,7 @@ def inject_global_vars():
         gif_data=get_gif_data(),
         # Add to Playlist dropdown entries
         current_user_playlists=get_current_user_playlists(),
+        vapid_public_key=VAPID_PUBLIC_KEY,
         **colors.DEFAULT_COLORS,
     )
 

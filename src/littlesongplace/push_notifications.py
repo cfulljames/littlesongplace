@@ -147,12 +147,10 @@ def _do_push(app, userids, title, body):
 
                     sent_notifications += 1
                 except pywebpush.WebPushException as ex:
-                    if ex.response.status_code == 410:  # Subscription deleted
-                        app.logger.warning(f"Deleting dead push subscription: {subid}")
-                        db.query("DELETE FROM users_push_subscriptions WHERE subid = ?", [subid])
-                        db.commit()
-                    else:
-                        app.logger.error(f"Failed to send push: {ex}")
+                    # Failed to send notification, delete this subscription
+                    app.logger.warning(f"Deleting dead push subscription: {subid} - {ex}")
+                    db.query("DELETE FROM users_push_subscriptions WHERE subid = ?", [subid])
+                    db.commit()
 
         if sent_notifications > 0:
             app.logger.info(f"Pushed {sent_notifications} notifications")

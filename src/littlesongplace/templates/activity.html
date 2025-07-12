@@ -85,7 +85,7 @@ async function enablePushNotifications() {
             if (!existingSubscription || !window.localStorage.getItem("subid"))
             {
                 // Subscribe via browser's push service
-                const vapid_public_key = "BLsO37LostwqKch7SFr5Df0MexEoBOcujdMRY7wJurRPc_MGdz9rAkMrqs_dil4qSFxVbVyAA3FqLEPSL-WRNZs";
+                const vapid_public_key = "{{ vapid_public_key }}";
                 const options = {userVisibleOnly: true, applicationServerKey: vapid_public_key};
                 const subscription = await registration.pushManager.subscribe(options);
                 console.log(JSON.stringify(subscription));
