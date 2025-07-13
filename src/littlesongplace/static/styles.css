@@ -452,8 +452,8 @@ input[type=file] {
     box-shadow: 2px 2px 0px 0px;
     border: 1px solid var(--black);
     border-radius: var(--radius);
-    padding: 10px;
-    margin: 8px 0px;
+    padding: 5px;
+    margin: 10px 0px;
 }
 
 /* Song Entry in Song List */

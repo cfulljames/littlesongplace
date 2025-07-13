@@ -44,7 +44,7 @@
     {{ songs|length }} songs
     <button class="button subtle" onclick="showAllSongsInUploadBlock(event)">show all</button>
     {%- endif %}
-    <div style="padding-top: 10px">
+    <div style="padding-top: 5px">
         {{ song_list(songs, current_user_playlists, show_first_only=True) }}
     </div>
 </div>
