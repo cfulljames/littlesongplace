@@ -117,7 +117,7 @@
         {{ song_list_entry(song, current_user_playlists) | indent(8) }}
         {%- endfor %}
         {% for song in songs[1:] -%}
-        {{ song_list_entry(song, current_user_playlists, hidden=True) | indent(8) }}
+        {{ song_list_entry(song, current_user_playlists, hidden=show_first_only) | indent(8) }}
         {%- endfor %}
     </div>
 </div>
