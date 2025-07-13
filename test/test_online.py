@@ -10,7 +10,7 @@ import pytest
 TEST_DATA = Path(__file__).parent / "data"
 
 def _get_song_list_from_page(page_contents):
-    matches = re.findall('data-song="(.*)">', page_contents)
+    matches = re.findall(r'data-song="(.*)"\s+>', page_contents)
     return [json.loads(html.unescape(m)) for m in matches]
 
 def test_upload_and_delete_song(session):
