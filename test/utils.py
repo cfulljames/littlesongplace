@@ -85,6 +85,8 @@ def upload_song(
 
 def get_song_list_from_page(client, url):
     response = client.get(url)
-    matches = re.findall('data-song="(.*)">', response.data.decode())
+    print(response.data.decode())
+    matches = re.findall(r'data-song="(.*)"\s*>', response.data.decode())
+    print(matches)
     return [json.loads(html.unescape(m)) for m in matches]
 
