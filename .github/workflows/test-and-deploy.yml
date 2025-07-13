@@ -6,6 +6,10 @@ on:
       - dev
   workflow_dispatch: {}
 
+concurrency:
+  group: test_server
+  cancel-in-progress: false
+
 jobs:
   build-package:
     runs-on: ubuntu-latest
