@@ -175,6 +175,58 @@ function songUpdate() {
     document.getElementById("player-total-time").textContent = getTimeString(audio.duration);
 }
 
+// Shown song details when the "..." button is clicked in a song list
+function showSongDetails(event) {
+    var songElement = event.target.closest(".song");
+    var songDetails = songElement.querySelector(".song-details");
+    var detailsToggle = songElement.querySelector(".details-toggle img");
+    if (songDetails.hidden) {
+        // Show details
+        songDetails.hidden = false;
+        detailsToggle.alt = "Hide Details";
+        detailsToggle.className = "lsp_btn_hide02";
+        detailsToggle.src = customImage(document.getElementById("lsp_btn_hide02"), detailsToggle);
+    }
+    else {
+        // Hide details
+        songDetails.hidden = true;
+        detailsToggle.alt = "Show Details";
+        detailsToggle.className = "lsp_btn_show02";
+        detailsToggle.src = customImage(document.getElementById("lsp_btn_show02"), detailsToggle);
+    }
+    return false;
+}
+
+// Shuffle the songs in a song list
+function shuffleSongList(event) {
+    var songList = event.target.closest(".song-list");
+    var songs = songList.querySelector(".song-list-songs");
+    if (event.target.checked) {
+        // Store original list so it can be restored later
+        songList.dataset.original = songs.innerHTML;
+
+        // Shuffle
+        var songElements = [];
+        while (songs.firstElementChild) {
+            songElements.push(songs.lastElementChild);
+            songs.removeChild(songs.lastElementChild);
+        }
+        for (let i = songElements.length - 1; i >= 0; i --) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [songElements[i], songElements[j]] = [songElements[j], songElements[i]];
+        }
+        for (const child of songElements) {
+            songs.appendChild(child);
+        }
+    }
+    else {
+        // Unshuffle
+        if (songList.dataset.original) {
+            songs.innerHTML = songList.dataset.original;
+        }
+    }
+}
+
 // Add event listeners
 var m_firstLoadPlayer = true;
 document.addEventListener("DOMContentLoaded", (event) => {

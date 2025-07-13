@@ -75,3 +75,48 @@
     {{ comment_thread(song.threadid, session["userid"], song.userid, song.get_comments()) }}
 </div>
 {% endmacro %}
+
+{% macro song_list_entry(song, current_user_playlists) -%}
+{%- if not (song.hidden and session['userid'] != song.userid) -%}
+<div class="song" data-song="{{ song.json() }}">
+    <div class="song-main">
+        <div class="song-list-pfp-container">
+            {%- if song.user_has_pfp %}
+            <!-- Profile Picture -->
+            <img class="small-pfp" src="/pfp/{{ song.userid }}" onerror="this.style.display = 'none'" width="32" height="32" />
+            {%- endif %}
+        </div>
+        {{ song_info(song) | indent(8) }}
+        <div class="song-buttons">
+            <!-- Details Button -->
+            <button onclick="return showSongDetails(event)" class="song-list-button details-toggle" title="Toggle Details">
+                <img class="lsp_btn_show02" alt="Show Details">
+            </button>
+
+            <!-- Play Button -->
+            <button onclick="return play(event)" class="song-list-button" title="Play">
+                <img class="lsp_btn_play02" alt="Play">
+            </button>
+        </div>
+    </div>
+    {{ song_details(song, current_user_playlists) | indent(4) }}
+</div>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro song_list(songs, current_user_playlists) -%}
+<div class="song-list">
+    {% if songs|length > 1 %}
+    <div class="song-list-controls">
+        <label><input type="checkbox" name="shuffle" onchange="shuffleSongList(event)">Shuffle</label>
+    </div>
+    {% endif %}
+
+    <div class="song-list-songs">
+        {% for song in songs -%}
+        {{ song_list_entry(song, current_user_playlists) | indent(8) }}
+        {%- endfor %}
+    </div>
+</div>
+{%- endmacro %}
+

@@ -180,7 +180,8 @@
     {% endif %}
 
     <!-- Song List -->
-    {% include "song-list.html" %}
+    {%- from "song-macros.html" import song_list -%}
+    {{ song_list(songs, current_user_playlists) | indent(4) }}
 </div>
 
 {% endif %}

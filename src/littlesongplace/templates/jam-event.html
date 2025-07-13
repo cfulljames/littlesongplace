@@ -52,7 +52,9 @@
     <br/>
     <br/>
     {% if songs %}<p><small>This event has received {{ songs|length }} {% if songs|length > 1 %}entries{% else %}entry{% endif %}</small></p>{% endif %}
-    {% include "song-list.html" %}
+
+    {%- from "song-macros.html" import song_list %}
+    {{ song_list(songs, current_user_playlists) | indent(4) }}
     {%- endif %}
 
     <h2>Comments</h2>

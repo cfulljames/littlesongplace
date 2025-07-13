@@ -33,6 +33,7 @@
 </div>
 
 <h2>hot new tunes</h2>
-{% include "song-list.html" %}
+{%- from "song-macros.html" import song_list %}
+{{ song_list(songs, current_user_playlists) }}
 
 {% endblock %}

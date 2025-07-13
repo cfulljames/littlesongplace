@@ -43,7 +43,8 @@ function hidePlaylistEditor() {
 
 {%- endif %}
 
-{% include "song-list.html" %}
+{%- from "song-macros.html" import song_list -%}
+{{ song_list(songs, current_user_playlists) }}
 
 {% if session["userid"] == userid -%}
 <!-- Drag-and-drop playlist editor -->
