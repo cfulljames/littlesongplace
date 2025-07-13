@@ -34,6 +34,27 @@
 
 <h2>hot new tunes</h2>
 {%- from "song-macros.html" import song_list %}
-{{ song_list(songs, current_user_playlists) }}
 
+{%- for songs in songs_by_user %}
+<div class="upload-block">
+    <a class="profile-link" href="/users/{{ songs[0].username }}">{{ songs[0].username }}</a> uploaded
+    {% if songs|length == 1 -%}
+    a song
+    {% else %}
+    {{ songs|length }} songs
+    <button class="button subtle" onclick="showAllSongsInUploadBlock(event)">show all</button>
+    {%- endif %}
+    <div style="padding-top: 10px">
+        {{ song_list(songs, current_user_playlists, show_first_only=True) }}
+    </div>
+</div>
+{% endfor -%}
+
+<script>
+function showAllSongsInUploadBlock(event) {
+    const uploadBlock = event.target.closest(".upload-block");
+    uploadBlock.querySelectorAll(".song").forEach((s) => { s.hidden = false; });
+    event.target.hidden = true;  // Hide show all button
+}
+</script>
 {% endblock %}

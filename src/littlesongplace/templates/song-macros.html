@@ -76,9 +76,9 @@
 </div>
 {% endmacro %}
 
-{% macro song_list_entry(song, current_user_playlists) -%}
+{% macro song_list_entry(song, current_user_playlists, hidden=False) -%}
 {%- if not (song.hidden and session['userid'] != song.userid) -%}
-<div class="song" data-song="{{ song.json() }}">
+<div class="song" data-song="{{ song.json() }}" {% if hidden %}hidden{% endif %}>
     <div class="song-main">
         <div class="song-list-pfp-container">
             {%- if song.user_has_pfp %}
@@ -104,17 +104,20 @@
 {%- endif -%}
 {%- endmacro %}
 
-{% macro song_list(songs, current_user_playlists) -%}
+{% macro song_list(songs, current_user_playlists, show_first_only=False) -%}
 <div class="song-list">
-    {% if songs|length > 1 %}
+    {% if songs|length > 1 and not show_first_only %}
     <div class="song-list-controls">
         <label><input type="checkbox" name="shuffle" onchange="shuffleSongList(event)">Shuffle</label>
     </div>
     {% endif %}
 
     <div class="song-list-songs">
-        {% for song in songs -%}
+        {% for song in songs[:1] -%}
         {{ song_list_entry(song, current_user_playlists) | indent(8) }}
+        {%- endfor %}
+        {% for song in songs[1:] -%}
+        {{ song_list_entry(song, current_user_playlists, hidden=True) | indent(8) }}
         {%- endfor %}
     </div>
 </div>

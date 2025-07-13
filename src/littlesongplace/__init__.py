@@ -74,11 +74,20 @@ def index():
         all_events.extend(j.events)
     ongoing_events, upcoming_events, _, _ = jams._sort_events(all_events)
 
-    page_songs = songs.get_latest(50)
+    # Group songs by userid
+    page_songs = songs.get_latest(100)
+    songs_by_user = []
+    prev_song_user = None
+    for song in page_songs:
+        if song.userid != prev_song_user:
+            songs_by_user.append([])
+            prev_song_user = song.userid
+        songs_by_user[-1].append(song)
+
     return render_template(
             "index.html",
             users=all_users,
-            songs=page_songs,
+            songs_by_user=songs_by_user,
             page_title=title,
             ongoing_events=ongoing_events,
             upcoming_events=upcoming_events)
