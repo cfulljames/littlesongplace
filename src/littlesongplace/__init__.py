@@ -85,7 +85,7 @@ def index():
     return render_template(
             "index.html",
             users=all_users,
-            songs=page_songs,
+            songs_by_user=songs_by_user,
             ongoing_events=ongoing_events,
             upcoming_events=upcoming_events)
 
