@@ -191,7 +191,8 @@ def comment():
                     notification_targets,
                     title=f"Comment from {g.username}",
                     body=content,
-                    url="/activity")
+                    url="/activity",
+                    setting=push_notifications.SubscriptionSetting.COMMENTS)
 
         db.commit()
 

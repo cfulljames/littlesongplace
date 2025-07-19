@@ -120,24 +120,24 @@ def get_user_subscriptions(userid):
     for r in rows:
         s = r["subscription"]
         try:
-            subs.append((r["subid"], json.loads(s)))
+            subs.append((r["subid"], r["settings"], json.loads(s)))
         except json.decoder.JSONDecodeError:
             current_app.logger.error(f"Invalid subscription: {s}")
     return subs
 
-def notify_all(title, body, url, _except=None):
+def notify_all(title, body, url, setting, _except=None):
     # Notify all users (who have notifications enabled)
     rows = db.query("SELECT * FROM users")
     userids = [r["userid"] for r in rows]
     if _except in userids:
         userids.remove(_except)
-    notify(userids, title, body, url)
+    notify(userids, title, body, url, setting)
 
-def notify(userids, title, body, url):
+def notify(userids, title, body, url, setting):
     # Send push notifications in background thread (could take a while)
     thread = threading.Thread(
             target=_do_push,
-            args=(current_app._get_current_object(), userids, title, body, url))
+            args=(current_app._get_current_object(), userids, title, body, url, setting))
     push_threads.append(thread)
     thread.start()
 
@@ -146,7 +146,7 @@ def wait_all():
     for thread in push_copy:
         thread.join()
 
-def _do_push(app, userids, title, body, url):
+def _do_push(app, userids, title, body, url, setting):
     data = {"title": title, "body": body, "url": url}
     data_str = json.dumps(data)
 
@@ -161,7 +161,9 @@ def _do_push(app, userids, title, body, url):
     with app.app_context():
         for userid in userids:
             subs = get_user_subscriptions(userid)
-            for subid, sub in subs:
+            for subid, sub_settings, sub in subs:
+                if not (sub_settings & setting):
+                    continue  # This setting is disabled for this subscription
                 try:
                     if private_key:
                         pywebpush.webpush(sub, data_str, vapid_private_key=private_key, vapid_claims=claims.copy())
@@ -196,10 +198,14 @@ def notify_new_songs_cmd():
             _except = new_songs[0].userid
         elif len(new_songs) > 1:
             title = f"New songs from {', '.join(unique_users)}"
-        
+
         if title:
-            print(title)
-            notify_all(title, body=None, url="/", _except=_except)
+            notify_all(
+                    title,
+                    body=None,
+                    url="/",
+                    setting=SubscriptionSetting.SONGS,
+                    _except=_except)
 
 def init_app(app):
     app.cli.add_command(notify_new_songs_cmd)
