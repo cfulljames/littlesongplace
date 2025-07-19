@@ -188,7 +188,10 @@ def comment():
 
             # Send push notifications
             push_notifications.notify(
-                    notification_targets, f"Comment from {g.username}", content)
+                    notification_targets,
+                    title=f"Comment from {g.username}",
+                    body=content,
+                    url="/activity")
 
         db.commit()
 

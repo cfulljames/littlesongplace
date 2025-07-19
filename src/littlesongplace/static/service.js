@@ -18,7 +18,7 @@ self.addEventListener("pushsubscriptionchanged", (event) => {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(subscription)
             });
-        });
+        })
     );
 });
 
