@@ -13,7 +13,7 @@ from flask import Blueprint, current_app, g, render_template, request, redirect,
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
-from . import auth, comments, colors, datadir, db, push_notifications, users
+from . import auth, comments, colors, datadir, db, users
 from .sanitize import sanitize_user_text
 from .logutils import flash_and_log
 
@@ -167,6 +167,15 @@ def get_for_event(eventid):
         WHERE songs.eventid = ?
         """,
         [eventid])
+
+def get_uploaded_since(timestamp):
+    return _from_db(
+        """
+        SELECT * FROM songs
+        INNER JOIN users ON songs.userid = users.userid
+        WHERE songs.created > ?
+        """,
+        [timestamp])
 
 def _get_song_info_list(table, column, songid):
     rows = db.query(
@@ -453,10 +462,6 @@ def create_song():
             db.commit()
 
             flash_and_log(f"Successfully uploaded '{title}'", "success")
-
-            # Send push notifications to all other users
-            push_notifications.notify_all(
-                    f"New song from {g.username}", title, _except=g.userid)
 
             return False  # No error
 

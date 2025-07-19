@@ -1,11 +1,13 @@
 import json
 import threading
 import enum
+from datetime import datetime, timedelta, timezone
 
+import click
 import pywebpush
 from flask import Blueprint, current_app, g, request
 
-from . import auth, datadir, db
+from . import auth, datadir, db, songs
 
 bp = Blueprint("push-notifications", __name__, url_prefix="/push-notifications")
 
@@ -123,19 +125,19 @@ def get_user_subscriptions(userid):
             current_app.logger.error(f"Invalid subscription: {s}")
     return subs
 
-def notify_all(title, body, _except=None):
+def notify_all(title, body, url, _except=None):
     # Notify all users (who have notifications enabled)
     rows = db.query("SELECT * FROM users")
     userids = [r["userid"] for r in rows]
     if _except in userids:
         userids.remove(_except)
-    notify(userids, title, body)
+    notify(userids, title, body, url)
 
-def notify(userids, title, body):
+def notify(userids, title, body, url):
     # Send push notifications in background thread (could take a while)
     thread = threading.Thread(
             target=_do_push,
-            args=(current_app._get_current_object(), userids, title, body))
+            args=(current_app._get_current_object(), userids, title, body, url))
     push_threads.append(thread)
     thread.start()
 
@@ -144,8 +146,8 @@ def wait_all():
     for thread in push_copy:
         thread.join()
 
-def _do_push(app, userids, title, body):
-    data = {"title": title, "body": body}
+def _do_push(app, userids, title, body, url):
+    data = {"title": title, "body": body, "url": url}
     data_str = json.dumps(data)
 
     private_key_path = datadir.get_vapid_private_key_path()
@@ -178,3 +180,26 @@ def _do_push(app, userids, title, body):
 
     push_threads.remove(threading.current_thread())
 
+@click.command("notify-new-songs")
+def notify_new_songs_cmd():
+    """Notify subscribed users that new songs have been uploaded"""
+    with current_app.app_context():
+        one_day = timedelta(days=1)
+        yesterday = (datetime.now(timezone.utc) - one_day).isoformat()
+        new_songs = songs.get_uploaded_since(yesterday)
+        unique_users = sorted(set(s.username for s in new_songs))
+
+        title = None
+        _except = None
+        if len(new_songs) == 1:
+            title = f"New song from {unique_users[0]}"
+            _except = new_songs[0].userid
+        elif len(new_songs) > 1:
+            title = f"New songs from {', '.join(unique_users)}"
+        
+        if title:
+            print(title)
+            notify_all(title, body=None, url="/", _except=_except)
+
+def init_app(app):
+    app.cli.add_command(notify_new_songs_cmd)

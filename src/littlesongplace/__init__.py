@@ -38,6 +38,7 @@ app.register_blueprint(profiles.bp)
 app.register_blueprint(push_notifications.bp)
 app.register_blueprint(songs.bp)
 db.init_app(app)
+push_notifications.init_app(app)
 
 if "DATA_DIR" in os.environ:
     # Running on server behind proxy
