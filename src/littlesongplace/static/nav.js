@@ -196,8 +196,8 @@ async function checkForNewActivity() {
     indicator.hidden = !json.new_activity;
 }
 
-// Check for new activity every 10s
-setInterval(checkForNewActivity, 10000);
+// Check for new activity every 5 minutes (in ms)
+setInterval(checkForNewActivity, 5 * 60 * 1000);
 
 function customImage(source, target) {
     // Customize an image by performing a palette swap on the .gif
