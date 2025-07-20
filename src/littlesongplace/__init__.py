@@ -79,10 +79,11 @@ def index():
     songs_by_user = []
     prev_song_user = None
     for song in page_songs:
-        if song.userid != prev_song_user:
-            songs_by_user.append([])
-            prev_song_user = song.userid
-        songs_by_user[-1].append(song)
+        if not song.hidden:  # Don't show any hidden songs on homepage
+            if song.userid != prev_song_user:
+                songs_by_user.append([])
+                prev_song_user = song.userid
+            songs_by_user[-1].append(song)
 
     return render_template(
             "index.html",
