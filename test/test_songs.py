@@ -14,7 +14,7 @@ def _create_fake_mp3_and_return(returncode):
         if subprocess_args[0] == "ffmpeg":
             # Create "fake" mp3 file by just copying input file
             output_filename = subprocess_args[-1]
-            input_filename = subprocess_args[-2]
+            input_filename = subprocess_args[2]
             with open(input_filename, "rb") as infile, open(output_filename, "wb") as outfile:
                 outfile.write(infile.read())
 
