@@ -4,6 +4,7 @@ import random
 import shutil
 import subprocess
 import tempfile
+import time
 from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import Optional
@@ -488,9 +489,18 @@ def convert_song(tmp_file, request_file, yt_url):
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as out_file:
         out_file.close()
         os.remove(out_file.name)
-        result = subprocess.run(
-            ["ffmpeg", "-i", tmp_file.name, out_file.name],
-            stdout=subprocess.PIPE)
+        start = time.perf_counter()
+        result = subprocess.run([
+                "ffmpeg",
+                "-i", tmp_file.name,
+                "-codec:a", "libmp3lame",
+                "-qscale:a", "2",
+                "-ar", "44100",
+                out_file.name
+            ], stdout=subprocess.PIPE)
+        duration = time.perf_counter() - start
+        current_app.logger.info(f"Ran ffmpeg in {duration:0.6f} s")
+
         if result.returncode == 0:
             # Successfully converted file, overwrite original file
             os.replace(out_file.name, tmp_file.name)
