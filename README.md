@@ -16,7 +16,6 @@ Important Places:
 ## Dependencies
 This project has some dependencies that need to be installed manually to your system PATH:
 - [Python 3.11](https://python.org)
-- mpck from [Checkmate](https://github.com/Sjord/checkmate)
 - [ffmpeg](https://ffmpeg.org/)
 
 ## Environment Setup

@@ -100,11 +100,6 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install mpck
-      run: |
-        wget https://github.com/Sjord/checkmate/releases/download/v0.21/mpck_0.21-1_amd64.deb
-        sudo dpkg --install mpck_0.21-1_amd64.deb
-
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip

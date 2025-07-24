@@ -476,16 +476,7 @@ def convert_song(tmp_file, request_file, yt_url):
             flash_and_log(f"Failed to import from YouTube URL: {yt_url}")
             return False
 
-    result = subprocess.run(["mpck", tmp_file.name], stdout=subprocess.PIPE)
-    res_stdout = result.stdout.decode()
-    current_app.logger.info(f"mpck result: \n {res_stdout}")
-    lines = res_stdout.split("\n")
-    lines = [l.strip().lower() for l in lines]
-    if any(l.startswith("result") and l.endswith("ok") for l in lines):
-        # Uploaded valid mp3 file
-        return True
-
-    # Not a valid mp3, try to convert with ffmpeg
+    # Try to convert with ffmpeg
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as out_file:
         out_file.close()
         os.remove(out_file.name)

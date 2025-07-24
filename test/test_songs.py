@@ -110,8 +110,9 @@ def test_update_song_success(client):
     upload_song(client, b"Successfully updated &#39;song title&#39;", filename=TEST_DATA/"sample-6s.mp3", songid=1)
     response = client.get("/song/1/1")
     assert response.status_code == 200
-    with open(TEST_DATA/"sample-6s.mp3", "rb") as expected_file:
-        assert response.data == expected_file.read()
+    # File has been converted by ffmpeg, will not match byte-for-byte
+    # with open(TEST_DATA/"sample-6s.mp3", "rb") as expected_file:
+    #     assert response.data == expected_file.read()
 
 @pytest.mark.yt
 def test_update_song_from_youtube(client):
@@ -264,8 +265,11 @@ def test_delete_song_other_users_song(client):
 def test_get_song(client):
     create_user_and_song(client)
     response = client.get("/song/1/1")
-    with open(TEST_DATA/"sample-3s.mp3", "rb") as mp3file:
-        assert response.data == mp3file.read()
+    assert response.status_code == 200
+
+    # File has been converted by ffmpeg, will not match byte-for-byte
+    # with open(TEST_DATA/"sample-3s.mp3", "rb") as mp3file:
+    #     assert response.data == mp3file.read()
 
 def test_get_song_invalid_song(client):
     create_user_and_song(client)
