@@ -46,26 +46,14 @@ class Song:
         return comments.for_thread(self.threadid)
 
 def by_id(songid):
-    songs = _from_db(
-        """
-        select * from songs
-        inner join users on songs.userid = users.userid
-        where songid = ?
-        """,
-        [songid])
+    songs = _from_db("SELECT * FROM songs_view WHERE songid = ?", [songid])
     if not songs:
         raise ValueError(f"No song for ID {songid:d}")
 
     return songs[0]
 
 def by_threadid(threadid):
-    songs = _from_db(
-        """
-        select * from songs
-        inner join users on songs.userid = users.userid
-        where songs.threadid = ?
-        """,
-        [threadid])
+    songs = _from_db("SELECT * FROM songs_view WHERE threadid = ?", [threadid])
     if not songs:
         raise ValueError(f"No song for Thread ID {songid:d}")
 
@@ -74,131 +62,89 @@ def by_threadid(threadid):
 def get_all_for_userid(userid):
     return _from_db(
         """
-        select * from songs
-        inner join users on songs.userid = users.userid
-        where songs.userid = ?
-        order by songs.created desc
-        """,
-        [userid])
+        SELECT * FROM songs_view
+        WHERE userid = ?
+        ORDER BY created DESC
+        """, [userid])
 
 def get_all_for_username(username):
     return _from_db(
         """
-        select * from songs
-        inner join users on songs.userid = users.userid
-        where users.username = ?
-        order by songs.created desc
-        """,
-        [username])
+        SELECT * FROM songs_view
+        WHERE username = ?
+        ORDER BY created DESC
+        """, [username])
 
 def get_all_for_username_and_tag(username, tag):
     return _from_db(
         """
-        select * from song_tags
-        inner join songs on song_tags.songid = songs.songid
-        inner join users on songs.userid = users.userid
-        where (username = ? and tag = ?)
-        order by songs.created desc
+        SELECT * FROM song_tags
+        INNER JOIN songs_view on song_tags.songid = songs_view.songid
+        WHERE (username = ? and tag = ?)
+        ORDER BY created DESC
         """,
         [username, tag])
 
 def get_all_for_tag(tag):
     return _from_db(
         """
-        select * from song_tags
-        inner join songs on song_tags.songid = songs.songid
-        inner join users on songs.userid = users.userid
-        where (tag = ?)
-        order by songs.created desc
+        SELECT * FROM song_tags
+        INNER JOIN songs_view on song_tags.songid = songs_view.songid
+        WHERE tag = ?
+        ORDER BY created DESC
         """,
         [tag])
 
 def get_latest(count):
     return _from_db(
         """
-        select * from songs
-        inner join users on songs.userid = users.userid
-        order by songs.created desc
-        limit ?
+        SELECT * FROM songs_view
+        ORDER BY created DESC
+        LIMIT ?
         """,
         [count])
 
 def get_random(count):
-    # Get random songs + 10 extras so I can filter out my own
-    # (I uploaded too many :/)
     songs = _from_db(
         """
-        select * from songs
-        inner join users on songs.userid = users.userid
-        where songid in (
-            select songid from songs
-            order by random()
-            limit ?
+        SELECT * FROM songs_view
+        WHERE songid IN (
+            SELECT songid FROM songs
+            ORDER BY random()
+            LIMIT ?
         )
         """,
-        [count + 10])
+        [count])
+
     random.shuffle(songs)
-
-    # Prevent my songs from showing up in the first 10 results
-    for i in reversed(range(min(10, len(songs)))):
-        if songs[i].username == "cfulljames":
-            del songs[i]
-
-    # Drop any extra songs (since we asked for 10 extras)
-    songs = songs[:count]
-
     return songs
 
 def get_for_playlist(playlistid):
     return _from_db(
         """
-        select * from playlist_songs
-        inner join songs on playlist_songs.songid = songs.songid
-        inner join users on songs.userid = users.userid
-        where playlistid = ?
-        order by playlist_songs.position asc
+        SELECT * FROM playlist_songs
+        INNER JOIN songs_view ON playlist_songs.songid = songs_view.songid
+        WHERE playlistid = ?
+        ORDER BY playlist_songs.position ASC
         """,
         [playlistid])
 
 def get_for_event(eventid):
-    return _from_db(
-        """
-        SELECT * FROM songs
-        INNER JOIN users ON songs.userid = users.userid
-        WHERE songs.eventid = ?
-        """,
-        [eventid])
-
-def _get_song_info_list(table, column, songid):
-    rows = db.query(
-            f"SELECT ({column}) FROM {table} WHERE songid = ?", [songid])
-    return [r[column] for r in rows if r[column]]
+    return _from_db("SELECT * FROM songs_view WHERE eventid = ?", [eventid])
 
 def _from_db(query, args=()):
     songs_data = db.query(query, args)
     songs = []
     for sd in songs_data:
         songid = sd["songid"]
-        song_tags = _get_song_info_list("song_tags", "tag", songid)
-        song_collabs = _get_song_info_list("song_collaborators", "name", songid)
+        song_tags = sd["tags"].split(",") if sd["tags"] else []
+        song_collabs = sd["collaborators"].split(",") if sd["collaborators"] else []
 
         # Song is hidden if it was submitted to an event that hasn't ended yet
         hidden = False
-        jamid = None
-        event_title = None
-
-        if sd["eventid"]:
-            event_row = db.query(
-                    "SELECT * FROM jam_events WHERE eventid = ?",
-                    [sd["eventid"]],
-                    one=True)
-            if event_row:
-                jamid = event_row["jamid"]
-                event_title = event_row["title"]
-                if event_row["enddate"]:
-                    enddate = datetime.fromisoformat(event_row["enddate"])
-                    hidden = datetime.now(timezone.utc) < enddate
-
+        if sd["event_enddate"]:
+            enddate = datetime.fromisoformat(sd["event_enddate"])
+            hidden = datetime.now(timezone.utc) < enddate
 
         created = (
                 datetime.fromisoformat(sd["created"])
@@ -218,8 +164,8 @@ def _from_db(query, args=()):
             user_has_pfp=users.user_has_pfp(sd["userid"]),
             hidden=hidden,
             eventid=sd["eventid"],
-            jamid=jamid,
-            event_title=event_title,
+            jamid=sd["jamid"],
+            event_title=sd["event_title"],
         ))
     return songs
 
@@ -351,7 +297,7 @@ def update_song():
     collaborators = [c.strip() for c in request.form["collabs"].split(",") if c]
 
     # Make sure song exists and the logged-in user owns it
-    song_data = db.query("select * from songs where songid = ?", [songid], one=True)
+    song_data = db.query("SELECT * FROM songs WHERE songid = ?", [songid], one=True)
     if song_data is None:
         abort(400)
     elif session["userid"] != song_data["userid"]:
@@ -374,8 +320,8 @@ def update_song():
         # Update songs table
         db.query(
             """
-            update songs set title = ?, description = ?
-            where songid = ?
+            UPDATE songs SET title = ?, description = ?
+            WHERE songid = ?
             """,
             [title, description, songid])
 
@@ -384,18 +330,18 @@ def update_song():
         for tag in tags:
             db.query(
                 """
-                insert into song_tags (tag, songid)
-                values (?, ?)
+                INSERT INTO song_tags (tag, songid)
+                VALUES (?, ?)
                 """,
                 [tag, songid])
 
         # Update song_collaborators table
-        db.query("delete from song_collaborators where songid = ?", [songid])
+        db.query("DELETE FROM song_collaborators WHERE songid = ?", [songid])
         for collab in collaborators:
             db.query(
                 """
-                insert into song_collaborators (name, songid)
-                values (?, ?)
+                INSERT INTO song_collaborators (name, songid)
+                VALUES (?, ?)
                 """,
                 [collab, songid])
 
@@ -430,9 +376,9 @@ def create_song():
             timestamp = datetime.now(timezone.utc).isoformat()
             song_data = db.query(
                 """
-                insert into songs (userid, title, description, created, threadid, eventid)
-                values (?, ?, ?, ?, ?, ?)
-                returning (songid)
+                INSERT INTO songs (userid, title, description, created, threadid, eventid)
+                VALUES (?, ?, ?, ?, ?, ?)
+                RETURNING (songid)
                 """,
                 [session["userid"], title, description, timestamp, threadid, eventid],
                 one=True)
@@ -446,13 +392,13 @@ def create_song():
             songid = song_data["songid"]
             for tag in tags:
                 db.query(
-                    "insert into song_tags (tag, songid) values (?, ?)",
+                    "INSERT INTO song_tags (tag, songid) VALUES (?, ?)",
                     [tag, songid])
 
             # Assign collaborators
             for collab in collaborators:
                 db.query(
-                    "insert into song_collaborators (songid, name) values (?, ?)",
+                    "INSERT INTO song_collaborators (songid, name) VALUES (?, ?)",
                     [songid, collab])
 
             db.commit()
@@ -515,7 +461,7 @@ def yt_import(tmp_file, yt_url):
 @bp.get("/delete-song/<int:songid>")
 def delete_song(songid):
     song_data = db.query(
-        "select * from songs where songid = ?", [songid], one=True)
+        "SELECT * FROM songs WHERE songid = ?", [songid], one=True)
 
     if not song_data:
         current_app.logger.warning(
@@ -529,11 +475,11 @@ def delete_song(songid):
         abort(401)
 
     # Delete tags, collaborators
-    db.query("delete from song_tags where songid = ?", [songid])
-    db.query("delete from song_collaborators where songid = ?", [songid])
+    db.query("DELETE FROM song_tags WHERE songid = ?", [songid])
+    db.query("DELETE FROM song_collaborators WHERE songid = ?", [songid])
 
     # Delete song database entry
-    db.query("delete from songs where songid = ?", [songid])
+    db.query("DELETE FROM songs WHERE songid = ?", [songid])
     db.commit()
 
     # Delete song file from disk
