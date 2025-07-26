@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from .utils import create_user, create_user_and_song, upload_song
+from .utils import create_user, create_user_and_song, get_song_list_from_page, upload_song
 
 TEST_DATA = Path(__file__).parent / "data"
 
@@ -26,6 +26,16 @@ def _create_fake_mp3_and_return(returncode):
 def test_upload_song_success(client):
     create_user(client, "user", "password", login=True)
     upload_song(client, b"Successfully uploaded &#39;song title&#39;")
+
+def test_upload_song_multiple_tags_collabs(client):
+    create_user(client, "user", "password", login=True)
+    upload_song(
+            client, b"Successfully uploaded &#39;song title&#39;",
+            tags="tag1, tag2, tag3",
+            collabs="collab1, collab2, collab3")
+    songs = get_song_list_from_page(client, "/users/user")
+    assert songs[0]["tags"] == ["tag1", "tag2", "tag3"]
+    assert songs[0]["collaborators"] == ["collab1", "collab2", "collab3"]
 
 def test_upload_song_bad_title(client):
     create_user(client, "user", "password", login=True)
