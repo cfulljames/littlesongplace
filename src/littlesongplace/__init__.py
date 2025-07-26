@@ -2,6 +2,7 @@ import base64
 import logging
 import os
 import random
+import time
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -47,12 +48,14 @@ if "DATA_DIR" in os.environ:
 
 @app.route("/")
 def index():
+    start = time.perf_counter()
     all_users = db.query("select * from users order by username asc")
     all_users = [dict(row) for row in all_users]
     for user in all_users:
         user["has_pfp"] = users.user_has_pfp(user["userid"])
         for key, value in users.get_user_colors(user).items():
             user[key] = value
+    app.logger.info(f"Homepage users in {time.perf_counter() - start} seconds")
 
     titles = [
             ("Little Song Place", 2.0),
@@ -63,6 +66,7 @@ def index():
     titles, weights = zip(*titles)
     title = random.choices(titles, weights)[0]
 
+    start = time.perf_counter()
     rows = db.query(
             """
             SELECT * FROM jams
@@ -73,8 +77,10 @@ def index():
     for j in all_jams:
         all_events.extend(j.events)
     ongoing_events, upcoming_events, _, _ = jams._sort_events(all_events)
+    app.logger.info(f"Homepage jams in {time.perf_counter() - start} seconds")
 
     # Group songs by userid
+    start = time.perf_counter()
     page_songs = songs.get_latest(100)
     songs_by_user = []
     prev_song_user = None
@@ -84,14 +90,19 @@ def index():
                 songs_by_user.append([])
                 prev_song_user = song.userid
             songs_by_user[-1].append(song)
+    app.logger.info(f"Homepage songs in {time.perf_counter() - start} seconds")
 
-    return render_template(
+    start = time.perf_counter()
+    page = render_template(
             "index.html",
             users=all_users,
             songs_by_user=songs_by_user,
             page_title=title,
             ongoing_events=ongoing_events,
             upcoming_events=upcoming_events)
+    app.logger.info(f"Homepage render in {time.perf_counter() - start} seconds")
+
+    return page
 
 @app.get("/site-news")
 def site_news():
