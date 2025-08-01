@@ -258,3 +258,47 @@ function updateImageColors() {
     });
 }
 
+async function periodicPushSync() {
+    console.log("sync");
+    if (!("serviceWorker" in navigator)) {
+        return;  // No service woker available
+    }
+    const subid = window.localStorage.getItem("subid");
+    console.log(subid);
+    if (subid) {
+        await syncPushSubscription();
+    }
+}
+
+async function syncPushSubscription() {
+    const registration = await navigator.serviceWorker.getRegistration();
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription)
+    {
+        // Subscribe via browser's push service
+        const data = await fetch("/push-notifications/vapid-public-key").then((r) => { return r.json() });
+        const vapid_public_key = data.public_key;
+        const options = {userVisibleOnly: true, applicationServerKey: vapid_public_key};
+        subscription = await registration.pushManager.subscribe(options);
+        console.log(JSON.stringify(subscription));
+    }
+
+    // Register (or update) subscription with LSP server
+    const subid = window.localStorage.getItem("subid");
+    const params = subid ? `?subid=${subid}` : "";
+    const response = await fetch(
+        `/push-notifications/subscribe${params}`, {
+            method: "post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(subscription)
+        }
+    );
+
+    const rspJson = await response.json();
+    console.log("Subscription ID:", rspJson.subid);
+    window.localStorage.setItem("subid", rspJson.subid);
+}
+
+periodicPushSync();
+setInterval(periodicPushSync, 10000);
+

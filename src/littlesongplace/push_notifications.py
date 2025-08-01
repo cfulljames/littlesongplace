@@ -24,13 +24,30 @@ def subscribe():
         # Request must contain valid subscription JSON
         abort(400)
 
-    row = db.query(
-            """
-            INSERT INTO users_push_subscriptions (userid, subscription, settings)
-            VALUES (?, ?, ?)
-            RETURNING subid
-            """,
-            [g.userid, json.dumps(request.json), 0], expect_one=True)
+    subid = request.args.get("subid", None)
+    existing_sub = None
+    if subid:
+        existing_sub = db.query(
+                "SELECT * FROM users_push_subscriptions WHERE subid = ? AND userid = ?",
+                [subid, g.userid])
+
+    if existing_sub:
+        row = db.query(
+                """
+                UPDATE users_push_subscriptions
+                SET userid = ?, subscription = ?
+                WHERE subid = ? AND userid = ?
+                RETURNING subid
+                """,
+                [g.userid, json.dumps(request.json), subid, g.userid], expect_one=True)
+    else:
+        row = db.query(
+                """
+                INSERT INTO users_push_subscriptions (userid, subscription, settings)
+                VALUES (?, ?, ?)
+                RETURNING subid
+                """,
+                [g.userid, json.dumps(request.json), 0], expect_one=True)
     db.commit()
 
     current_app.logger.info(f"{g.username} registered push subscription")
@@ -57,6 +74,15 @@ def update_subscription(subid):
     current_app.logger.info(f"{g.username} updated push subscription")
 
     return {"status": "success", "subid": row["subid"]}
+
+@bp.get("/vapid-public-key")
+def vapid_public_key():
+    try:
+        with open(datadir.get_vapid_public_key_path(), "r") as keyfile:
+            key = keyfile.read().strip()
+        return {"status": "ok", "public_key": key}
+    except OSError:
+        return {"status": "error"}
 
 @bp.get("/settings")
 @auth.requires_login

@@ -80,29 +80,7 @@ async function enablePushNotifications() {
     if (permission === "granted") {
         // Subscribe to push notifications (if we don't already have an active subscription)
         try {
-            const registration = await navigator.serviceWorker.getRegistration();
-            const existingSubscription = await registration.pushManager.getSubscription();
-            if (!existingSubscription || !window.localStorage.getItem("subid"))
-            {
-                // Subscribe via browser's push service
-                const vapid_public_key = "{{ vapid_public_key }}";
-                const options = {userVisibleOnly: true, applicationServerKey: vapid_public_key};
-                const subscription = await registration.pushManager.subscribe(options);
-                console.log(JSON.stringify(subscription));
-
-                // Register subscription with LSP server
-                const response = await fetch(
-                    "/push-notifications/subscribe", {
-                        method: "post",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify(subscription)
-                    }
-                );
-
-                const rspJson = await response.json();
-                console.log("Subscription ID:", rspJson.subid);
-                window.localStorage.setItem("subid", rspJson.subid);
-            }
+            await syncPushSubscription();
         }
         catch (err) {
             console.log("Error subscribing to push notifications:", err);
