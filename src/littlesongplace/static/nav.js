@@ -259,18 +259,19 @@ function updateImageColors() {
 }
 
 async function periodicPushSync() {
-    console.log("sync");
     if (!("serviceWorker" in navigator)) {
         return;  // No service woker available
     }
     const subid = window.localStorage.getItem("subid");
-    console.log(subid);
     if (subid) {
         await syncPushSubscription();
     }
 }
 
 async function syncPushSubscription() {
+    if (Notification.permission != "granted") {
+        return;
+    }
     const registration = await navigator.serviceWorker.getRegistration();
     let subscription = await registration.pushManager.getSubscription();
     if (!subscription)
@@ -295,10 +296,9 @@ async function syncPushSubscription() {
     );
 
     const rspJson = await response.json();
-    console.log("Subscription ID:", rspJson.subid);
     window.localStorage.setItem("subid", rspJson.subid);
 }
 
 periodicPushSync();
-setInterval(periodicPushSync, 10000);
+setInterval(periodicPushSync, 60*60*1000);
 

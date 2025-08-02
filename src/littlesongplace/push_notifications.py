@@ -35,11 +35,12 @@ def subscribe():
         row = db.query(
                 """
                 UPDATE users_push_subscriptions
-                SET userid = ?, subscription = ?
+                SET subscription = ?
                 WHERE subid = ? AND userid = ?
                 RETURNING subid
                 """,
-                [g.userid, json.dumps(request.json), subid, g.userid], expect_one=True)
+                [json.dumps(request.json), subid, g.userid], expect_one=True)
+        current_app.logger.info(f"{g.username} updated push subscription {row['subid']}")
     else:
         row = db.query(
                 """
@@ -48,9 +49,8 @@ def subscribe():
                 RETURNING subid
                 """,
                 [g.userid, json.dumps(request.json), 0], expect_one=True)
+        current_app.logger.info(f"{g.username} registered push subscription {row['subid']}")
     db.commit()
-
-    current_app.logger.info(f"{g.username} registered push subscription")
 
     return {"status": "success", "subid": row["subid"]}
 

@@ -26,7 +26,7 @@ function updateSelections() {
     // Prevent this from getting called again on the next page load
     document.removeEventListener("DOMContentLoaded", updateSelections);
 
-    if (window.localStorage.getItem("subid"))
+    if (localStorage.getItem("subid") && Notification.permission == "granted")
     {
         const params = new URLSearchParams({subid: window.localStorage.getItem("subid")});
         fetch(`/push-notifications/settings?${params}`).then((r) => {
@@ -36,6 +36,10 @@ function updateSelections() {
                 document.getElementById("song-push").checked = j.songs;
             });
         })
+    }
+    else {
+        document.getElementById("comment-push").checked = false;
+        document.getElementById("song-push").checked = false;
     }
 }
 document.addEventListener("DOMContentLoaded", updateSelections());
