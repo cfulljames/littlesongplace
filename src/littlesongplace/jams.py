@@ -1,4 +1,5 @@
 import functools
+import random
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -154,6 +155,7 @@ def events_view(jamid, eventid):
         abort(404)  # No event with this ID
 
     event_songs = songs.get_for_event(event.eventid)
+    random.shuffle(event_songs)
 
     return render_template("jam-event.html", jam=jam, event=event, songs=event_songs)
 
