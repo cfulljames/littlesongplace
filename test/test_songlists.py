@@ -31,12 +31,12 @@ def test_homepage_songs_two_songs(client):
     songs = get_song_list_from_page(client, "/")
 
     # Newest first (all songs)
-    assert len(songs) == 2
-    assert songs[0]["title"] == "song2"
-    assert songs[0]["username"] == "user2"
+    assert len(songs) == 4 # Includes random songs (both)
+    assert songs[2]["title"] == "song2"
+    assert songs[2]["username"] == "user2"
 
-    assert songs[1]["title"] == "song1"
-    assert songs[1]["username"] == "user1"
+    assert songs[3]["title"] == "song1"
+    assert songs[3]["username"] == "user1"
 
 # Songs by tag #################################################################
 

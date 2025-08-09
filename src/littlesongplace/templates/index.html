@@ -32,8 +32,12 @@
     {% endfor %}
 </div>
 
-<h2>hot new tunes</h2>
 {%- from "song-macros.html" import song_list %}
+<h2>human music</h2>
+
+{{ song_list(random_songs, current_user_playlists) }}
+
+<h2>hot new tunes</h2>
 
 {%- for songs in songs_by_user %}
 <div class="upload-block">

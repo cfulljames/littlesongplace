@@ -79,6 +79,8 @@ def index():
     ongoing_events, upcoming_events, _, _ = jams._sort_events(all_events)
     app.logger.info(f"Homepage jams in {time.perf_counter() - start} seconds")
 
+    random_songs = songs.get_random(3)
+
     # Group songs by userid
     start = time.perf_counter()
     page_songs = songs.get_latest(100)
@@ -96,6 +98,7 @@ def index():
     page = render_template(
             "index.html",
             users=all_users,
+            random_songs=random_songs,
             songs_by_user=songs_by_user,
             page_title=title,
             ongoing_events=ongoing_events,
