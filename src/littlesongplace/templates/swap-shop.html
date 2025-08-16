@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block body -%}
+
+<h1>the swap shop</h1>
+
+<p>Welcome to the Swap Shop: a collaborative mode for SaucelessOne's MMiaH.</p>
+<p>It works much like &qt;Secret Santa&qt;:</p>
+<ol>
+    <li>Join the event by entering your PSN name below.</li>
+    <li>When the event starts, you will be given another name from the list</li>
+    <li>Start making a song</li>
+    <li>At the 30 minute mark, release the song as public, and send it to your assigned recipient</li>
+    <li>You should also receive a song from a different person on the list.  It's a surprise!</li>
+    <li>Spend another 30 minutes remixing the song you received</li>
+    <li>Release the finished song as public and send it to Sauceless</li>
+</ol>
+
+<h2>Join</h2>
+{% if "swap-shop-name" in session %}
+<p>Joined as {{ session["swap-shop-name"] }}</p>
+{% else %}
+<form method="post" action="/swap-shop/enter">
+    <label>Name: <input type="text" name="name"></label>
+    <input type="submit" value="Join">
+</form>
+{% endif %}
+
+<h2>Participants</h2>
+<ul>
+    {%- for name in participants %}
+    <li>{{ name }}</li>
+    {% endfor -%}
+</ul>
+
+{%- endblock %}
